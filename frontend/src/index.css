@@ -1,3 +1,16 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+@layer components {
+    .container {
+        @apply max-w-full w-[1440px] px-5 mx-auto;
+    }
+}
+
+@media only screen and (max-width: 1024px) {
+    .container {
+        @apply w-full;
+    }
+}
