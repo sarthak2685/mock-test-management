@@ -54,17 +54,17 @@ const company = [
 const Footer = () => {
   return (
     <footer className="pb-16 pt-10 bg-[#FCFCFC] text-black shadow-lg border-t-2 border-gray-200">
-      <br />
-      <br />
-      <br />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between flex-col md:flex-row flex-wrap gap-[30px] text-left">
-          <div className="-mt-6">
-            {/* Logo Section */}
-            <h3 className="text-[35px] font-[400] text-black mt-4">
-              Mock <b>Period.</b>
+        <div className="flex flex-col md:flex-row justify-between gap-10 md:gap-[30px]">
+          {/* Logo Section */}
+          <div className="text-center md:text-left">
+            <h3 className="text-[28px] sm:text-[35px] font-[400] text-black mt-4">
+              Mock
+              <span className="text-[#007bff]">
+                <b> Period.</b>
+              </span>
             </h3>
-            <p className="text-[16px] font-[400] text-black mt-4">
+            <p className="text-[14px] sm:text-[16px] font-[400] text-black mt-4">
               Lorem ipsum is placeholder text commonly
               <br />
               used in the graphic, print, and publishing
@@ -75,7 +75,8 @@ const Footer = () => {
             </p>
           </div>
 
-          <div className="flex items-center gap-4 mt-4">
+          {/* Social Links */}
+          <div className="flex justify-center md:justify-start gap-4">
             {socialLinks.map((link, index) => (
               <Link
                 to={link.path}
@@ -83,22 +84,22 @@ const Footer = () => {
                 className="w-12 h-12 flex items-center justify-center group social-link"
                 aria-label={link.ariaLabel}
               >
-                <div className="text-[27px]">{link.icon}</div>
+                <div className="text-[24px] sm:text-[27px]">{link.icon}</div>
               </Link>
             ))}
           </div>
 
-          {/* Reach Out To Us */}
-          <div>
-            <h2 className="text-[20px] leading-[30px] font-[700] mb-3 text-black">
+          {/* Reach Out To Us Section */}
+          <div className="text-center md:text-right">
+            <h2 className="text-[18px] sm:text-[20px] font-bold mb-3 text-black">
               Reach Out To Us
             </h2>
             <ul>
               {reach.map((item, index) => (
-                <li key={index} className="mb-4 text-right">
+                <li key={index} className="mb-4">
                   <Link
                     to={item.path}
-                    className="text-[16px] leading-7 font-[400] text-black"
+                    className="text-[14px] sm:text-[16px] leading-7 font-[400] text-black"
                   >
                     {item.display}
                   </Link>
@@ -107,17 +108,17 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Company */}
-          <div>
-            <h2 className="text-[20px] leading-[30px] font-[700] mb-3 text-black text-right">
+          {/* Company Section */}
+          <div className="text-center md:text-right">
+            <h2 className="text-[18px] sm:text-[20px] font-bold mb-3 text-black">
               Company
             </h2>
             <ul>
               {company.map((item, index) => (
-                <li key={index} className="mb-4 text-right">
+                <li key={index} className="mb-4">
                   <Link
                     to={item.path}
-                    className="text-[16px] leading-7 font-[400] text-black"
+                    className="text-[14px] sm:text-[16px] leading-7 font-[400] text-black"
                   >
                     {item.display}
                   </Link>
