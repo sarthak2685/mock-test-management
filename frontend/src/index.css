@@ -14,3 +14,10 @@
         @apply w-full;
     }
 }
+
+@layer utilities {
+    .bg-dotted-pattern {
+      background-image: radial-gradient(circle, #000 1px, transparent 1px);
+      background-size: 4px 4px;
+    }
+  }

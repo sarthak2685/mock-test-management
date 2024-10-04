@@ -11,7 +11,7 @@ const Message = () => {
         </h1>
 
         {/* Subheading */}
-        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-light mb-6">
+        <h2 className="text-2xl font-semibold sm:text-3xl lg:text-4xl  mb-6">
           With Us
         </h2>
 

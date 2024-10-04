@@ -76,7 +76,7 @@ const Footer = () => {
           </div>
 
           {/* Social Links */}
-          <div className="flex justify-center md:justify-start gap-4">
+          <div className="flex justify-center items-center md:justify-start gap-4">
             {socialLinks.map((link, index) => (
               <Link
                 to={link.path}
