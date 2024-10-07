@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 // Import logos (ensure correct paths)
 import sscLogo from "../../assets/ssc-logo.png";
@@ -27,15 +27,54 @@ const logoMap = {
 };
 
 const Exams = () => {
+  const [count, setCount] = useState(1); // State to manage the counter
+  const ref = useRef(null); // Ref to the component
+
+  useEffect(() => {
+    const handleScroll = (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          // Reset the counter
+          setCount(1); // Reset to 1 when the component comes into view
+
+          // Start counting up to 10
+          const interval = setInterval(() => {
+            setCount((prevCount) => {
+              if (prevCount < 10) {
+                return prevCount + 1; // Increment counter until it reaches 10
+              } else {
+                clearInterval(interval); // Clear interval once it reaches 10
+                return prevCount; // Return 10 once reached
+              }
+            });
+          }, 200); // Set interval for every 200ms
+
+          return () => clearInterval(interval); // Cleanup interval on component unmount
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(handleScroll);
+    const currentRef = ref.current; // Copying ref.current to a variable
+    if (currentRef) {
+      observer.observe(currentRef);
+    }
+
+    return () => {
+      if (currentRef) {
+        observer.unobserve(currentRef); // Using the copied variable
+      }
+    };
+  }, [ref]);
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div ref={ref} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header Section */}
       <h1 className="text-5xl font-extrabold text-black mb-4 text-center">
         Our Extensive List Of <span className="text-[#007bff]">Exams</span>
       </h1>
       <h6 className="text-[20px] text-gray-600 mb-8 text-center">
-        <span className="text-[#007bff] font-bold">5+</span> exams for your
-        preparation
+        <span className="text-[#007bff] font-bold">{count}+</span> exams for your preparation
       </h6>
 
       {/* Grid Layout for Exam Cards */}
