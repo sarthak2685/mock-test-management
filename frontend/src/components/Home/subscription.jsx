@@ -7,7 +7,7 @@ function Subscription() {
     <section className="bg-white ">
       <div className="py-8 px-4 mx-auto max-w-screen-xl lg:pb-16 lg:px-6">
         <div className="mx-auto max-w-screen-md text-center mb-8 lg:mb-12">
-          <h1 className="mb-4 text-6xl tracking-tight font-extrabold text-gray-900 ">
+          <h1 className="mb-4 text-4xl sm:text-5xl lg:text-6xl tracking-tight font-extrabold text-gray-900 ">
             Subscription
             <span className="text-[#007bff]"> Plan</span>
           </h1>
@@ -16,7 +16,7 @@ function Subscription() {
           </h6>
         </div>
         {/* Responsive Grid */}
-        <div className="space-y-8 md:grid md:grid-cols-2 md:gap-6 xl:gap-10 md:space-y-0">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Pricing Card 1 */}
           <div className="flex flex-col p-6 mx-auto max-w-lg text-center bg-white rounded-lg border border-gray-200 shadow-md ">
             <h3 className="mb-4 text-2xl font-semibold text-gray-900 ">
