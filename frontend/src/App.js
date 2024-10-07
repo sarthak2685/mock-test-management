@@ -1,22 +1,31 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar.jsx';
-import Home from './components/Home.jsx';
 import Footer from './components/Footer.jsx';
-import './App.css';
+import Home from './components/Home.jsx';
 import Login from './components/Login.jsx';
 import ContactPage from './components/Contact.jsx';
+import AdminDashboard from './components/AdminDasboard/AdminDasboard.jsx';
+import StudentManagement from './components/AdminDasboard/StudentMangement.jsx';
+import MockTestManagement from './components/AdminDasboard/MockTest.jsx';
+import ChartComponent from './components/AdminDasboard/Perfomance.jsx';
+import Dashboard from './components/AdminDasboard/Dasboard.jsx';
 
 function App() {
   return (
     <Router>
       <div className="App">
-        <Navbar />
+        {/* Conditional Navbar and Footer */}
+        {['/', '/login', '/contact'].includes(window.location.pathname) && <Navbar />}
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/contact" element={<ContactPage />} />
+          <Route path="/admin" element={<Dashboard />} />
+          <Route path="/students" element={<StudentManagement />} />
+          <Route path="/create-test" element={<MockTestManagement />} />
+          <Route path="/performance" element={<ChartComponent />} />
         </Routes>
-        <Footer />
+        {['/', '/login', '/contact'].includes(window.location.pathname) && <Footer />}
       </div>
     </Router>
   );
