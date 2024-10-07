@@ -45,7 +45,7 @@ const reach = [
 ];
 
 const company = [
-  { path: "/why-us", display: "Why Us" },
+  {},
   { path: "/privacy-policy", display: "Privacy Policy" },
   { path: "/terms-condition", display: "Terms And Condition" },
 ];
@@ -114,6 +114,7 @@ const Footer = () => {
               Company
             </h2>
             <ul>
+              <a href="#why-us">Why Us</a>
               {company.map((item, index) => (
                 <li key={index} className="mb-4">
                   <Link
