@@ -1,7 +1,7 @@
 // AdminDashboard.js
-import React from 'react';
-import { Link } from 'react-router-dom';
-import ChartComponent from './Perfomance.jsx';
+import React from "react";
+import { Link } from "react-router-dom";
+import ChartComponent from "./Perfomance.jsx";
 
 const AdminDashboard = () => {
   return (
@@ -12,9 +12,21 @@ const AdminDashboard = () => {
           <h2 className="text-2xl font-bold mb-6">Admin Dashboard</h2>
           <nav>
             <ul className="space-y-4">
-              <li><Link to="/students" className="hover:text-blue-400">Manage Students</Link></li>
-              <li><Link to="/create-test" className="hover:text-blue-400">Create Mock Test</Link></li>
-              <li><Link to="/performance" className="hover:text-blue-400">Student Performance</Link></li>
+              <li>
+                <Link to="/students" className="hover:text-blue-400">
+                  Manage Students
+                </Link>
+              </li>
+              <li>
+                <Link to="/create-test" className="hover:text-blue-400">
+                  Create Mock Test
+                </Link>
+              </li>
+              <li>
+                <Link to="/performance" className="hover:text-blue-400">
+                  Student Performance
+                </Link>
+              </li>
             </ul>
           </nav>
         </div>
