@@ -34,9 +34,9 @@ const WhyUs = () => {
           </div>
 
           {/* Right Side: Cards with different sizes */}
-          <div className="max-w-7xl lg:w-1/2 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="max-w-7xl lg:w-4/6 grid grid-cols-1 md:grid-cols-2 gap-6 lg:mt-8 mt-0">
             {/* Card 1 (Bottom aligned with Card 2) */}
-            <div className="flex items-center p-6 bg-green-100 rounded-lg shadow-lg h-48 transition-transform transform hover:scale-105 hover:shadow-xl">
+            <div className="flex items-center p-6 bg-green-100 rounded-lg mt-8 shadow-lg h-48 transition-transform transform hover:scale-105 hover:shadow-xl">
               <FaChalkboardTeacher className="text-4xl text-green-600 mr-4" />
               <div>
                 <h3 className="text-xl font-bold">Learn from the Best</h3>
