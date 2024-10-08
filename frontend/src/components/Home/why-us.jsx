@@ -10,20 +10,19 @@ import { Link } from "react-router-dom";
 const WhyUs = () => {
   return (
     <section className="why-us" id="why-us">
-      <div className="why-us-container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8  bg-white ">
-        <div className="flex flex-col  lg:flex-row items-center justify-between">
+      <div className="why-us-container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-white">
+        <div className="flex flex-col lg:flex-row items-center justify-between">
           {/* Left Side: Heading and Description */}
-          <div className="lg:w-1/2 mb-12 lg:mb-0 lg:pr-8 flex flex-col justify-center">
-            <h2 className="text-4xl font-bold mb-6">
+          <div className="w-full lg:w-1/2 text-center lg:text-left mb-8 lg:mb-0">
+            <h1 className="text-4xl lg:text-5xl font-bold text-gray-800 leading-tight mb-6">
               Why Choose <span className="text-[#007bff]">Mock Period?</span>
-            </h2>
-            <p className="text-lg text-gray-700 mb-6">
+            </h1>
+            <p className="text-lg lg:text-xl text-gray-600 mb-6">
               With thousands of students benefiting from our mock tests and
               detailed analytics, Mock Period is your ideal platform for exam
               preparation.
             </p>
-            {/* Smaller Button */}
-            <div className="text-center mb-10 md:text-left">
+            <div className="text-center lg:text-left">
               <Link
                 to="/login"
                 className="bg-[#007bff] hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-md transition duration-300 ease-in-out"
@@ -35,7 +34,7 @@ const WhyUs = () => {
 
           {/* Right Side: Cards with different sizes */}
           <div className="max-w-7xl lg:w-4/6 grid grid-cols-1 md:grid-cols-2 gap-6 lg:mt-8 mt-0">
-            {/* Card 1 (Bottom aligned with Card 2) */}
+            {/* Card 1 */}
             <div className="flex items-center p-6 bg-green-100 rounded-lg mt-8 shadow-lg h-48 transition-transform transform hover:scale-105 hover:shadow-xl">
               <FaChalkboardTeacher className="text-4xl text-green-600 mr-4" />
               <div>
@@ -48,7 +47,7 @@ const WhyUs = () => {
             </div>
 
             {/* Card 2 */}
-            <div className="flex items-center p-6 bg-red-100 rounded-lg shadow-lg h-56 transition-transform transform hover:scale-105 hover:shadow-xl">
+            <div className="flex items-center p-6 bg-red-100 rounded-lg h-56 shadow-lg transition-transform transform hover:scale-105 hover:shadow-xl">
               <FaClipboardCheck className="text-4xl text-red-600 mr-4" />
               <div>
                 <h3 className="text-xl font-bold">Live Tests for Real Exam</h3>
@@ -58,8 +57,8 @@ const WhyUs = () => {
               </div>
             </div>
 
-            {/* Card 3 (Top aligned with Card 4) */}
-            <div className="flex items-center p-6 bg-purple-100 rounded-lg shadow-lg h-56 transition-transform transform hover:scale-105 hover:shadow-xl">
+            {/* Card 3 */}
+            <div className="flex items-center p-6 bg-purple-100 rounded-lg h-56 shadow-lg transition-transform transform hover:scale-105 hover:shadow-xl">
               <FaChartBar className="text-4xl text-yellow-600 mr-4" />
               <div>
                 <h3 className="text-xl font-bold">Detailed Score Analysis</h3>
@@ -71,7 +70,7 @@ const WhyUs = () => {
             </div>
 
             {/* Card 4 */}
-            <div className="flex items-center p-6 bg-yellow-100 rounded-lg shadow-lg h-48 transition-transform transform hover:scale-105 hover:shadow-xl">
+            <div className="flex items-center p-6 bg-yellow-100 rounded-lg h-48 shadow-lg transition-transform transform hover:scale-105 hover:shadow-xl">
               <FaGlobe className="text-4xl text-purple-600 mr-4" />
               <div>
                 <h3 className="text-xl font-bold">Multilingual Support</h3>
