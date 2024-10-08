@@ -4,7 +4,7 @@ import { FiLogOut } from 'react-icons/fi';
 
 const DashboardHeader = ({ user }) => {
   return (
-    <header className="bg-white shadow-md p-4 flex items-center justify-between">
+    <header className="bg-white shadow-xl p-4 flex items-center justify-between">
       <div className="text-2xl font-bold text-blue-600">Mock Period</div>
       <div className="flex items-center">
         <span className="mr-4">{user.name}</span>
