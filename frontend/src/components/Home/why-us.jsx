@@ -10,11 +10,11 @@ import { Link } from "react-router-dom";
 const WhyUs = () => {
   return (
     <section className="why-us" id="why-us">
-      <div className="why-us-container bg-white py-16 px-6 md:px-12 lg:px-24">
-        <div className="flex flex-col lg:flex-row items-center justify-between">
+      <div className="why-us-container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8  bg-white ">
+        <div className="flex flex-col  lg:flex-row items-center justify-between">
           {/* Left Side: Heading and Description */}
           <div className="lg:w-1/2 mb-12 lg:mb-0 lg:pr-8 flex flex-col justify-center">
-            <h2 className="text-5xl font-bold mb-6">
+            <h2 className="text-4xl font-bold mb-6">
               Why Choose <span className="text-[#007bff]">Mock Period?</span>
             </h2>
             <p className="text-lg text-gray-700 mb-6">

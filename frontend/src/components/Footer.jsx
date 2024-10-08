@@ -53,7 +53,7 @@ const company = [
 // Footer component
 const Footer = () => {
   return (
-    <footer className="pb-16 pt-10 bg-[#FCFCFC] text-black shadow-lg border-t-2 border-gray-200">
+    <footer className="pt-10 bg-[#FCFCFC] text-black shadow-lg border-t-2 border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row justify-between gap-10 md:gap-[30px]">
           {/* Logo Section */}
@@ -128,6 +128,13 @@ const Footer = () => {
             </ul>
           </div>
         </div>
+
+        {/* Copyright Section */}
+        <div className="text-center py-4 mt-auto ">
+        <p className="text-sm text-gray-600">
+          © Copyright {new Date().getFullYear()} WebCraftrix | All Rights Reserved.
+        </p>
+      </div>
       </div>
     </footer>
   );
