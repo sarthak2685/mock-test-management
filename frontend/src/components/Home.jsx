@@ -4,16 +4,18 @@ import Subscription from "./Home/subscription.jsx";
 import Exam from "./Home/exams.jsx";
 import WhyUs from './Home/why-us.jsx'
 import Message from './Home/message.jsx'
+import FAQ from "./Home/faq.jsx";
 
 
 function Home() {
   return (
     <>
       <Banner />
-      <Subscription />
       <Exam />
-    <WhyUs />
-    <Message />
+      <WhyUs />
+      <Subscription />
+      <FAQ />
+      <Message />
     </>
   );
 }

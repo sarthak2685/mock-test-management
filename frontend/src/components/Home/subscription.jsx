@@ -7,7 +7,7 @@ function Subscription() {
     <section className="bg-white ">
       <div className="py-8 px-4 mx-auto max-w-screen-xl lg:pb-16 lg:px-6">
         <div className="mx-auto max-w-screen-md text-center mb-8 lg:mb-12">
-          <h1 className="mb-4 text-4xl sm:text-5xl lg:text-6xl tracking-tight font-extrabold text-gray-900 ">
+          <h1 className="mb-4 text-4xl  md:text-5xl tracking-tight font-extrabold text-gray-900 ">
             Subscription
             <span className="text-[#007bff]"> Plan</span>
           </h1>
