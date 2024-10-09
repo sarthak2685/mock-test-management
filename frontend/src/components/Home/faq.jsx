@@ -80,28 +80,39 @@ const FAQ = () => {
   };
 
   return (
-    <section className="bg-white max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 ">
-      <div className="container px-6 py-12 ">
-        <h1 className="text-4xl md:text-5xl font-bold mb-6 text-center ">Frequently Asked <span className="text-[#007bff]">Questions</span></h1>
-        <hr className="my-6 border-gray-200" />
+    <section className="bg-white max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="container px-6 py-12">
+        <h1 className="text-4xl md:text-5xl font-bold mb-6 text-center">Frequently Asked <span className="text-[#007bff]">Questions</span></h1>
+        <hr className="my-6 " />
 
         <div className="mt-8 xl:mt-16 lg:flex lg:-mx-12">
           {/* Section Buttons on the left */}
           <div className="lg:mx-12">
-            <h1 className="text-xl font-semibold text-gray-800">Table of Contents</h1>
+            <h1 className="text-xl font-semibold ">Table of Contents</h1>
             <div className="mt-4 space-y-4 lg:mt-8">
-              <button
-                className={`block w-full text-left ${visibleSection === 'payment' ? 'text-blue-500' : 'text-gray-500'} hover:underline`}
+              {/* Payment FAQs Button */}
+              <div
+                className={` py-6 px-4 rounded-lg text-sm shadow-md cursor-pointer opacity-50 transition-transform transform hover:scale-105  ${
+                  visibleSection === 'payment' ? 'border-b-2 opacity-100 font-semibold border-[#007bff] ' : ''
+                }`}
                 onClick={() => toggleSection('payment')}
               >
-                Payment/Transaction FAQs
-              </button>
-              <button
-                className={`block w-full text-left ${visibleSection === 'test' ? 'text-blue-500' : 'text-gray-500'} hover:underline`}
+                <h2 className={`text-left ${visibleSection === 'payment' ? 'text-[#007bff]' : ''}`}>
+                  Payment/Transaction FAQs
+                </h2>
+              </div>
+
+              {/* Test FAQs Button */}
+              <div
+                className={` py-6 px-4 cursor-pointer text-sm rounded-lg shadow-md opacity-50  transition-transform transform hover:scale-105  ${
+                  visibleSection === 'test' ? 'border-b-2 opacity-100 font-semibold border-[#007bff]' : ''
+                }`}
                 onClick={() => toggleSection('test')}
               >
-                Test FAQs
-              </button>
+                <h2 className={`text-left ${visibleSection === 'test' ? 'text-[#007bff]' : ''}`}>
+                  Test FAQs
+                </h2>
+              </div>
             </div>
           </div>
 
@@ -109,27 +120,27 @@ const FAQ = () => {
           <div className="flex-1 mt-8 lg:mx-12 lg:mt-0">
             {visibleSection === 'payment' && (
               <div>
-                <h2 className="text-xl font-bold mb-4 text-gray-700">Payment/Transaction FAQs</h2>
+                <h2 className="text-xl font-bold mb-4 ">Payment/Transaction FAQs</h2>
                 {paymentFAQs.map((faq, index) => (
                   <div key={index}>
                     <button
                       className="flex items-center justify-between w-full focus:outline-none"
                       onClick={() => toggleFAQ(index, 'payment')}
                     >
-                      <h3 className="text-lg text-gray-700">{faq.question}</h3>
+                      <h3 className="text-lg ">{faq.question}</h3>
                       {activeIndex === `payment-${index}` ? (
-                        <AiOutlineMinus className="flex-shrink-0 w-6 h-6 text-blue-500" />
+                        <AiOutlineMinus className="flex-shrink-0 w-6 h-6 text-[#007bff]" />
                       ) : (
-                        <AiOutlinePlus className="flex-shrink-0 w-6 h-6 text-blue-500" />
+                        <AiOutlinePlus className="flex-shrink-0 w-6 h-6 text-[#007bff]" />
                       )}
                     </button>
                     {activeIndex === `payment-${index}` && (
                       <div className="flex mt-2 md:mx-6">
-                        <span className="border border-blue-500"></span>
-                        <p className="max-w-3xl px-4 text-gray-500">{faq.answer}</p>
+                        <span className="border border-[#007bff]"></span>
+                        <p className="max-w-3xl px-4 ">{faq.answer}</p>
                       </div>
                     )}
-                    <hr className="my-8 border-gray-200" />
+                    <hr className="my-8 " />
                   </div>
                 ))}
               </div>
@@ -137,27 +148,27 @@ const FAQ = () => {
 
             {visibleSection === 'test' && (
               <div>
-                <h2 className="text-xl font-bold mb-4 text-gray-700">Test FAQs</h2>
+                <h2 className="text-xl font-bold mb-4 ">Test FAQs</h2>
                 {testFAQs.map((faq, index) => (
                   <div key={index}>
                     <button
                       className="flex items-center justify-between w-full focus:outline-none"
                       onClick={() => toggleFAQ(index, 'test')}
                     >
-                      <h3 className="text-lg text-gray-700">{faq.question}</h3>
+                      <h3 className="text-lg ">{faq.question}</h3>
                       {activeIndex === `test-${index}` ? (
-                        <AiOutlineMinus className="flex-shrink-0 w-6 h-6 text-blue-500" />
+                        <AiOutlineMinus className="flex-shrink-0 w-6 h-6 text-[#007bff]" />
                       ) : (
-                        <AiOutlinePlus className="flex-shrink-0 w-6 h-6 text-blue-500" />
+                        <AiOutlinePlus className="flex-shrink-0 w-6 h-6 text-[#007bff]" />
                       )}
                     </button>
                     {activeIndex === `test-${index}` && (
                       <div className="flex mt-2 md:mx-6">
-                        <span className="border border-blue-500"></span>
-                        <p className="max-w-3xl px-4 text-gray-500">{faq.answer}</p>
+                        <span className="border border-[#007bff]"></span>
+                        <p className="max-w-3xl px-4 ">{faq.answer}</p>
                       </div>
                     )}
-                    <hr className="my-8 border-gray-200" />
+                    <hr className="my-8" />
                   </div>
                 ))}
               </div>
