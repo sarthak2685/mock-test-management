@@ -128,13 +128,20 @@ const Footer = () => {
             </ul>
           </div>
         </div>
+        <br></br>
+        <hr></hr>
 
         {/* Copyright Section */}
-        <div className="text-center py-4 mt-auto ">
-        <p className="text-sm text-gray-600">
-          © Copyright {new Date().getFullYear()} WebCraftrix | All Rights Reserved.
-        </p>
-      </div>
+        <div className="text-right py-3 mt-auto">
+          <p
+            style={{ fontSize: "10px" }}
+            className="text-gray-600 font-semibold"
+          >
+            {" "}
+            {/* Adjust ml-* for desired margin */}© Copyright{" "}
+            {new Date().getFullYear()} WebCraftrix | All Rights Reserved.
+          </p>
+        </div>
       </div>
     </footer>
   );
