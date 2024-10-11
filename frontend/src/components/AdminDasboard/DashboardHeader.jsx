@@ -110,7 +110,7 @@ const DashboardHeader = ({ user }) => {
 
       <div className="flex items-center space-x-6">
         {/* Mail Icon */}
-        <div className="relative cursor-pointer" ref={mailDropdownRef}>
+        {/* <div className="relative cursor-pointer" ref={mailDropdownRef}>
           <FiMail
             className="text-gray-600 w-6 h-6"
             onClick={() => toggleDropdown("mail")}
@@ -154,7 +154,7 @@ const DashboardHeader = ({ user }) => {
               </div>
             </div>
           )}
-        </div>
+        </div> */}
 
         {/* Bell Icon */}
         <div className="relative cursor-pointer" ref={bellDropdownRef}>
