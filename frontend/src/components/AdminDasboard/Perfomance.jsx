@@ -1,62 +1,27 @@
-import React, { useState } from "react";
-import { Line } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Tooltip,
-  Legend,
-} from "chart.js";
+import React from "react";
+import { Link } from "react-router-dom";
 import DashboardHeader from "./DashboardHeader";
 import Sidebar from "./Sidebar/SideBars";
 
-// Register the necessary components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Tooltip,
-  Legend
-);
-
 const Performance = ({ user }) => {
-  const [selectedStudent, setSelectedStudent] = useState(null);
-
+  // Example students data
   const students = [
-    { id: 1, name: "Alice", testsTaken: 5, successRate: 80 },
-    { id: 2, name: "Bob", testsTaken: 3, successRate: 60 },
-    // Add more student data as needed
+    {
+      id: 1,
+      name: "Alice",
+      attemptedTests: 4,
+      monthlyPerformance: [60, 70, 80, 90, 85],
+      subjectPerformance: [85, 75, 80], // English, Math, GK/GS
+    },
+    {
+      id: 2,
+      name: "Bob",
+      attemptedTests: 3,
+      monthlyPerformance: [55, 65, 70, 75, 60],
+      subjectPerformance: [70, 60, 75], // English, Math, GK/GS
+    },
   ];
-
-  // Example data for the line chart
-  const performanceData = {
-    1: [70, 75, 80, 85, 90], // Alice's success rates over the last five months
-    2: [60, 65, 55, 70, 75], // Bob's success rates over the last five months
-  };
-
-  const chartData = {
-    labels: ["January", "February", "March", "April", "May"],
-    datasets: [
-      {
-        label: "Success Rate",
-        data: selectedStudent ? performanceData[selectedStudent.id] : [],
-        fill: true,
-        backgroundColor: "rgba(75,192,192,0.2)",
-        borderColor: "rgba(75,192,192,1)",
-        borderWidth: 2,
-        pointRadius: 4,
-        pointHoverRadius: 6,
-        tension: 0.3, // Smooth curve
-      },
-    ],
-  };
-
-  const handleStudentClick = (student) => {
-    setSelectedStudent(student);
-  };
+  console.log(students);
 
   return (
     <div className="flex min-h-screen">
@@ -72,34 +37,49 @@ const Performance = ({ user }) => {
         <div className="p-6">
           <h2 className="text-2xl font-semibold mb-4">Student Performance</h2>
 
-          <ul className="space-y-2">
-            {students.map((student) => (
-              <li
-                key={student.id}
-                className="p-4 border cursor-pointer hover:bg-blue-500 hover:text-white transition duration-300 rounded-lg"
-                onClick={() => handleStudentClick(student)}
-              >
-                {student.name} - Tests Taken: {student.testsTaken} - Success
-                Rate: {student.successRate}%
-              </li>
-            ))}
-          </ul>
-
-          {selectedStudent && (
-            <div className="mt-8">
-              <h3 className="text-xl font-semibold">
-                Performance Details for {selectedStudent.name}
-              </h3>
-              <p>Tests Taken: {selectedStudent.testsTaken}</p>
-              <p>Success Rate: {selectedStudent.successRate}%</p>
-              <div className="h-64">
-                <Line
-                  data={chartData}
-                  options={{ responsive: true, maintainAspectRatio: true }}
-                />
-              </div>
-            </div>
-          )}
+          {/* Students List with Links */}
+          <div className="bg-white shadow-md rounded-lg p-4">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Student Name
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Mock Tests Given
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Success Rate
+                  </th>
+                  <th className="px-6 py-3"></th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {students.map((student) => (
+                  <tr key={student.id}>
+                    <td className="px-6 py-4 whitespace-nowrap">{student.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{student.attemptedTests}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {(
+                        (student.monthlyPerformance.reduce((a, b) => a + b) / student.monthlyPerformance.length) || 0
+                      ).toFixed(2)}%
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right">
+                    <Link
+  to={{
+    pathname: `/student-performance/${student.id}`,
+    state: student, // Passing the student object
+  }}
+  className="text-blue-600 hover:text-blue-900"
+>
+  View Performance
+</Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>

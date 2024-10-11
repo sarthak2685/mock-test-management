@@ -70,7 +70,7 @@ const Sidebar = () => {
           </span>
         </NavLink>
 
-        {/* Mock Test Management */}
+        {/* Mock Test Management
         <NavLink
           to="/create-test"
           className={({ isActive }) =>
@@ -83,7 +83,7 @@ const Sidebar = () => {
           <span className={`${isCollapsed ? "hidden" : "block"}`}>
             Mock Test Management
           </span>
-        </NavLink>
+        </NavLink> */}
 
         {/* Performance */}
         <NavLink
