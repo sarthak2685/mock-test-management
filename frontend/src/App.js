@@ -10,6 +10,7 @@ import MockTestManagement from './components/AdminDasboard/MockTest.jsx';
 import ChartComponent from './components/AdminDasboard/Perfomance.jsx';
 import Dashboard from './components/AdminDasboard/Dasboard.jsx';
 import MockDemo from './components/Home/mock-demo.jsx';
+import StudentPerformance from './components/AdminDasboard/StudentPerformance.jsx';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
           <Route path="/create-test" element={<MockTestManagement />} />
           <Route path="/performance" element={<ChartComponent />} />
           < Route path='/mock-demo' element={<MockDemo />} />
+          <Route path="/student-performance/:id" element={<StudentPerformance />} />
         </Routes>
         {['/', '/login', '/contact'].includes(window.location.pathname) && <Footer />}
       </div>

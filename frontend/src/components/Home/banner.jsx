@@ -1,5 +1,5 @@
 import React from 'react';
-import mockTestImage from '../../assets/mock.png';
+import mockTestImage from '../../assets/mock.webp';
 import { Link } from 'react-router-dom';
 
 function Banner() {
@@ -26,6 +26,7 @@ function Banner() {
 
         <div className="w-full md:w-1/2 flex justify-center">
           <img
+            fetchPriority='high'
             src={mockTestImage}
             alt="Mock Test Platform"
             className="w-3/4 h-auto  "
