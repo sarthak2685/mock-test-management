@@ -1,42 +1,18 @@
 import React, { useState, useEffect, useRef } from "react";
-import { FiBell, FiMail } from "react-icons/fi";
-import { FaFileAlt, FaDollarSign, FaExclamationTriangle } from "react-icons/fa"; // Icons for alerts
+import { FiBell } from "react-icons/fi";
+import {
+  FaFileAlt,
+  FaDollarSign,
+  FaExclamationTriangle,
+  FaBars,
+} from "react-icons/fa"; // Import Font Awesome icons
 
-const DashboardHeader = ({ user }) => {
-  // State to track which dropdown is open: 'mail', 'bell', or null
+const DashboardHeader = ({ user, toggleSidebar }) => {
   const [openDropdown, setOpenDropdown] = useState(null);
-
   const mailDropdownRef = useRef(null);
   const bellDropdownRef = useRef(null);
 
   // Mock notification data (replace with real data)
-  const mailNotifications = [
-    {
-      id: 1,
-      message: "Hi there! I am wondering if you ...",
-      sender: "Emily Fowler",
-      time: "58m",
-    },
-    {
-      id: 2,
-      message: "I have the photos that you ordered ...",
-      sender: "Jae Chun",
-      time: "1d",
-    },
-    {
-      id: 3,
-      message: "Last month's report looks great, I ...",
-      sender: "Morgan Alvarez",
-      time: "2d",
-    },
-    {
-      id: 4,
-      message: "Am I a good boy? The reason I ask ...",
-      sender: "Chicken the Dog",
-      time: "2w",
-    },
-  ];
-
   const bellNotifications = [
     {
       id: 1,
@@ -66,6 +42,7 @@ const DashboardHeader = ({ user }) => {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
+      // Check if click was outside of both dropdowns
       if (
         openDropdown &&
         mailDropdownRef.current &&
@@ -98,19 +75,24 @@ const DashboardHeader = ({ user }) => {
     }
   };
 
-  // Function to generate a random avatar URL if none is provided
-  const generateRandomAvatar = () => {
-    const randomId = Math.floor(Math.random() * 1000);
-    return `https://picsum.photos/seed/${randomId}/32`;
-  };
-
   return (
     <header className="bg-white shadow-lg flex items-center justify-between p-4 relative">
+      {/* Sidebar toggle button */}
+      <button
+        onClick={toggleSidebar}
+        className="text-gray-600 lg:hidden mr-4"
+        aria-label="Toggle Sidebar"
+      >
+        <FaBars className="w-6 h-6" /> {/* Bar icon here */}
+      </button>
+
       <div className="flex-grow" />
 
       <div className="flex items-center space-x-6">
         {/* Mail Icon */}
-        {/* <div className="relative cursor-pointer" ref={mailDropdownRef}>
+        {/* Uncomment if you want to include the mail notifications */}
+        {/* 
+        <div className="relative cursor-pointer" ref={mailDropdownRef}>
           <FiMail
             className="text-gray-600 w-6 h-6"
             onClick={() => toggleDropdown("mail")}
@@ -122,9 +104,7 @@ const DashboardHeader = ({ user }) => {
           {openDropdown === "mail" && (
             <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 shadow-md rounded-lg z-50">
               <div className="p-4 text-sm">
-                <h4 className="font-semibold mb-2 text-blue-500">
-                  Message Center
-                </h4>
+                <h4 className="font-semibold mb-2 text-blue-500">Message Center</h4>
                 {mailNotifications.length > 0 ? (
                   mailNotifications.map((mail) => (
                     <div
@@ -137,9 +117,7 @@ const DashboardHeader = ({ user }) => {
                         className="w-8 h-8 rounded-full mr-3"
                       />
                       <div className="flex-grow">
-                        <p className="text-gray-700 font-semibold">
-                          {mail.sender}
-                        </p>
+                        <p className="text-gray-700 font-semibold">{mail.sender}</p>
                         <p className="text-gray-500 text-sm">{mail.message}</p>
                       </div>
                       <span className="text-xs text-gray-500">{mail.time}</span>
@@ -154,7 +132,8 @@ const DashboardHeader = ({ user }) => {
               </div>
             </div>
           )}
-        </div> */}
+        </div>
+        */}
 
         {/* Bell Icon */}
         <div className="relative cursor-pointer" ref={bellDropdownRef}>
@@ -167,7 +146,14 @@ const DashboardHeader = ({ user }) => {
           </span>
 
           {openDropdown === "bell" && (
-            <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 shadow-md rounded-lg z-50">
+            <div
+              className={`${
+                // Adjust positioning for mobile view
+                window.innerWidth < 768
+                  ? "fixed right-2 w-64" // Fixed to right for mobile
+                  : "absolute right-0 mt-2 w-80" // For desktop view
+              } bg-white border border-gray-200 shadow-md rounded-lg z-50`}
+            >
               <div className="p-4 text-sm">
                 <h4 className="font-semibold mb-2 text-blue-500">
                   Alerts Center
