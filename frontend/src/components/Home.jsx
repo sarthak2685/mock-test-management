@@ -5,6 +5,7 @@ import Exam from "./Home/exams.jsx";
 import WhyUs from './Home/why-us.jsx'
 import Message from './Home/message.jsx'
 import FAQ from "./Home/faq.jsx";
+import FreeMock from "./Home/free-mock.jsx";
 
 
 function Home() {
@@ -12,6 +13,7 @@ function Home() {
     <>
       <Banner />
       <Exam />
+      <FreeMock />
       <WhyUs />
       <Subscription />
       <FAQ />

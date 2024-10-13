@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { Link } from "react-router-dom"; // Import Link for navigation
 
 // Import logos (ensure correct paths)
 import sscLogo from "../../assets/ssc-logo.png";
@@ -6,7 +7,6 @@ import sbiLogo from "../../assets/sbi-logo.png";
 import railwayLogo from "../../assets/railway-logo.png";
 import ibpsLogo from "../../assets/ibps-logo.png";
 
-// Sample data mimicking the structure from the image
 const examData = [
   { name: "SSC CGL", exam: "SSC Exam" },
   { name: "SSC CHSL", exam: "SSC Exam" },
@@ -27,49 +27,44 @@ const logoMap = {
 };
 
 const Exams = () => {
-  const [count, setCount] = useState(1); // State to manage the counter
-  const ref = useRef(null); // Ref to the component
+  const [count, setCount] = useState(1);
+  const ref = useRef(null);
 
   useEffect(() => {
     const handleScroll = (entries) => {
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
-          // Reset the counter
-          setCount(1); // Reset to 1 when the component comes into view
-
-          // Start counting up to 10
+          setCount(1);
           const interval = setInterval(() => {
             setCount((prevCount) => {
               if (prevCount < 10) {
-                return prevCount + 1; // Increment counter until it reaches 10
+                return prevCount + 1;
               } else {
-                clearInterval(interval); // Clear interval once it reaches 10
-                return prevCount; // Return 10 once reached
+                clearInterval(interval);
+                return prevCount;
               }
             });
-          }, 200); // Set interval for every 200ms
-
-          return () => clearInterval(interval); // Cleanup interval on component unmount
+          }, 200);
+          return () => clearInterval(interval);
         }
       });
     };
 
     const observer = new IntersectionObserver(handleScroll);
-    const currentRef = ref.current; // Copying ref.current to a variable
+    const currentRef = ref.current;
     if (currentRef) {
       observer.observe(currentRef);
     }
 
     return () => {
       if (currentRef) {
-        observer.unobserve(currentRef); // Using the copied variable
+        observer.unobserve(currentRef);
       }
     };
   }, [ref]);
 
   return (
     <div ref={ref} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Header Section */}
       <h1 className="text-5xl font-extrabold text-black mb-4 text-center">
         Our Extensive List Of <span className="text-[#007bff]">Exams</span>
       </h1>
@@ -77,17 +72,15 @@ const Exams = () => {
         <span className="text-[#007bff] font-bold">{count}+</span> exams for your preparation
       </h6>
 
-      {/* Grid Layout for Exam Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {examData.map((exam, index) => (
           <div
             key={index}
-            className="bg-white border rounded-md shadow-lg p-4 flex flex-col items-center transition-transform transform hover:scale-105 hover:shadow-2xl duration-300 ease-in-out" // Added hover effect
+            className="bg-white border rounded-md shadow-lg p-4 flex flex-col items-center transition-transform transform hover:scale-105 hover:shadow-2xl duration-300 ease-in-out"
           >
             <div className="w-24 h-24 rounded-full mb-4 flex items-center justify-center">
-              {/* Dynamic rendering of logo based on exam category */}
               <img
-                src={logoMap[exam.exam]} // Dynamically show the logo based on the exam type
+                src={logoMap[exam.exam]}
                 alt={`${exam.exam} logo`}
                 className="w-full h-full object-cover rounded-full"
               />
@@ -96,6 +89,14 @@ const Exams = () => {
             <p className="text-gray-600">{exam.exam}</p>
           </div>
         ))}
+
+        {/* Add a card that navigates to the MockDemo page
+        <Link to="/mock-demo">
+          <div className="bg-white border rounded-md shadow-lg p-4 flex flex-col items-center transition-transform transform hover:scale-105 hover:shadow-2xl duration-300 ease-in-out">
+            <h3 className="text-xl font-bold text-gray-800">Take a Mock Test</h3>
+            <p className="text-gray-600">Test your knowledge with our mock test.</p>
+          </div>
+        </Link> */}
       </div>
     </div>
   );
