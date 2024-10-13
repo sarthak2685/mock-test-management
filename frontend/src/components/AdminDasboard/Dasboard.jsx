@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import DashboardHeader from "./DashboardHeader";
 import Sidebar from "./Sidebar/SideBars"; // Importing the updated Sidebar
 import { FaTrophy } from "react-icons/fa"; // Icons for leaderboard
@@ -24,29 +24,53 @@ const Dashboard = () => {
     setIsCollapsed((prev) => !prev); // Toggle collapse state
   };
 
+  // Effect to handle sidebar visibility on window resize
+  useEffect(() => {
+    const handleResize = () => {
+      // Check if the window width is less than 768px (Bootstrap's md breakpoint)
+      if (window.innerWidth < 768) {
+        setIsCollapsed(true); // Collapse sidebar on mobile view
+      } else {
+        setIsCollapsed(false); // Expand sidebar on desktop view
+      }
+    };
+
+    // Set initial state based on the current window size
+    handleResize();
+
+    // Add event listener for resize
+    window.addEventListener("resize", handleResize);
+
+    // Clean up the event listener on unmount
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* Main Content */}
       <div className="flex flex-row flex-grow">
-        {/* Sidebar */}
-        <Sidebar isCollapsed={isCollapsed} toggleSidebar={toggleSidebar} />
+        {/* Sidebar: hidden on mobile */}
+        <Sidebar
+          isCollapsed={isCollapsed}
+          toggleSidebar={toggleSidebar}
+          className="hidden md:block" // Hide on mobile, show on medium screens and up
+        />
 
         {/* Main Dashboard Content */}
         <div
           className={`flex-grow transition-all duration-300 ease-in-out ${
             isCollapsed ? "ml-0" : "ml-64" // Adjust margin based on collapse state
           }`}
-          style={{
-            transition: "margin-left 0.3s ease-in-out", // Smooth transition for margin
-          }}
         >
           {/* Header */}
-          <DashboardHeader user={user || { name: "Guest" }} />
+          <DashboardHeader user={user} toggleSidebar={toggleSidebar} />
 
           <div className="p-6">
             <h1
               className={`text-3xl font-semibold mb-6 ${
-                isCollapsed ? "text-center" : ""
+                isCollapsed ? "text-left" : "text-left"
               }`}
             >
               Admin Dashboard
@@ -57,7 +81,7 @@ const Dashboard = () => {
               {/* Card for Total Students */}
               <div
                 className={`bg-white shadow-md rounded-lg p-4 ${
-                  isCollapsed ? "text-center" : ""
+                  isCollapsed ? "text-left" : "text-left"
                 }`}
               >
                 <h2 className="text-xl">Total Students</h2>
@@ -67,7 +91,7 @@ const Dashboard = () => {
               {/* Card for Active Tests */}
               <div
                 className={`bg-white shadow-md rounded-lg p-4 ${
-                  isCollapsed ? "text-center" : ""
+                  isCollapsed ? "text-left" : "text-left"
                 }`}
               >
                 <h2 className="text-xl">Active Tests</h2>
@@ -78,23 +102,26 @@ const Dashboard = () => {
             {/* Leaderboard Section */}
             <div
               className={`bg-white shadow-lg rounded-lg p-6 ${
-                isCollapsed ? "text-center" : ""
+                isCollapsed ? "text-left" : "text-left"
               }`}
             >
-              <h2 className="text-xl font-semibold mb-4 text-gray-800">
-                Leaderboard
-              </h2>
+              {/* Heading only appears in desktop view */}
+              {!isCollapsed && (
+                <h2 className="text-xl font-semibold mb-4 text-gray-800">
+                  Leaderboard
+                </h2>
+              )}
               <table className="min-w-full leading-normal border border-gray-300 rounded-lg overflow-hidden">
                 <thead className="bg-gradient-to-r from-[#007bff] to-[#0056b3] text-white">
                   <tr>
                     <th className="px-6 py-4 border-b border-gray-200 text-left text-xs font-semibold uppercase tracking-wider">
-                      {isCollapsed ? "" : "Participants"}
+                      {isCollapsed ? "Participants" : "Participants"}
                     </th>
                     <th className="px-6 py-4 border-b border-gray-200 text-left text-xs font-semibold uppercase tracking-wider">
-                      {isCollapsed ? "" : "Score"}
+                      {isCollapsed ? "Score" : "Score"}
                     </th>
                     <th className="px-6 py-4 border-b border-gray-200 text-left text-xs font-semibold uppercase tracking-wider">
-                      {isCollapsed ? "" : "Time Taken"}
+                      {isCollapsed ? "Time Taken" : "Time Taken"}
                     </th>
                   </tr>
                 </thead>

@@ -1,9 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FiBell, FiMail } from "react-icons/fi";
-import { FaFileAlt, FaDollarSign, FaExclamationTriangle } from "react-icons/fa"; // Icons for alerts
+import {
+  FaFileAlt,
+  FaDollarSign,
+  FaExclamationTriangle,
+  FaBars,
+} from "react-icons/fa"; // Import Font Awesome bar icon
+import { HiBars3 } from "react-icons/hi2"; // This import is no longer needed
 
-const DashboardHeader = ({ user }) => {
-  // State to track which dropdown is open: 'mail', 'bell', or null
+const DashboardHeader = ({ user, toggleSidebar }) => {
   const [openDropdown, setOpenDropdown] = useState(null);
 
   const mailDropdownRef = useRef(null);
@@ -106,10 +111,20 @@ const DashboardHeader = ({ user }) => {
 
   return (
     <header className="bg-white shadow-lg flex items-center justify-between p-4 relative">
+      {/* Sidebar toggle button */}
+      <button
+        onClick={toggleSidebar}
+        className="text-gray-600 lg:hidden mr-4"
+        aria-label="Toggle Sidebar"
+      >
+        <FaBars className="w-6 h-6" /> {/* Bar icon here */}
+      </button>
+
       <div className="flex-grow" />
 
       <div className="flex items-center space-x-6">
         {/* Mail Icon */}
+        {/* Uncomment if you want to include the mail notifications */}
         {/* <div className="relative cursor-pointer" ref={mailDropdownRef}>
           <FiMail
             className="text-gray-600 w-6 h-6"
@@ -122,9 +137,7 @@ const DashboardHeader = ({ user }) => {
           {openDropdown === "mail" && (
             <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 shadow-md rounded-lg z-50">
               <div className="p-4 text-sm">
-                <h4 className="font-semibold mb-2 text-blue-500">
-                  Message Center
-                </h4>
+                <h4 className="font-semibold mb-2 text-blue-500">Message Center</h4>
                 {mailNotifications.length > 0 ? (
                   mailNotifications.map((mail) => (
                     <div
@@ -137,9 +150,7 @@ const DashboardHeader = ({ user }) => {
                         className="w-8 h-8 rounded-full mr-3"
                       />
                       <div className="flex-grow">
-                        <p className="text-gray-700 font-semibold">
-                          {mail.sender}
-                        </p>
+                        <p className="text-gray-700 font-semibold">{mail.sender}</p>
                         <p className="text-gray-500 text-sm">{mail.message}</p>
                       </div>
                       <span className="text-xs text-gray-500">{mail.time}</span>
