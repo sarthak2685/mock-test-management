@@ -7,7 +7,6 @@ import { FaTimes } from "react-icons/fa"; // Importing Font Awesome close icon
 const Sidebar = ({ isCollapsed, toggleSidebar }) => {
   const handleLogout = () => {
     console.log("User logged out");
-    // Add any additional logout logic here (e.g., redirecting to a login page)
   };
 
   return (
@@ -20,17 +19,12 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
         <span className="text-2xl font-bold text-white">Mock Period</span>
 
         {/* Show close button only in mobile view */}
-        {isCollapsed && (
-          <button onClick={toggleSidebar} className="text-white">
-            <FaTimes className="w-6 h-6" /> {/* Close icon */}
-          </button>
-        )}
-        {/* Show toggle button when sidebar is open */}
-        {!isCollapsed && (
-          <button onClick={toggleSidebar} className="text-white md:hidden">
-            <FaTimes className="w-6 h-6" /> {/* Close icon */}
-          </button>
-        )}
+        <button
+          onClick={toggleSidebar}
+          className={`text-white ${isCollapsed ? "hidden" : "block"} md:hidden`}
+        >
+          <FaTimes className="w-6 h-6" /> {/* Close icon */}
+        </button>
       </div>
 
       {/* Navigation links */}
