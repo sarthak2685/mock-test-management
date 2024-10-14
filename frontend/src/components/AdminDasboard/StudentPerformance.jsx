@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Line, Bar, Pie } from "react-chartjs-2";
 import {
@@ -30,7 +30,27 @@ ChartJS.register(
 );
 
 const StudentPerformance = ({ user }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false); // Sidebar collapse state
+  const [isCollapsed, setIsCollapsed] = useState(true); // Sidebar collapse state
+
+  // Detect window size and update sidebar state accordingly
+  const handleResize = () => {
+    if (window.innerWidth >= 768) {
+      setIsCollapsed(false); // Show sidebar on desktop
+    } else {
+      setIsCollapsed(true); // Hide sidebar on mobile
+    }
+  };
+
+  useEffect(() => {
+    // Set initial sidebar state based on the window size
+    handleResize();
+    // Add resize event listener
+    window.addEventListener("resize", handleResize);
+    return () => {
+      // Cleanup the event listener on component unmount
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   const toggleSidebar = () => {
     setIsCollapsed((prev) => !prev); // Toggle sidebar collapse state
@@ -148,45 +168,47 @@ const StudentPerformance = ({ user }) => {
           className={`flex-grow transition-all duration-300 ease-in-out ${
             isCollapsed ? "ml-0" : "ml-64"
           }`}
-          style={{ transition: "margin-left 0.3s ease-in-out" }}
         >
           {/* Header */}
-          <DashboardHeader user={user || { name: "Guest" }} />
+          <DashboardHeader
+            user={user || { name: "Guest" }}
+            toggleSidebar={toggleSidebar}
+          />
 
-          <div className="p-6 max-w-screen-lg mx-auto">
-            <h2 className="text-2xl font-semibold mb-4 text-center underline">
+          <div className="p-2 sm:p-4 max-w-screen-lg mx-auto">
+            <h2 className="text-lg sm:text-xl font-semibold mb-2 text-center underline">
               Performance Overview
             </h2>
-            <h3 className="text-lg font-semibold mb-6 text-center">
+            <h3 className="text-sm sm:text-md font-semibold mb-3 text-center">
               Details for {studentName}
             </h3>
 
             {/* Container for Pie Chart */}
-            <div className="bg-white p-6 shadow-lg rounded-lg mb-8">
-              <h3 className="text-md font-semibold mb-2 text-center">
+            <div className="bg-white p-2 sm:p-4 shadow-lg rounded-lg mb-4">
+              <h3 className="text-xs sm:text-sm font-semibold mb-1 text-center">
                 Mock Tests Attempted
               </h3>
-              <div className="h-72 w-full sm:w-[80%] lg:w-[60%] mx-auto">
+              <div className="h-32 sm:h-40 lg:h-72 w-full sm:w-[80%] lg:w-[60%] mx-auto">
                 <Pie data={pieData} options={{ maintainAspectRatio: false }} />
               </div>
             </div>
 
             {/* Container for Line Chart */}
-            <div className="bg-white p-6 shadow-lg rounded-lg mb-8">
-              <h3 className="text-md font-semibold mb-2 text-center">
+            <div className="bg-white p-2 sm:p-4 shadow-lg rounded-lg mb-4">
+              <h3 className="text-xs sm:text-sm font-semibold mb-1 text-center">
                 Monthly Success Rate Trend
               </h3>
-              <div className="h-72 w-full sm:w-[80%] lg:w-[60%] mx-auto">
+              <div className="h-32 sm:h-40 lg:h-72 w-full sm:w-[80%] lg:w-[60%] mx-auto">
                 <Line data={lineData} options={lineOptions} />
               </div>
             </div>
 
             {/* Container for Bar Chart */}
-            <div className="bg-white p-6 shadow-lg rounded-lg mb-8">
-              <h3 className="text-md font-semibold mb-2 text-center">
+            <div className="bg-white p-2 sm:p-4 shadow-lg rounded-lg mb-4">
+              <h3 className="text-xs sm:text-sm font-semibold mb-1 text-center">
                 Subject-Wise Performance
               </h3>
-              <div className="h-72 w-full sm:w-[80%] lg:w-[60%] mx-auto">
+              <div className="h-32 sm:h-40 lg:h-72 w-full sm:w-[80%] lg:w-[60%] mx-auto">
                 <Bar data={barData} options={barOptions} />
               </div>
             </div>
