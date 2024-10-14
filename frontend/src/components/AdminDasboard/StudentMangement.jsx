@@ -251,9 +251,7 @@ const StudentManagement = ({ user }) => {
             {/* Current Students Card */}
             <div className="bg-white p-2 md:p-4 shadow-lg rounded-lg">
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-2 md:mb-4 space-y-2 md:space-y-0">
-                <h2 className="text-lg md:text-2xl font-semibold">
-                  Current Students
-                </h2>
+                <h2 className="text-2xl font-semibold">Current Students</h2>
                 {/* Search Bar */}
                 <div className="flex items-center w-full md:w-auto space-x-2">
                   <FaSearch className="mr-1 text-gray-400 hidden md:block" />
@@ -268,23 +266,23 @@ const StudentManagement = ({ user }) => {
               </div>
 
               {/* Students Table */}
-              <div className="overflow-x-auto">
-                <table className="min-w-full text-xs md:text-base rounded-lg">
+              <div className="overflow-x-auto md:overflow-visible">
+                <table className="min-w-full text-[9px] md:text-base rounded-lg">
                   <thead className="bg-gradient-to-r from-[#007bff] to-[#0056b3] text-white">
                     <tr>
-                      <th className="px-2 py-1 md:px-4 md:py-2 text-left rounded-tl-lg text-sm md:text-base">
+                      <th className="px-2 py-1 md:px-4 md:py-2 text-left rounded-tl-lg">
                         Name
                       </th>
-                      <th className="px-2 py-1 md:px-4 md:py-2 text-left text-sm md:text-base">
+                      <th className="px-2 py-1 md:px-4 md:py-2 text-left">
                         Username
                       </th>
-                      <th className="px-2 py-1 md:px-4 md:py-2 text-left hidden sm:table-cell text-sm md:text-base">
-                        Password
+                      <th className="px-2 py-1 md:px-4 md:py-2 text-left">
+                        Password {/* Now visible in mobile */}
                       </th>
-                      <th className="px-2 py-1 md:px-4 md:py-2 text-center hidden sm:table-cell text-sm md:text-base">
-                        Change Password
+                      <th className="px-2 py-1 md:px-4 md:py-2 text-center">
+                        Change Password {/* Now visible in mobile */}
                       </th>
-                      <th className="px-2 py-1 md:px-4 md:py-2 text-center rounded-tr-lg text-sm md:text-base">
+                      <th className="px-2 py-1 md:px-4 md:py-2 text-center rounded-tr-lg">
                         Delete
                       </th>
                     </tr>
@@ -298,19 +296,19 @@ const StudentManagement = ({ user }) => {
                             index % 2 === 0 ? "bg-gray-50" : "bg-white"
                           }`}
                         >
-                          <td className="px-2 py-1 md:px-4 md:py-2 text-sm md:text-base">
+                          <td className="px-2 py-1 md:px-4 md:py-2 text-[9px] md:text-sm">
                             {student.name}
                           </td>
-                          <td className="px-2 py-1 md:px-4 md:py-2 text-sm md:text-base">
+                          <td className="px-2 py-1 md:px-4 md:py-2 text-[9px] md:text-sm">
                             {student.username}
                           </td>
-                          <td className="px-2 py-1 md:px-4 md:py-2 hidden sm:table-cell text-sm md:text-base">
-                            {student.password}
+                          <td className="px-2 py-1 md:px-4 md:py-2 text-[9px] md:text-sm">
+                            {student.password} {/* Now visible in mobile */}
                           </td>
-                          <td className="px-2 py-1 md:px-4 md:py-2 text-center hidden sm:table-cell">
+                          <td className="px-2 py-1 md:px-4 md:py-2 text-center">
                             <button
                               onClick={() => handleChangePassword(student.id)}
-                              className="bg-gradient-to-r from-[#007bff] to-[#0056b3] text-white px-2 py-1 md:px-4 md:py-2 rounded-md text-xs md:text-sm"
+                              className="bg-gradient-to-r from-[#007bff] to-[#0056b3] text-white px-2 py-1 md:px-4 md:py-2 rounded-md text-[9px] md:text-sm"
                             >
                               Change
                             </button>
@@ -318,9 +316,9 @@ const StudentManagement = ({ user }) => {
                           <td className="px-2 py-1 md:px-4 md:py-2 text-center">
                             <button
                               onClick={() => handleRemoveStudent(student.id)}
-                              className="text-red-600 hover:text-red-700 transition text-xs md:text-base"
+                              className="text-red-600 hover:text-red-700 transition text-[9px] md:text-base"
                             >
-                              <FaTrash className="h-4 w-4" />
+                              <FaTrash className="h-3 w-3 md:h-4 md:w-4" />
                             </button>
                           </td>
                         </tr>
@@ -329,7 +327,7 @@ const StudentManagement = ({ user }) => {
                       <tr>
                         <td
                           colSpan="5"
-                          className="px-2 py-1 md:px-4 md:py-2 text-center text-sm md:text-base"
+                          className="px-2 py-1 md:px-4 md:py-2 text-center text-[9px] md:text-sm"
                         >
                           No students found.
                         </td>
@@ -343,10 +341,10 @@ const StudentManagement = ({ user }) => {
               <div className="flex flex-col md:flex-row justify-between items-center mt-2 md:mt-4 space-y-2 md:space-y-0">
                 <button
                   onClick={handleExport}
-                  className="bg-gradient-to-r from-[#007bff] to-[#0056b3] text-white px-4 py-2 md:px-6 md:py-3 rounded-md text-sm md:text-lg" // Increased size for export button
+                  className="bg-gradient-to-r from-[#007bff] to-[#0056b3] text-white px-3 py-2 rounded-md text-sm md:px-3 md:py-2.5 md:text-sm" // Slightly increased height for desktop
                 >
                   <FaFileCsv className="inline-block mr-1" />
-                  Export CSV
+                  Export to CSV
                 </button>
 
                 <div className="flex items-center space-x-2 text-xs md:text-sm">

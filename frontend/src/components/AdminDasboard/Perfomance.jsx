@@ -69,23 +69,26 @@ const Performance = ({ user }) => {
           />
 
           <div className="p-4">
-            <h2 className="text-xl font-semibold mb-2">Student Performance</h2>
+            {/* Adjusted heading to 3xl and bold, left-aligned */}
+            <h2 className="text-3xl md:text-3xl font-bold mb-2 text-left text-[1.6rem] sm:text-3xl">
+              Student Performance
+            </h2>
 
             {/* Students List with Links */}
             <div className="bg-white shadow-md rounded-lg p-4 overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-200 rounded-lg overflow-hidden">
+                <thead className="bg-gradient-to-r from-[#007bff] to-[#0056b3] text-white">
                   <tr>
-                    <th className="px-4 py-2 text-base font-medium text-gray-500 uppercase tracking-wider text-center">
+                    <th className="px-4 py-2 text-base font-medium text-white uppercase tracking-wider text-center">
                       Student
                     </th>
-                    <th className="px-4 py-2 text-base font-medium text-gray-500 uppercase tracking-wider text-center">
+                    <th className="px-4 py-2 text-base font-medium text-white uppercase tracking-wider text-center">
                       Tests
                     </th>
-                    <th className="px-4 py-2 text-base font-medium text-gray-500 uppercase tracking-wider text-center">
+                    <th className="px-4 py-2 text-base font-medium text-white uppercase tracking-wider text-center">
                       Success
                     </th>
-                    <th className="px-4 py-2"></th>
+                    <th className="px-4 py-2 text-right text-white"></th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -137,7 +140,13 @@ const Performance = ({ user }) => {
           }
 
           h2 {
-            font-size: 1.25rem; /* Adjusting heading size */
+            font-size: 1.6rem; /* Adjusted heading size to 1.6rem */
+          }
+
+          table {
+            display: block; /* Ensure the table is block for scrolling */
+            overflow-x: auto; /* Enable horizontal scrolling */
+            white-space: nowrap; /* Prevent wrapping */
           }
         }
       `}</style>
