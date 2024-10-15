@@ -176,10 +176,11 @@ const StudentPerformance = ({ user }) => {
           />
 
           <div className="p-2 sm:p-4 max-w-screen-lg mx-auto">
-            <h2 className="text-lg sm:text-xl font-semibold mb-2 text-center underline">
+            {/* Updated headings */}
+            <h2 className="text-3xl sm:text-3xl font-bold mb-2 text-center sm:text-center text-[1.6rem]">
               Performance Overview
             </h2>
-            <h3 className="text-sm sm:text-md font-semibold mb-3 text-center">
+            <h3 className="text-2xl font-semibold mb-3 text-center">
               Details for {studentName}
             </h3>
 

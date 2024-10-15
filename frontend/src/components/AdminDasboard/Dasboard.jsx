@@ -67,7 +67,8 @@ const Dashboard = () => {
           <DashboardHeader user={user} toggleSidebar={toggleSidebar} />
 
           <div className="p-3 md:p-4">
-            <h1 className="text-xl md:text-2xl font-semibold mb-4 text-left">
+            {/* Adjusted text size for Admin Dashboard */}
+            <h1 className="text-3xl md:text-3xl font-bold mb-6 text-left">
               Admin Dashboard
             </h1>
 
@@ -88,17 +89,15 @@ const Dashboard = () => {
 
             {/* Leaderboard Section */}
             <div className="bg-white shadow-lg rounded-lg p-3">
-              {/* Heading visible on both mobile and desktop view */}
-              <h2 className="text-base md:text-lg font-semibold mb-3 text-gray-800">
+              {/* Adjusted text size for Leaderboard */}
+              <h2 className="text-2xl md:text-2xl font-semibold mb-3 text-gray-800">
                 Leaderboard
               </h2>
 
               {/* Responsive Table */}
               <div className="overflow-x-auto rounded-lg">
-                {" "}
                 {/* Apply rounded-lg here */}
                 <table className="min-w-full leading-normal border border-gray-300 rounded-lg overflow-hidden">
-                  {" "}
                   {/* Apply rounded-lg and overflow-hidden here */}
                   <thead className="bg-gradient-to-r from-[#007bff] to-[#0056b3] text-white">
                     <tr>
