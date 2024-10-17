@@ -100,9 +100,6 @@ const MockTest = () => {
             </div>
           ))}
         </main>
-
-        {/* Score Display (optional) */}
-        {/* ... (Can be added below the main section) */}
       </div>
     </>
   );
