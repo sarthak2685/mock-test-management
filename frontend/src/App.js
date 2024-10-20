@@ -11,6 +11,10 @@ import ChartComponent from './components/AdminDasboard/Perfomance.jsx';
 import Dashboard from './components/AdminDasboard/Dasboard.jsx';
 import MockDemo from './components/Home/mock-demo.jsx';
 import StudentPerformance from './components/AdminDasboard/StudentPerformance.jsx';
+import Dashboards from './components/StudentDashboard/Dashboards.jsx';
+import Performances from './components/StudentDashboard/Performances.jsx';
+import StudentPerformances from './components/StudentDashboard/StudentPerformances.jsx';
+import Profile from './components/StudentDashboard/Profile.jsx';
 
 function App() {
   return (
@@ -28,6 +32,12 @@ function App() {
           <Route path="/performance" element={<ChartComponent />} />
           < Route path='/mock-demo' element={<MockDemo />} />
           <Route path="/student-performance/:id" element={<StudentPerformance />} />
+          <Route path="/student-dashboard" element={<Dashboards />} />
+          <Route path="/student-performance" element={<Performances />} />
+          <Route path="//student-performances/:id" element={<StudentPerformances />} />
+          <Route path="/profile" element={<Profile />} />
+
+
         </Routes>
         {['/', '/login', '/contact'].includes(window.location.pathname) && <Footer />}
       </div>
