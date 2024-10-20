@@ -84,6 +84,8 @@ const FreeMock = () => {
     speed: 500,
     slidesToShow: 3, // Show 3 slides by default (large screen)
     slidesToScroll: 1,
+    autoplay: true, // Enable auto-scrolling
+    autoplaySpeed: 3000, // Duration before sliding to the next item (in milliseconds)
     responsive: [
       {
         breakpoint: 1024, // For medium screens
@@ -99,6 +101,7 @@ const FreeMock = () => {
       },
     ],
   };
+  
 
   return (
     <div ref={ref} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
