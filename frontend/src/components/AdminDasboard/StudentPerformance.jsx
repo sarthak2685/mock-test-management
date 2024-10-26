@@ -161,8 +161,11 @@ const StudentPerformance = ({ user }) => {
     <div className="flex flex-col min-h-screen">
       <div className="flex flex-row flex-grow">
         {/* Sidebar */}
-        <Sidebar isCollapsed={isCollapsed} toggleSidebar={toggleSidebar} />
-
+        <Sidebar
+          isCollapsed={isCollapsed}
+          toggleSidebar={toggleSidebar}
+          className={`${isCollapsed ? "hidden" : "block"} md:block`}
+        />   
         {/* Main Performance Content */}
         <div
           className={`flex-grow transition-all duration-300 ease-in-out ${
