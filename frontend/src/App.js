@@ -15,6 +15,7 @@ import Dashboards from './components/StudentDashboard/Dashboards.jsx';
 import Performances from './components/StudentDashboard/Performances.jsx';
 import StudentPerformances from './components/StudentDashboard/StudentPerformances.jsx';
 import Profile from './components/StudentDashboard/Profile.jsx';
+import Help from './components/AdminDasboard/Help.jsx';
 
 function App() {
   return (
@@ -36,8 +37,7 @@ function App() {
           <Route path="/student-performance" element={<Performances />} />
           <Route path="//student-performances/:id" element={<StudentPerformances />} />
           <Route path="/profile" element={<Profile />} />
-
-
+          <Route path="/help" element={<Help />} />
         </Routes>
         {['/', '/login', '/contact'].includes(window.location.pathname) && <Footer />}
       </div>

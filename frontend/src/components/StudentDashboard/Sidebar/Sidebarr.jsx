@@ -8,6 +8,7 @@ const Sidebarr = ({ isCollapsed, toggleSidebar }) => {
   const handleLogout = () => {
     console.log("User logged out");
   };
+  console.log(isCollapsed,toggleSidebar)
 
   return (
     <aside
