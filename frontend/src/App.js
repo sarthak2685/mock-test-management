@@ -9,7 +9,7 @@ import StudentManagement from './components/AdminDasboard/StudentMangement.jsx';
 import MockTestManagement from './components/AdminDasboard/MockTest.jsx';
 import ChartComponent from './components/AdminDasboard/Perfomance.jsx';
 import Dashboard from './components/AdminDasboard/Dasboard.jsx';
-import MockDemo from './components/Home/mock-demo.jsx';
+import MockDemo from './components/Home/Mock/mock-demo.jsx';
 import StudentPerformance from './components/AdminDasboard/StudentPerformance.jsx';
 
 function App() {
