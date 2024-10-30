@@ -17,7 +17,7 @@ const Message = () => {
 
         {/* Footer Message */}
         <p className="text-sm text-gray-500 flex items-center justify-center">
-          Made With Love <FaHeart className="text-[#007bff] mx-1" />In India
+          Made With <FaHeart className="text-[#007bff] mx-1" />In India
         </p>
       </div>
     </div>

@@ -132,14 +132,14 @@ const Footer = () => {
         <hr></hr>
 
         {/* Copyright Section */}
-        <div className="text-right py-3 mt-auto">
+        <div className="md:text-right py-3 mt-auto items-center text-center justify-center">
           <p
             style={{ fontSize: "10px" }}
             className="text-gray-600 font-semibold"
           >
             {" "}
             {/* Adjust ml-* for desired margin */}© Copyright{" "}
-            {new Date().getFullYear()} WebCraftrix | All Rights Reserved.
+            {new Date().getFullYear()} <span className="font-semibold text-blue-500">WebCraftrix</span> | All Rights Reserved.
           </p>
         </div>
       </div>
