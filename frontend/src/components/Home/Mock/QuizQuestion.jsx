@@ -1,16 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 function QuizQuestion({ questionData }) {
   const { question, options, correctAnswer } = questionData;
   const [selectedOption, setSelectedOption] = useState(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
 
+  useEffect(() => {
+    // Reset the states whenever questionData changes
+    setSelectedOption(null);
+    setIsSubmitted(false);
+  }, [questionData]);
+
   const handleOptionClick = (option) => {
-    setSelectedOption(option);
+    if (!isSubmitted) {
+      setSelectedOption(option);
+    }
   };
 
   const handleSubmit = () => {
-    setIsSubmitted(true);
+    if (selectedOption !== null) {
+      setIsSubmitted(true);
+    } else {
+      alert("Please select an option before submitting.");
+    }
   };
 
   return (
@@ -32,6 +44,7 @@ function QuizQuestion({ questionData }) {
                 ? 'bg-blue-100 text-blue-700'
                 : 'bg-gray-200 text-gray-700'
             }`}
+            disabled={isSubmitted}
           >
             {option}
           </button>
@@ -48,7 +61,9 @@ function QuizQuestion({ questionData }) {
           {selectedOption === correctAnswer ? (
             <p className="text-green-600">Correct!</p>
           ) : (
-            <p className="text-red-600">Incorrect! The correct answer is: {correctAnswer}</p>
+            <p className="text-red-600">
+              Incorrect! The correct answer is: <span className="font-bold">{correctAnswer}</span>
+            </p>
           )}
         </div>
       )}
