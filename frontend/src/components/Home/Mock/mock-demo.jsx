@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
-import { quizData } from '../Mock/quiz'; // Adjust the import path based on your file structure
-import QuestionNavigation from '../Mock/navigation'; // Adjust the import path as needed
-import Timer from '../Mock/timer'; // Adjust the import path as needed
+import React, { useState } from 'react'; 
+import { useMediaQuery } from 'react-responsive';
+import { quizData } from '../Mock/quiz';
+import QuestionNavigation from '../Mock/navigation';
+import Timer from '../Mock/timer';
+import MobileQuizLayout from './MobileQuizLayout'; // New component for mobile view
+import FeedbackForm from '../Mock/FeedbackForm';
+import SummaryScreen from '../Mock/SummaryScreen';
 
 const MockDemo = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -9,12 +13,23 @@ const MockDemo = () => {
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState(0);
+  const [showSummary, setShowSummary] = useState(false);
 
-  const currentSection = quizData[currentSectionIndex]; 
+  const [answeredQuestions, setAnsweredQuestions] = useState(
+    quizData.map(() => [])
+  );
+  const [markedForReview, setMarkedForReview] = useState(
+    quizData.map(() => [])
+  );
+
+  const currentSection = quizData[currentSectionIndex];
   const currentQuestion = currentSection.questions[currentQuestionIndex];
+
+  const isMobile = useMediaQuery({ query: '(max-width: 700px)' });
 
   const handleOptionChange = (option) => {
     setSelectedOption(option);
+    handleAnswerSelection(); // Auto-save on answer selection
   };
 
   const handleNext = () => {
@@ -35,53 +50,98 @@ const MockDemo = () => {
     setCurrentSectionIndex(index);
     setCurrentQuestionIndex(0);
     setSelectedOption(null);
-    setSubmitted(false);
-    setScore(0);
+  };
+
+  const handleMarkForReview = () => {
+    setMarkedForReview((prevMarked) => {
+      const updatedMarked = [...prevMarked];
+      if (!updatedMarked[currentSectionIndex].includes(currentQuestionIndex)) {
+        updatedMarked[currentSectionIndex] = [
+          ...updatedMarked[currentSectionIndex],
+          currentQuestionIndex,
+        ];
+      }
+      return updatedMarked;
+    });
+  };
+
+  const handleAnswerSelection = () => {
+    setAnsweredQuestions((prevAnswers) => {
+      const updatedAnswers = [...prevAnswers];
+      updatedAnswers[currentSectionIndex][currentQuestionIndex] = selectedOption;
+      return updatedAnswers;
+    });
+    setSelectedOption(null);
   };
 
   const handleSubmit = () => {
-    let calculatedScore = 0;
+    setShowSummary(true); // Display summary before final submission
+  };
 
-    // Calculate score
-    currentSection.questions.forEach((question) => {
-      if (question.correctAnswer === selectedOption) {
+  const handleFinalSubmit = () => {
+    let calculatedScore = 0;
+    answeredQuestions[currentSectionIndex].forEach((answer, index) => {
+      if (answer === currentSection.questions[index].correctAnswer) {
         calculatedScore++;
       }
     });
-
     setScore(calculatedScore);
     setSubmitted(true);
+    setShowSummary(false);
   };
 
-  return (
+  const handleReturnFromSummary = () => {
+    setShowSummary(false);
+  };
+
+  return isMobile ? (
+    <MobileQuizLayout
+      currentSectionIndex={currentSectionIndex}
+      currentQuestionIndex={currentQuestionIndex}
+      handleOptionChange={handleOptionChange}
+      handleNext={handleNext}
+      handlePrevious={handlePrevious}
+      handleMarkForReview={handleMarkForReview}
+      handleSubmit={handleSubmit}
+      setSubmitted={setSubmitted}
+      score={score}
+      submitted={submitted}
+      quizData={quizData}
+      currentSection={currentSection}
+      currentQuestion={currentQuestion}
+      setCurrentSectionIndex={setCurrentSectionIndex}
+      setCurrentQuestionIndex={setCurrentQuestionIndex}
+      answeredQuestions={answeredQuestions}
+      markedForReview={markedForReview}
+      selectedOption={selectedOption}
+    />
+  ) : (
     <div className="min-h-screen flex flex-col bg-gray-100 p-4">
-      <div className="flex justify-center">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 w-full max-w-5xl">
-          {/* Header Buttons for Section Navigation */}
-          <div className="col-span-4 flex justify-around py-4">
-            {quizData.map((section, index) => (
-              <button
-                key={index}
-                className={`${
-                  currentSectionIndex === index
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-blue-100 text-blue-500'
-                } px-4 py-2 rounded-lg transition duration-300`}
-                onClick={() => handleSectionChange(index)}
-              >
-                {section.section}
-              </button>
-            ))}
-          </div>
+      <div className="flex flex-col items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 w-full max-w-full">
+        <div className="lg:col-span-1 col-span-full flex flex-col space-y-4 py-4 p-4 rounded-md bg-white shadow">
+  {quizData.map((section, index) => (
+    <button
+      key={index}
+      className={`flex items-center py-2 px-4 rounded-md transition duration-300 ${
+        currentSectionIndex === index ? "bg-blue-700 text-white" : "hover:bg-blue-600 hover:text-white"
+      }`}
+      onClick={() => handleSectionChange(index)}
+    >
+      <span>{section.section}</span>
+    </button>
+  ))}
+</div>
 
           {/* Main Question Section */}
-          <div className="col-span-3 bg-white rounded-lg shadow p-6">
+          <div className="lg:col-span-3 col-span-full bg-white rounded-lg shadow p-6">
             {!submitted ? (
               <>
-                <h2 className="text-2xl font-bold text-blue-600">Question {currentQuestionIndex + 1}</h2>
-                <p className="text-lg mt-4">{currentQuestion.question}</p>
-
-                {/* Options */}
+                <h2 className="text-xl lg:text-2xl font-bold text-blue-600">
+                  Question {currentQuestionIndex + 1}
+                </h2>
+                <p className="text-md lg:text-lg mt-4">{currentQuestion.question}</p>
+  
                 <div className="mt-4 space-y-2">
                   {currentQuestion.options.map((option, index) => (
                     <label key={index} className="flex items-center space-x-3">
@@ -97,49 +157,75 @@ const MockDemo = () => {
                     </label>
                   ))}
                 </div>
-
-                {/* Navigation Buttons */}
-                <div className="flex items-center space-x-4 mt-6">
-                  <button className="bg-red-500 text-white px-4 py-2 rounded-lg">Mark for Review</button>
-                  <button onClick={handlePrevious} className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg">Previous</button>
-                  <button onClick={handleNext} className="bg-blue-500 text-white px-4 py-2 rounded-lg">Next</button>
+  
+                <div className="flex flex-wrap items-center space-x-4 mt-6">
+                  <button
+                    onClick={handleMarkForReview}
+                    className="bg-red-500 text-white px-4 py-2 rounded-lg mt-2"
+                  >
+                    Mark for Review
+                  </button>
+                  <button
+                    onClick={handlePrevious}
+                    className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg mt-2"
+                  >
+                    Previous
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleAnswerSelection();
+                      handleNext();
+                    }}
+                    className="bg-green-500 text-white px-4 py-2 rounded-lg mt-2"
+                  >
+                    Save & Next
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleNext();
+                    }}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-lg mt-2"
+                  >
+                    Next
+                  </button>
+                  <button
+                    onClick={handleSubmit}
+                    className="bg-yellow-500 text-white px-4 py-2 rounded-lg mt-2"
+                  >
+                    Review Summary
+                  </button>
                 </div>
               </>
             ) : (
-              // Display result after submission
               <div className="text-center">
-                <h2 className="text-2xl font-bold text-blue-600">Quiz Submitted!</h2>
-                <p className="mt-4 text-lg">Your Score: {score} out of {currentSection.questions.length}</p>
-                <button
-                  onClick={() => {
-                    setSubmitted(false);
-                    setCurrentQuestionIndex(0);
-                    setSelectedOption(null);
-                    setScore(0);
-                  }}
-                  className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg"
-                >
-                  Restart Quiz
-                </button>
+                <h2 className="text-xl lg:text-2xl font-bold text-blue-600">
+                  Quiz Submitted!
+                </h2>
+                <p className="mt-4 text-md lg:text-lg">
+                  Your Score: {score} out of {currentSection.questions.length}
+                </p>
               </div>
             )}
           </div>
-
+  
           {/* Sidebar with Timer and Navigation */}
-          <div className="col-span-1 space-y-4">
+          <div className="lg:col-span-1 col-span-full space-y-4">
             <Timer />
             <QuestionNavigation
-              questions={currentSection?.questions.map((_, index) => `Q${index + 1}`) || []}
-              onSelectQuestion={setCurrentQuestionIndex}
+              questions={currentSection.questions}
               selectedQuestionIndex={currentQuestionIndex}
-              onSubmit={handleSubmit} // Pass the submit function to navigation
-              sectionName={currentSection.section} // Pass the current section name
+              onSelectQuestion={(index) => setCurrentQuestionIndex(index)}
+              onSubmit={handleSubmit}
+              sectionName={currentSection.section}
+              answeredQuestions={answeredQuestions[currentSectionIndex] || []}
+              markedForReview={markedForReview[currentSectionIndex] || []}
             />
           </div>
         </div>
       </div>
     </div>
   );
+  
 };
 
 export default MockDemo;
