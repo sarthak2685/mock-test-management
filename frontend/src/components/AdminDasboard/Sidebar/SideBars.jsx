@@ -8,7 +8,8 @@ import { FiHelpCircle } from "react-icons/fi";
 const Sidebar = ({ isCollapsed, toggleSidebar }) => {
   
   const handleLogout = () => {
-    console.log("User logged out");
+    localStorage.removeItem("user");
+    window.location.href = "/login"; // Replace with your login route
   };
 
   return (

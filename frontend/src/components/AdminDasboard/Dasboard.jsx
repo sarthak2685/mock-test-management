@@ -5,10 +5,18 @@ import { FaTrophy } from "react-icons/fa"; // Icons for leaderboard
 
 const Dashboard = () => {
   const [isCollapsed, setIsCollapsed] = useState(false); // Sidebar collapse state
+  const [user, setUser] = useState(null); // State to hold user data
 
-  const user = {
-    name: "John Doe",
-  };
+  useEffect(() => {
+    // Retrieve user data from localStorage
+    const storedUser = localStorage.getItem('user');
+    console.log("Stored User Data:", storedUser); // Log stored data
+
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser); // Parse the stored user data
+      setUser(parsedUser); // Set the user state
+    }
+  }, []);
 
   // Example leaderboard data with marks and time taken
   const leaderboardData = [
@@ -96,9 +104,7 @@ const Dashboard = () => {
 
               {/* Responsive Table */}
               <div className="overflow-x-auto rounded-lg">
-                {/* Apply rounded-lg here */}
                 <table className="min-w-full leading-normal border border-gray-300 rounded-lg overflow-hidden">
-                  {/* Apply rounded-lg and overflow-hidden here */}
                   <thead className="bg-gradient-to-r from-[#007bff] to-[#0056b3] text-white">
                     <tr>
                       <th className="px-3 py-2 md:px-4 md:py-3 border-b border-gray-200 text-left text-xs font-semibold uppercase tracking-wider">

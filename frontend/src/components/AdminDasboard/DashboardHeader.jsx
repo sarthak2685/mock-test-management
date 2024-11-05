@@ -1,16 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FiBell } from "react-icons/fi";
-import {
-  FaFileAlt,
-  FaDollarSign,
-  FaExclamationTriangle,
-  FaBars,
-} from "react-icons/fa"; // Import Font Awesome icons
+import { FaFileAlt, FaDollarSign, FaExclamationTriangle, FaBars } from "react-icons/fa"; // Import Font Awesome icons
 
-const DashboardHeader = ({ user, toggleSidebar }) => {
+const DashboardHeader = ({ toggleSidebar }) => {
   const [openDropdown, setOpenDropdown] = useState(null);
   const mailDropdownRef = useRef(null);
   const bellDropdownRef = useRef(null);
+
+  const user = JSON.parse(localStorage.getItem("user")) || {
+    type: "guest",
+    user: "Guest",
+  };
 
   // Mock notification data (replace with real data)
   const bellNotifications = [
@@ -42,7 +42,6 @@ const DashboardHeader = ({ user, toggleSidebar }) => {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // Check if click was outside of both dropdowns
       if (
         openDropdown &&
         mailDropdownRef.current &&
@@ -89,52 +88,6 @@ const DashboardHeader = ({ user, toggleSidebar }) => {
       <div className="flex-grow" />
 
       <div className="flex items-center space-x-6">
-        {/* Mail Icon */}
-        {/* Uncomment if you want to include the mail notifications */}
-        {/* 
-        <div className="relative cursor-pointer" ref={mailDropdownRef}>
-          <FiMail
-            className="text-gray-600 w-6 h-6"
-            onClick={() => toggleDropdown("mail")}
-          />
-          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1">
-            {mailNotifications.length}
-          </span>
-
-          {openDropdown === "mail" && (
-            <div className="absolute right-0 mt-2 w-80 bg-white border border-gray-200 shadow-md rounded-lg z-50">
-              <div className="p-4 text-sm">
-                <h4 className="font-semibold mb-2 text-blue-500">Message Center</h4>
-                {mailNotifications.length > 0 ? (
-                  mailNotifications.map((mail) => (
-                    <div
-                      key={mail.id}
-                      className="flex items-center py-2 px-3 border-b last:border-none hover:bg-gray-100 transition"
-                    >
-                      <img
-                        src={mail.avatar || generateRandomAvatar()} // Use provided avatar or generate a random one
-                        alt={mail.sender}
-                        className="w-8 h-8 rounded-full mr-3"
-                      />
-                      <div className="flex-grow">
-                        <p className="text-gray-700 font-semibold">{mail.sender}</p>
-                        <p className="text-gray-500 text-sm">{mail.message}</p>
-                      </div>
-                      <span className="text-xs text-gray-500">{mail.time}</span>
-                    </div>
-                  ))
-                ) : (
-                  <div className="p-3 text-gray-600">No new messages</div>
-                )}
-                <div className="text-blue-500 text-sm font-semibold cursor-pointer hover:underline mt-2">
-                  Read More Messages
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-        */}
-
         {/* Bell Icon */}
         <div className="relative cursor-pointer" ref={bellDropdownRef}>
           <FiBell
@@ -148,7 +101,6 @@ const DashboardHeader = ({ user, toggleSidebar }) => {
           {openDropdown === "bell" && (
             <div
               className={`${
-                // Adjust positioning for mobile view
                 window.innerWidth < 768
                   ? "fixed right-2 w-64" // Fixed to right for mobile
                   : "absolute right-0 mt-2 w-80" // For desktop view
@@ -188,9 +140,9 @@ const DashboardHeader = ({ user, toggleSidebar }) => {
 
         {/* User Info */}
         <div className="flex items-center space-x-4">
-          <span className="font-semibold text-gray-700">{user.name}</span>
+          <span className="font-semibold text-gray-700">{user.user}</span>
           <div className="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center">
-            {user.name.charAt(0).toUpperCase()}
+            {user.name?.charAt(0).toUpperCase()}
           </div>
         </div>
       </div>

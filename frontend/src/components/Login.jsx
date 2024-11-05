@@ -1,23 +1,19 @@
 import React, { useState } from 'react';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; // Import for navigation
-import config from '../config'; // Import your config file
+import { useNavigate } from 'react-router-dom';
+import config from '../config';
 import illustrationImage from '../assets/login.webp';
 
 const Login = () => {
   const [mobileNumber, setMobileNumber] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState(null); // State to handle errors
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  // Toggle password visibility
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
+  const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
-  // Handle form submit
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
@@ -25,18 +21,21 @@ const Login = () => {
         mobileno: mobileNumber,
         password: password,
       });
-      console.log(response);
 
       if (response.data.data && response.data.data.type) {
-        const role = response.data.data.type;
-        console.log(role);
+        const { type, user, mobileNumber,token } = response.data.data;
 
-        if (role === 'owner') {
+        // Save user data to localStorage
+        localStorage.setItem('user', JSON.stringify({ type, user, mobileNumber, token }));
+        // console.log("User Data Stored in LocalStorage:", JSON.parse(localStorage.getItem('user')));
+
+        // Navigate based on role
+        if (type === 'owner') {
           navigate('/super-admin');
-        } else if (role === 'Admin') {
+        } else if (type === 'admin') {
           navigate('/admin');
-        } else if (role === 'Student') {
-          navigate('/student');
+        } else if (type === 'student') {
+          navigate('/student-dashboard');
         } else {
           setError("Unknown role. Please contact support.");
         }

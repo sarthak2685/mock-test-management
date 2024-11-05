@@ -5,19 +5,23 @@ import { FaTrophy } from "react-icons/fa";
 
 const timeToMinutes = (timeString) => {
   const [value, unit] = timeString.split(" ");
-  return unit === "mins" ? parseInt(value) : 0; // Convert time to integer minutes
+  return unit === "mins" ? parseInt(value, 10) : 0; // Convert time to integer minutes
 };
 
 const Dashboards = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [user, setUser] = useState(null); // State to hold user data
 
-  // Simulated user data
-  const user = {
-    name: "John Doe", // Assume user is logged in as "John Doe"
-    rank: 10, // Placeholder for current rank; to be recalculated
-  };
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    console.log("Stored User Data:", storedUser);
 
-  // Example leaderboard data for the current mock test
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
+    }
+  }, []);
+
   let leaderboardData = [
     { id: 1, name: "Self-confident Swan", score: 5, timeTaken: "12 mins" },
     { id: 2, name: "Ambitious Swan", score: 5, timeTaken: "13 mins" },
@@ -25,7 +29,7 @@ const Dashboards = () => {
     { id: 4, name: "Straightforward Dove", score: 4, timeTaken: "15 mins" },
     { id: 5, name: "Frank Dove", score: 3, timeTaken: "13 mins" },
     { id: 6, name: "Modest Pigeon", score: 3, timeTaken: "15 mins" },
-    { id: 10, name: "John Doe", score: 4, timeTaken: "14 mins" }, // Logged-in user's rank
+    { id: 10, name: "John Doe", score: 4, timeTaken: "14 mins" }, // Example logged-in user's rank
     { id: 7, name: "Courageous Hawk", score: 5, timeTaken: "11 mins" },
   ];
 
@@ -33,26 +37,21 @@ const Dashboards = () => {
     setIsCollapsed((prev) => !prev);
   };
 
-  // Sort leaderboard by score and time taken
   leaderboardData = leaderboardData.sort((a, b) => {
     if (b.score !== a.score) {
-      return b.score - a.score; // Higher score gets better rank
+      return b.score - a.score;
     }
-    return timeToMinutes(a.timeTaken) - timeToMinutes(b.timeTaken); // Less time gets better rank
+    return timeToMinutes(a.timeTaken) - timeToMinutes(b.timeTaken);
   });
 
   // Update user's rank after sorting
   const userRank = leaderboardData.findIndex(
-    (student) => student.name === user.name
+    (student) => student.name === user?.name // Use user?.name to avoid errors if user is null
   ) + 1;
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth < 768) {
-        setIsCollapsed(true);
-      } else {
-        setIsCollapsed(false);
-      }
+      setIsCollapsed(window.innerWidth < 768);
     };
 
     handleResize();
@@ -65,7 +64,6 @@ const Dashboards = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Main Content */}
       <div className="flex flex-row flex-grow">
         <Sidebar
           isCollapsed={isCollapsed}
@@ -73,13 +71,11 @@ const Dashboards = () => {
           className="hidden md:block"
         />
 
-        {/* Main Dashboard Content */}
         <div
           className={`flex-grow transition-all duration-300 ease-in-out ${
             isCollapsed ? "ml-0" : "ml-64"
           }`}
         >
-          {/* Header */}
           <DashboardHeader user={user} toggleSidebar={toggleSidebar} />
 
           <div className="p-3 md:p-4">
@@ -87,22 +83,18 @@ const Dashboards = () => {
               Student Dashboard
             </h1>
 
-            {/* Stats Cards Row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
-              {/* Card for Current Rank */}
               <div className="bg-white shadow-md rounded-lg p-3">
                 <h2 className="text-base md:text-lg">Current Rank</h2>
                 <p className="text-xl md:text-2xl font-bold">{userRank}</p>
               </div>
 
-              {/* Placeholder for the second card */}
               <div className="bg-white shadow-md rounded-lg p-3">
                 <h2 className="text-base md:text-lg">Next Test Date</h2>
                 <p className="text-xl md:text-2xl font-bold">22 Oct, 2024</p>
               </div>
             </div>
 
-            {/* Leaderboard Section */}
             <div className="bg-white shadow-lg rounded-lg p-3">
               <h2 className="text-2xl md:text-2xl font-semibold mb-3 text-gray-800">
                 Current Test Leaderboard
@@ -128,7 +120,7 @@ const Dashboards = () => {
                       <tr
                         key={student.id}
                         className={`hover:bg-gray-100 transition-colors ${
-                          student.name === user.name
+                          student.name === user?.name
                             ? "bg-yellow-100 font-bold"
                             : index % 2 === 0
                             ? "bg-white"

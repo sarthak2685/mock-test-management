@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar.jsx";
 import Footer from "./components/Footer.jsx";
 import Home from "./components/Home.jsx";
@@ -20,41 +20,49 @@ import Profile from './components/StudentDashboard/Profile.jsx';
 import Help from './components/AdminDasboard/Help.jsx';
 
 function App() {
+  const location = useLocation();
+  
+  // Get the user role from local storage
+  const userRole = localStorage.getItem("userRole"); // Assuming "userRole" is set after login
+
+  // Determine visibility of Navbar and Footer based on role and route
+  const isNavbarFooterVisible = userRole !== "owner" && userRole !== "admin" && ["/", "/login", "/contact"].includes(location.pathname);
+
+  return (
+    <div className="App">
+      {/* Conditional Navbar and Footer */}
+      {isNavbarFooterVisible && <Navbar />}
+
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/admin" element={<Dashboard />} />
+        <Route path="/super-admin" element={<SuperAdminDashboard />} />
+        <Route path="/students" element={<StudentManagement />} />
+        <Route path="/create-test" element={<MockTestManagement />} />
+        <Route path="/performance" element={<ChartComponent />} />
+        <Route path="/admin-management" element={<AdminManagement />} />
+        <Route path="/student-performance/:id" element={<StudentPerformance />} />
+        <Route path="/mock-demo" element={<MockDemo />} />
+        <Route path="/student-dashboard" element={<Dashboards />} />
+        <Route path="/student-performance" element={<Performances />} />
+        <Route path="/student-performances/:id" element={<StudentPerformances />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/help" element={<Help />} />
+      </Routes>
+
+      {isNavbarFooterVisible && <Footer />}
+    </div>
+  );
+}
+
+function AppWrapper() {
   return (
     <Router>
-      <div className="App">
-        {/* Conditional Navbar and Footer */}
-        {["/", "/login", "/contact"].includes(window.location.pathname) && (
-          <Navbar />
-        )}
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/contact" element={<ContactPage />} />
-          <Route path="/admin" element={<Dashboard />} />
-          <Route path="/super-admin" element={<SuperAdminDashboard />} />
-          <Route path="/students" element={<StudentManagement />} />
-          <Route path="/create-test" element={<MockTestManagement />} />
-          <Route path="/performance" element={<ChartComponent />} />
-          <Route path="/admin-management" element={<AdminManagement />} />
-          <Route
-            path="/student-performance/:id"
-            element={<StudentPerformance />}
-          />
-          < Route path='/mock-demo' element={<MockDemo />} />
-          <Route path="/student-performance/:id" element={<StudentPerformance />} />
-          <Route path="/student-dashboard" element={<Dashboards />} />
-          <Route path="/student-performance" element={<Performances />} />
-          <Route path="//student-performances/:id" element={<StudentPerformances />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/help" element={<Help />} />
-        </Routes>
-        {["/", "/login", "/contact"].includes(window.location.pathname) && (
-          <Footer />
-        )}
-      </div>
+      <App />
     </Router>
   );
 }
 
-export default App;
+export default AppWrapper;

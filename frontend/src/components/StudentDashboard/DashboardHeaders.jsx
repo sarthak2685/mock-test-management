@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FiBell } from "react-icons/fi";
-import { FaUser, FaBars } from "react-icons/fa"; // Import Font Awesome icons
-import { useNavigate } from "react-router-dom"; // For navigation
+import { FaUser, FaBars } from "react-icons/fa"; 
+import { useNavigate } from "react-router-dom";
 
-const DashboardHeaders = ({ user, toggleSidebar }) => {
+const DashboardHeaders = ({ toggleSidebar }) => {
   const [openDropdown, setOpenDropdown] = useState(null);
-  const mailDropdownRef = useRef(null);
   const bellDropdownRef = useRef(null);
   const userDropdownRef = useRef(null);
-  const navigate = useNavigate(); // For navigating to profile page
+  const navigate = useNavigate();
 
   // Dummy alert data
   const alerts = [
@@ -23,15 +22,20 @@ const DashboardHeaders = ({ user, toggleSidebar }) => {
     setOpenDropdown((prev) => (prev === dropdown ? null : dropdown));
   };
 
+  // Get user data from local storage
+  const user = JSON.parse(localStorage.getItem("user")) || {
+    type: "guest",
+    user: "Guest",
+    name: "Guest" // Default name for guest
+  };
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
         openDropdown &&
-        mailDropdownRef.current &&
         bellDropdownRef.current &&
         userDropdownRef.current &&
-        !mailDropdownRef.current.contains(event.target) &&
         !bellDropdownRef.current.contains(event.target) &&
         !userDropdownRef.current.contains(event.target)
       ) {
@@ -50,7 +54,7 @@ const DashboardHeaders = ({ user, toggleSidebar }) => {
     <header className="bg-white shadow-lg flex items-center justify-between p-4 relative">
       {/* Sidebar toggle button */}
       <button onClick={toggleSidebar} className="text-gray-600 lg:hidden mr-4" aria-label="Toggle Sidebar">
-        <FaBars className="w-6 h-6" /> {/* Bar icon here */}
+        <FaBars className="w-6 h-6" />
       </button>
 
       <div className="flex-grow" />
@@ -83,9 +87,9 @@ const DashboardHeaders = ({ user, toggleSidebar }) => {
         {/* User Info Dropdown */}
         <div className="relative cursor-pointer" ref={userDropdownRef}>
           <div className="flex items-center space-x-2" onClick={() => toggleDropdown("user")}>
-            <span className="font-semibold text-gray-700">{user.name}</span>
+            <span className="font-semibold text-gray-700">{user.user}</span>
             <div className="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center">
-              {user.name.charAt(0).toUpperCase()}
+              {user.name ? user.name.charAt(0).toUpperCase() : "G"} {/* Use "G" for guest */}
             </div>
           </div>
 
@@ -93,7 +97,7 @@ const DashboardHeaders = ({ user, toggleSidebar }) => {
             <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 shadow-md rounded-lg z-50">
               <div
                 className="flex items-center py-2 px-4 hover:bg-gray-100 cursor-pointer"
-                onClick={() => navigate("/profile")} // Navigate to profile page
+                onClick={() => navigate("/profile")}
               >
                 <FaUser className="text-gray-700 w-5 h-5 mr-2" />
                 <span className="text-gray-700">Profile</span>

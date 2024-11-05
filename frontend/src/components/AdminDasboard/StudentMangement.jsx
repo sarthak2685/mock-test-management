@@ -7,29 +7,23 @@ import {
   FaUserPlus,
   FaPaperPlane,
   FaFileCsv,
+  FaPhone // Import the phone icon
 } from "react-icons/fa";
 import DashboardHeader from "./DashboardHeader";
 import Sidebar from "../AdminDasboard/Sidebar/SideBars"; // Importing Sidebar
+import config from "../../config";
+import axios from "axios";
 
 const StudentManagement = ({ user }) => {
-  const [students, setStudents] = useState([
-    { id: 1, name: "John Doe", username: "john_doe", password: "password123" },
-    {
-      id: 2,
-      name: "Jane Smith",
-      username: "jane_smith",
-      password: "password456",
-    },
-  ]);
-
-  const [newStudents, setNewStudents] = useState([
-    { name: "", username: "", password: "" },
-  ]);
+  const [students, setStudents] = useState([]);
+  const [newStudents, setNewStudents] = useState([{ name: "", username: "", password: "", mobile_no: "" }]); // Added mobile_no field
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [studentsPerPage] = useState(5);
-  const [isCollapsed, setIsCollapsed] = useState(true); // Sidebar collapse state starts as collapsed for mobile view
+  const [isCollapsed, setIsCollapsed] = useState(true);
+  const S = JSON.parse(localStorage.getItem("user"));
+  const token = S.token;
 
   const toggleSidebar = () => {
     setIsCollapsed((prev) => !prev);
@@ -52,6 +46,42 @@ const StudentManagement = ({ user }) => {
     };
   }, []);
 
+  // Fetch students on component mount
+  useEffect(() => {
+    const fetchStudents = async () => {
+      try {
+        const response = await fetch(`${config.apiUrl}/admin-student-crud/`, {
+          method: "GET",
+          headers: {
+            'Authorization': `Token ${token}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log("Fetched students data:", data); // Log the fetched data
+
+        // Ensure the data is an array before setting it to state
+        if (Array.isArray(data.data)) {
+          setStudents(data.data);
+        } else {
+          console.warn("Fetched data is not an array:", data);
+          setStudents([]); // Fallback to an empty array
+        }
+      } catch (error) {
+        console.error("Error fetching students:", error);
+        setError("Failed to fetch students.");
+        setStudents([]); // Ensure students is reset to an empty array on error
+      }
+    };
+
+    fetchStudents();
+  }, []);
+
   // Handle student form input changes
   const handleStudentChange = (index, field, value) => {
     const updatedStudents = [...newStudents];
@@ -60,7 +90,7 @@ const StudentManagement = ({ user }) => {
   };
 
   const handleAddStudentField = () => {
-    setNewStudents([...newStudents, { name: "", username: "", password: "" }]);
+    setNewStudents([...newStudents, { name: "", username: "", password: "", mobile_no: "" }]); // Added mobile_no field
   };
 
   const handleRemoveStudentField = (index) => {
@@ -68,74 +98,128 @@ const StudentManagement = ({ user }) => {
     setNewStudents(updatedStudents);
   };
 
-  const handleSubmitStudents = () => {
-    if (
-      newStudents.some(
-        (student) => !student.name || !student.username || !student.password
-      )
-    ) {
-      setError("All fields are required for each student.");
-      return;
+const handleSubmitStudents = async () => {
+    // Check if the token exists
+    if (!token) {
+        setError("Authentication token is required.");
+        return;
     }
 
-    if (
-      newStudents.some((student) =>
-        students.some((existing) => existing.username === student.username)
-      )
-    ) {
-      setError("Each username must be unique.");
-      return;
+    // Check for required fields in new students
+    if (newStudents.some(student => !student.name || !student.username || !student.password || !student.mobile_no)) {
+        setError("All fields (name, username, password, mobile_no) are required.");
+        return;
     }
 
-    const newStudentsWithId = newStudents.map((student, index) => ({
-      ...student,
-      id: students.length + index + 1,
-    }));
+    try {
+        // Prepare the POST requests
+        const responses = await Promise.all(newStudents.map(student => {
+            return axios.post(`${config.apiUrl}/admin-student-crud/`, {
+                name: student.name,
+                mobile_no: student.mobile_no,
+                institute_name: "none", // Placeholder; modify if necessary
+                email_id: "none", // Placeholder; modify if necessary
+                password_encoded: student.password,
+            }, {
+                headers: {
+                    'Authorization': `Token ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+        }));
 
-    setStudents([...students, ...newStudentsWithId]);
-    setNewStudents([{ name: "", username: "", password: "" }]);
-    setError("");
+        // Log responses for debugging
+        console.log("Responses from API:", responses);
+
+        // Update state with newly added students
+        const newStudentData = responses.map((response, index) => ({
+            ...newStudents[index],
+            id: students.length + index + 1, // Generate a unique ID for each new student
+            apiResponse: response.data // Optional: Store the response from the API if needed
+        }));
+
+        // Update the students state
+        setStudents([...students, ...newStudentData]);
+        setNewStudents([{ name: "", username: "", password: "", mobile_no: "" }]); // Reset the input fields
+        setError(""); // Clear any existing error message
+    } catch (error) {
+        // Enhanced error handling
+        console.error("Error adding students:", error.response ? error.response.data : error);
+        setError("Failed to add students. Please try again.");
+    }
+};
+
+
+
+
+
+
+
+  const handleRemoveStudent = async (id) => {
+    try {
+      // DELETE request to remove a student
+      await fetch(`${config.apiUrl}/admin-student-crud/${id}`, {
+        method: "DELETE",
+        headers: {
+          'Authorization': `Token ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      setStudents(students.filter((student) => student.id !== id));
+    } catch (error) {
+      console.error("Error removing student:", error);
+      setError("Failed to remove student.");
+    }
   };
 
-  const handleRemoveStudent = (id) => {
-    setStudents(students.filter((student) => student.id !== id));
-  };
-
-  const handleChangePassword = (id) => {
+  const handleChangePassword = async (id) => {
     const newPassword = prompt("Enter new password:");
     if (newPassword) {
-      setStudents(
-        students.map((student) =>
-          student.id === id ? { ...student, password: newPassword } : student
-        )
-      );
+      // Update student password via API
+      try {
+        await fetch(`${config.apiUrl}/admin-student-crud/${id}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ password: newPassword }),
+        });
+
+        setStudents(
+          students.map((student) =>
+            student.id === id ? { ...student, password: newPassword } : student
+          )
+        );
+      } catch (error) {
+        console.error("Error updating password:", error);
+        setError("Failed to update password.");
+      }
     }
   };
 
-  const filteredStudents = students.filter(
-    (student) =>
-      student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.username.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredStudents = Array.isArray(students) 
+    ? students.filter(student => 
+        student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        student.username.toLowerCase().includes(searchTerm.toLowerCase())
+    ) 
+    : [];
 
   const indexOfLastStudent = currentPage * studentsPerPage;
   const indexOfFirstStudent = indexOfLastStudent - studentsPerPage;
-  const currentStudents = filteredStudents.slice(
-    indexOfFirstStudent,
-    indexOfLastStudent
-  );
+  const currentStudents = filteredStudents.slice(indexOfFirstStudent, indexOfLastStudent);
   const totalPages = Math.ceil(filteredStudents.length / studentsPerPage);
 
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  // Add a check to avoid out of bounds for pagination
+  const paginate = (pageNumber) => {
+    if (pageNumber < 1 || pageNumber > totalPages) return;
+    setCurrentPage(pageNumber);
+  };
 
   const handleExport = () => {
     const csvContent =
       "data:text/csv;charset=utf-8," +
-      students
-        .map(
-          (student) => `${student.name},${student.username},${student.password}`
-        )
-        .join("\n");
+      students.map((student) => `${student.name},${student.username},${student.password},${student.mobile_no}`).join("\n"); // Include mobile_no in CSV
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
@@ -155,16 +239,8 @@ const StudentManagement = ({ user }) => {
         />
 
         {/* Main Content */}
-        <div
-          className={`flex-grow transition-all duration-300 ease-in-out ${
-            isCollapsed ? "ml-0" : "ml-64"
-          }`}
-        >
-          {/* Header with Hamburger icon for mobile view */}
-          <DashboardHeader
-            user={user || { name: "Guest" }}
-            toggleSidebar={toggleSidebar}
-          />
+        <div className={`flex-grow transition-all duration-300 ease-in-out ${isCollapsed ? "ml-0" : "ml-64"}`}>
+          <DashboardHeader user={user || { name: "Guest" }} toggleSidebar={toggleSidebar} />
 
           <div className="p-6">
             <h1 className="text-3xl font-bold mb-6">Manage Students</h1>
@@ -172,12 +248,8 @@ const StudentManagement = ({ user }) => {
             {/* Add Multiple Students Form */}
             <div className="bg-white p-6 mb-6 shadow-lg rounded-lg">
               <h2 className="text-2xl font-semibold mb-4">Add Students</h2>
-              {error && <p className="text-red-500 mb-4">{error}</p>}
               {newStudents.map((student, index) => (
-                <div
-                  key={index}
-                  className="mb-4 p-4 bg-gray-50 rounded-lg shadow-md"
-                >
+                <div key={index} className="mb-4 p-4 bg-gray-50 rounded-lg shadow-md">
                   <div className="flex justify-between items-center mb-2">
                     <h3 className="text-lg font-medium">Student {index + 1}</h3>
                     <button
@@ -194,11 +266,9 @@ const StudentManagement = ({ user }) => {
                         type="text"
                         placeholder="Name"
                         value={student.name}
-                        onChange={(e) =>
-                          handleStudentChange(index, "name", e.target.value)
-                        }
+                        onChange={(e) => handleStudentChange(index, "name", e.target.value)}
                         className="border p-2 pl-10 mb-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        style={{ paddingLeft: "2.5rem" }} // Adjusted padding for better spacing
+                        style={{ paddingLeft: "2.5rem" }}
                       />
                     </div>
                     <div className="relative">
@@ -207,11 +277,9 @@ const StudentManagement = ({ user }) => {
                         type="text"
                         placeholder="Username"
                         value={student.username}
-                        onChange={(e) =>
-                          handleStudentChange(index, "username", e.target.value)
-                        }
+                        onChange={(e) => handleStudentChange(index, "username", e.target.value)}
                         className="border p-2 pl-10 mb-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        style={{ paddingLeft: "2.5rem" }} // Adjusted padding for better spacing
+                        style={{ paddingLeft: "2.5rem" }}
                       />
                     </div>
                     <div className="relative">
@@ -220,17 +288,27 @@ const StudentManagement = ({ user }) => {
                         type="password"
                         placeholder="Password"
                         value={student.password}
-                        onChange={(e) =>
-                          handleStudentChange(index, "password", e.target.value)
-                        }
+                        onChange={(e) => handleStudentChange(index, "password", e.target.value)}
                         className="border p-2 pl-10 mb-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        style={{ paddingLeft: "2.5rem" }} // Adjusted padding for better spacing
+                        style={{ paddingLeft: "2.5rem" }}
+                      />
+                    </div>
+                    {/* Mobile Number Input */}
+                    <div className="relative">
+                      <FaPhone className="absolute left-3 top-2 text-gray-400" />
+                      <input
+                        type="text"
+                        placeholder="Mobile Number"
+                        value={student.mobile_no}
+                        onChange={(e) => handleStudentChange(index, "mobile_no", e.target.value)}
+                        className="border p-2 pl-10 mb-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        style={{ paddingLeft: "2.5rem" }}
                       />
                     </div>
                   </div>
                 </div>
               ))}
-              <div className="flex flex-col sm:flex-row sm:justify-between items-center gap-4">
+             <div className="flex flex-col sm:flex-row sm:justify-between items-center gap-4">
                 <button
                   onClick={handleAddStudentField}
                   className="bg-gradient-to-r from-[#007bff] to-[#0056b3] text-white px-4 py-2 rounded-md hover:bg-[#0056b3] hover:to-[#004080] transition text-sm w-full sm:w-auto"
@@ -248,7 +326,7 @@ const StudentManagement = ({ user }) => {
               </div>
             </div>
 
-            {/* Current Students Card */}
+            {/* Search and Export */}
             <div className="bg-white p-2 md:p-4 shadow-lg rounded-lg">
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-2 md:mb-4 space-y-2 md:space-y-0">
                 <h2 className="text-2xl font-semibold">Current Students</h2>
@@ -274,7 +352,7 @@ const StudentManagement = ({ user }) => {
                         Name
                       </th>
                       <th className="px-2 py-1 md:px-4 md:py-2 text-left">
-                        Username
+                        Mobile Number
                       </th>
                       <th className="px-2 py-1 md:px-4 md:py-2 text-left">
                         Password {/* Now visible in mobile */}
@@ -300,10 +378,10 @@ const StudentManagement = ({ user }) => {
                             {student.name}
                           </td>
                           <td className="px-2 py-1 md:px-4 md:py-2 text-[9px] md:text-sm">
-                            {student.username}
+                            {student.mobile_no}
                           </td>
                           <td className="px-2 py-1 md:px-4 md:py-2 text-[9px] md:text-sm">
-                            {student.password} {/* Now visible in mobile */}
+                            {student.password_encoded} {/* Now visible in mobile */}
                           </td>
                           <td className="px-2 py-1 md:px-4 md:py-2 text-center">
                             <button

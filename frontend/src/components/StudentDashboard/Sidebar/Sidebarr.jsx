@@ -1,14 +1,17 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { FiUsers, FiBarChart } from "react-icons/fi";
 import { HomeIcon, ArrowLeftOnRectangleIcon } from "@heroicons/react/24/solid";
 import { FaTimes } from "react-icons/fa"; 
 
 const Sidebarr = ({ isCollapsed, toggleSidebar }) => {
+  const navigate = useNavigate();
+
   const handleLogout = () => {
-    console.log("User logged out");
+    localStorage.removeItem("userData");
+    // Navigate to the login page
+    navigate("/login");
   };
-  console.log(isCollapsed,toggleSidebar)
 
   return (
     <aside
