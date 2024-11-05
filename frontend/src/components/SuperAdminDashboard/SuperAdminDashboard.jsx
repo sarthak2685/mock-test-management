@@ -1,75 +1,46 @@
 import React, { useState, useEffect } from "react";
 import DashboardHeader from "../SuperAdminDashboard/Header";
-import Sidebar from "../SuperAdminDashboard/Sidebar"; // Importing the updated Sidebar
+import Sidebar from "../SuperAdminDashboard/Sidebar";
 
 const SuperAdminDashboard = () => {
-  const [isCollapsed, setIsCollapsed] = useState(false); // Sidebar collapse state
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [user, setUser] = useState(null); // State to hold user data
 
-  const user = {
-    name: "John Doe",
-  };
+  useEffect(() => {
+    // Retrieve user data from localStorage
+    const storedUser = localStorage.getItem('user');
+    console.log("Stored User Data:", storedUser); // Log stored data
 
-  // Example data for institutes with subscription details
+    if (storedUser) {
+      const parsedUser = JSON.parse(storedUser); // Parse the stored user data
+      setUser(parsedUser); // Set the user state
+    }
+  }, []);
+  
+
   const instituteData = [
-    {
-      id: 1,
-      name: "Tech University",
-      duration: "1 Year",
-      subscription: "Premium",
-    },
-    {
-      id: 2,
-      name: "Green Valley College",
-      duration: "6 Months",
-      subscription: "Standard",
-    },
-    {
-      id: 3,
-      name: "Harbor Institute",
-      duration: "2 Years",
-      subscription: "Enterprise",
-    },
-    {
-      id: 4,
-      name: "Oceanic Academy",
-      duration: "1 Year",
-      subscription: "Standard",
-    },
-    {
-      id: 5,
-      name: "Skyline Institute",
-      duration: "3 Months",
-      subscription: "Basic",
-    },
-    {
-      id: 6,
-      name: "Mountainview College",
-      duration: "1 Year",
-      subscription: "Premium",
-    },
+    { id: 1, name: "Tech University", duration: "1 Year", subscription: "Premium" },
+    { id: 2, name: "Green Valley College", duration: "6 Months", subscription: "Standard" },
+    { id: 3, name: "Harbor Institute", duration: "2 Years", subscription: "Enterprise" },
+    { id: 4, name: "Oceanic Academy", duration: "1 Year", subscription: "Standard" },
+    { id: 5, name: "Skyline Institute", duration: "3 Months", subscription: "Basic" },
+    { id: 6, name: "Mountainview College", duration: "1 Year", subscription: "Premium" },
   ];
 
   const toggleSidebar = () => {
-    setIsCollapsed((prev) => !prev); // Toggle collapse state
+    setIsCollapsed((prev) => !prev);
   };
 
-  // Effect to handle sidebar visibility on window resize
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth < 768) {
-        setIsCollapsed(true); // Collapse sidebar on mobile view
+        setIsCollapsed(true);
       } else {
-        setIsCollapsed(false); // Expand sidebar on desktop view
+        setIsCollapsed(false);
       }
     };
-
-    // Set initial state based on the current window size
     handleResize();
-
-    // Add event listener for resize
     window.addEventListener("resize", handleResize);
-
-    // Clean up the event listener on unmount
     return () => {
       window.removeEventListener("resize", handleResize);
     };
@@ -77,52 +48,41 @@ const SuperAdminDashboard = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Main Content */}
       <div className="flex flex-row flex-grow">
-        {/* Sidebar: hidden on mobile */}
         <Sidebar
           isCollapsed={isCollapsed}
           toggleSidebar={toggleSidebar}
-          className="hidden md:block" // Hide on mobile, show on medium screens and up
+          className="hidden md:block"
         />
 
-        {/* Main Dashboard Content */}
         <div
           className={`flex-grow transition-all duration-300 ease-in-out ${
             isCollapsed ? "ml-0" : "ml-64"
           }`}
         >
-          {/* Header */}
           <DashboardHeader user={user} toggleSidebar={toggleSidebar} />
 
           <div className="p-3 md:p-4">
-            {/* Adjusted text size for Super Admin Dashboard */}
             <h1 className="text-3xl md:text-3xl font-bold mb-6 text-left">
               Super Admin Dashboard
             </h1>
 
-            {/* Stats Cards Row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
-              {/* Card for Total Institutes */}
               <div className="bg-white shadow-md rounded-lg p-3">
                 <h2 className="text-base md:text-lg">Total Institutes</h2>
                 <p className="text-xl md:text-2xl font-bold">20</p>
               </div>
-
-              {/* Card for Active Institutes */}
               <div className="bg-white shadow-md rounded-lg p-3">
                 <h2 className="text-base md:text-lg">Active Institutes</h2>
                 <p className="text-xl md:text-2xl font-bold">5</p>
               </div>
             </div>
 
-            {/* Institutes List Section */}
             <div className="bg-white shadow-lg rounded-lg p-3">
               <h2 className="text-2xl md:text-2xl font-semibold mb-3 text-gray-800">
                 Institutes List
               </h2>
 
-              {/* Responsive Table */}
               <div className="overflow-x-auto rounded-lg">
                 <table className="min-w-full leading-normal border border-gray-300 rounded-lg overflow-hidden">
                   <thead className="bg-gradient-to-r from-[#007bff] to-[#0056b3] text-white">
