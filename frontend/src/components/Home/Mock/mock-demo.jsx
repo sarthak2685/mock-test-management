@@ -1,9 +1,9 @@
-import React, { useState } from 'react'; 
+import React, { useState } from 'react';
 import { useMediaQuery } from 'react-responsive';
 import { quizData } from '../Mock/quiz';
 import QuestionNavigation from '../Mock/navigation';
 import Timer from '../Mock/timer';
-import MobileQuizLayout from './MobileQuizLayout'; // New component for mobile view
+import MobileQuizLayout from './MobileQuizLayout';
 import FeedbackForm from '../Mock/FeedbackForm';
 import SummaryScreen from '../Mock/SummaryScreen';
 
@@ -25,11 +25,11 @@ const MockDemo = () => {
   const currentSection = quizData[currentSectionIndex];
   const currentQuestion = currentSection.questions[currentQuestionIndex];
 
-  const isMobile = useMediaQuery({ query: '(max-width: 700px)' });
+  const isMobile = useMediaQuery({ query: '(max-width: 1024px)' });
 
   const handleOptionChange = (option) => {
     setSelectedOption(option);
-    handleAnswerSelection(); // Auto-save on answer selection
+    handleAnswerSelection();
   };
 
   const handleNext = () => {
@@ -75,7 +75,7 @@ const MockDemo = () => {
   };
 
   const handleSubmit = () => {
-    setShowSummary(true); // Display summary before final submission
+    setShowSummary(true);
   };
 
   const handleFinalSubmit = () => {
@@ -118,83 +118,78 @@ const MockDemo = () => {
   ) : (
     <div className="min-h-screen flex flex-col bg-gray-100 p-4">
       <div className="flex flex-col items-center">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 w-full max-w-full">
-        <div className="lg:col-span-1 col-span-full flex flex-col space-y-4 py-4 p-4 rounded-md bg-white shadow">
-  {quizData.map((section, index) => (
-    <button
-      key={index}
-      className={`flex items-center py-2 px-4 rounded-md transition duration-300 ${
-        currentSectionIndex === index ? "bg-blue-700 text-white" : "hover:bg-blue-600 hover:text-white"
-      }`}
-      onClick={() => handleSectionChange(index)}
-    >
-      <span>{section.section}</span>
-    </button>
-  ))}
-</div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 w-full max-w-full">
+          <div className="lg:col-span-3 col-span-full flex flex-col space-y-4 py-4 p-4 rounded-md bg-white shadow">
+            {quizData.map((section, index) => (
+              <button
+                key={index}
+                className={`flex items-center py-2 px-4 rounded-md transition duration-300 ${
+                  currentSectionIndex === index ? "bg-blue-700 text-white" : "hover:bg-blue-600 hover:text-white"
+                }`}
+                onClick={() => handleSectionChange(index)}
+              >
+                <span>{section.section}</span>
+              </button>
+            ))}
+          </div>
 
-          {/* Main Question Section */}
-          <div className="lg:col-span-3 col-span-full bg-white rounded-lg shadow p-6">
+          <div className="lg:col-span-6 col-span-full bg-white rounded-lg shadow p-6">
             {!submitted ? (
               <>
-                <h2 className="text-xl lg:text-2xl font-bold text-blue-600">
-                  Question {currentQuestionIndex + 1}
-                </h2>
-                <p className="text-md lg:text-lg mt-4">{currentQuestion.question}</p>
-  
-                <div className="mt-4 space-y-2">
-                  {currentQuestion.options.map((option, index) => (
-                    <label key={index} className="flex items-center space-x-3">
-                      <input
-                        type="radio"
-                        name="option"
-                        value={option}
-                        checked={selectedOption === option}
-                        onChange={() => handleOptionChange(option)}
-                        className="form-radio text-blue-500"
-                      />
-                      <span>{option}</span>
-                    </label>
-                  ))}
-                </div>
-  
-                <div className="flex flex-wrap items-center space-x-4 mt-6">
-                  <button
-                    onClick={handleMarkForReview}
-                    className="bg-red-500 text-white px-4 py-2 rounded-lg mt-2"
-                  >
-                    Mark for Review
-                  </button>
-                  <button
-                    onClick={handlePrevious}
-                    className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg mt-2"
-                  >
-                    Previous
-                  </button>
-                  <button
-                    onClick={() => {
-                      handleAnswerSelection();
-                      handleNext();
-                    }}
-                    className="bg-green-500 text-white px-4 py-2 rounded-lg mt-2"
-                  >
-                    Save & Next
-                  </button>
-                  <button
-                    onClick={() => {
-                      handleNext();
-                    }}
-                    className="bg-blue-500 text-white px-4 py-2 rounded-lg mt-2"
-                  >
-                    Next
-                  </button>
-                  <button
-                    onClick={handleSubmit}
-                    className="bg-yellow-500 text-white px-4 py-2 rounded-lg mt-2"
-                  >
-                    Review Summary
-                  </button>
-                </div>
+                {showSummary ? (
+                  <SummaryScreen
+                    answeredQuestions={answeredQuestions}
+                    onFinalSubmit={handleFinalSubmit}
+                    onBack={handleReturnFromSummary}
+                  />
+                ) : (
+                  <>
+                    <h2 className="text-xl lg:text-2xl font-bold text-blue-600">
+                      Question {currentQuestionIndex + 1}
+                    </h2>
+                    <p className="text-md lg:text-lg mt-4">{currentQuestion.question}</p>
+
+                    <div className="mt-4 space-y-2">
+                      {currentQuestion.options.map((option, index) => (
+                        <label key={index} className="flex items-center space-x-3">
+                          <input
+                            type="radio"
+                            name="option"
+                            value={option}
+                            checked={selectedOption === option}
+                            onChange={() => handleOptionChange(option)}
+                            className="form-radio text-blue-500"
+                          />
+                          <span>{option}</span>
+                        </label>
+                      ))}
+                    </div>
+
+                    <div className="flex flex-wrap items-center space-x-4 mt-6">
+                      <button onClick={handleMarkForReview} className="bg-red-500 text-white px-4 py-2 rounded-lg mt-2">
+                        Mark for Review
+                      </button>
+                      <button onClick={handlePrevious} className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg mt-2">
+                        Previous
+                      </button>
+                      <button
+                        onClick={() => {
+                          handleAnswerSelection();
+                          handleNext();
+                        }}
+                        className="bg-green-500 text-white px-4 py-2 rounded-lg mt-2"
+                      >
+                        Save & Next
+                      </button>
+                      <button
+                        onClick={handleSubmit}
+                        className="bg-yellow-500 text-white px-4 py-2 rounded-lg mt-2"
+                      >
+                        Review Summary
+                      </button>
+                    </div>
+                  </>
+                )}
               </>
             ) : (
               <div className="text-center">
@@ -204,12 +199,12 @@ const MockDemo = () => {
                 <p className="mt-4 text-md lg:text-lg">
                   Your Score: {score} out of {currentSection.questions.length}
                 </p>
+                <FeedbackForm />
               </div>
             )}
           </div>
-  
-          {/* Sidebar with Timer and Navigation */}
-          <div className="lg:col-span-1 col-span-full space-y-4">
+
+          <div className="lg:col-span-3 col-span-full space-y-4">
             <Timer />
             <QuestionNavigation
               questions={currentSection.questions}
@@ -225,7 +220,6 @@ const MockDemo = () => {
       </div>
     </div>
   );
-  
 };
 
 export default MockDemo;
