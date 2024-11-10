@@ -1,8 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import DashboardHeader from "../SuperAdminDashboard/Header";
 import Sidebar from "../SuperAdminDashboard/Sidebar";
-import { FaTrashAlt } from "react-icons/fa";
+import { FaTrashAlt, FaEye } from "react-icons/fa";
 import Select from "react-select";
+import { Link, useNavigate } from "react-router-dom";
+import { InlineMath } from "react-katex"; // For inline math rendering
+import "katex/dist/katex.min.css"; // KaTeX styles
 
 const institutes = ["Institute A", "Institute B", "Institute C"];
 const subjects = ["Mathematics", "Science", "History", "ALL"];
@@ -19,18 +22,30 @@ const MockTestManagement = ({ user }) => {
     duration: "",
     questions: [
       {
+        index: 0, // Add index to the first question
         questionText: "",
         options: ["", "", "", ""],
         correctAnswer: "",
         image: null,
-        subtopic: "", // Add subtopic field to the question
+        subtopic: "",
       },
     ],
   });
+
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(1); // Starting index for the next question
   const [selectedImage, setSelectedImage] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showMainSubtopic, setShowMainSubtopic] = useState(false);
   const [fileInputValue, setFileInputValue] = useState(""); // Track file input value
+  const fileInputRef = useRef(null);
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [questionText, setQuestionText] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const navigate = useNavigate();
+
+  const handleInputChange = (e) => {
+    setQuestionText(e.target.value);
+  };
 
   const toggleSidebar = () => {
     setIsCollapsed((prev) => !prev);
@@ -65,18 +80,21 @@ const MockTestManagement = ({ user }) => {
 
   const handleQuestionChange = (index, field, value, optionIndex) => {
     const updatedQuestions = [...newTest.questions];
+
     if (field === "options") {
       updatedQuestions[index].options[optionIndex] = value;
     } else {
       updatedQuestions[index][field] = value;
     }
 
-    // Check if all options are filled
-    const allOptionsFilled = updatedQuestions[index].options.every(
-      (option) => option !== ""
+    // Check if any options are empty
+    const anyOptionEmpty = updatedQuestions[index].options.some(
+      (option) => option.trim() === ""
     );
-    if (allOptionsFilled) {
-      updatedQuestions[index].correctAnswer = ""; // Reset correct answer if options change
+
+    // Only reset correctAnswer if there's an empty option
+    if (anyOptionEmpty) {
+      updatedQuestions[index].correctAnswer = "";
     }
 
     setNewTest({ ...newTest, questions: updatedQuestions });
@@ -94,9 +112,8 @@ const MockTestManagement = ({ user }) => {
           questions: updatedQuestions,
         });
       };
-      reader.readAsDataURL(file); // Only read the file if it's not null
+      reader.readAsDataURL(file); // Read the file as a data URL
     } else {
-      // When file is null, reset the image for that question
       const updatedQuestions = newTest.questions.map((question, i) =>
         i === index ? { ...question, image: null } : question
       );
@@ -107,6 +124,7 @@ const MockTestManagement = ({ user }) => {
     }
   };
 
+  // Function to add a new question
   const addQuestion = () => {
     setNewTest({
       ...newTest,
@@ -117,10 +135,52 @@ const MockTestManagement = ({ user }) => {
           options: ["", "", "", ""],
           correctAnswer: "",
           image: null,
-          subtopic: "", // Add subtopic field to new question
+          subtopic: "", // Add subtopic field to the new question
+          subject: "", // Add subject field to the new question
         },
       ],
     });
+  };
+
+  // Function to handle the "Save and Next" button
+  const handleSaveAndNext = () => {
+    // Check if newTest or the required fields are undefined or empty
+    if (!newTest || !newTest.subject) {
+      console.error("Subject is missing in newTest.");
+      return;
+    }
+
+    // Log the newTest to check if subject and other properties are available
+    console.log("Saving and moving to the next question:", newTest);
+
+    // Save the current question data (e.g., saving questions)
+    // This can involve saving to local state, database, etc.
+    const savedQuestions = [...newTest.questions]; // Assuming you want to keep track of previous questions
+
+    // Increment the index for the next question
+    const nextQuestionIndex = currentQuestionIndex;
+
+    // Proceed to reset the state for the next question
+    setNewTest({
+      ...newTest, // Keep existing data
+      questions: [
+        ...savedQuestions, // Keep previously saved questions
+        {
+          index: nextQuestionIndex, // Set index for the new question
+          questionText: "", // Reset for the next question
+          options: ["", "", "", ""], // Reset options
+          correctAnswer: "", // Reset correct answer
+          image: null, // Reset image
+          subtopic: "", // Reset subtopic
+        },
+      ],
+    });
+
+    // Update the currentQuestionIndex to the next question
+    setCurrentQuestionIndex(nextQuestionIndex + 1);
+
+    // Optionally, focus on the next question if needed
+    // e.g., document.querySelector("input[name='questionText']").focus();
   };
 
   const handleDeleteQuestion = (index) => {
@@ -130,12 +190,11 @@ const MockTestManagement = ({ user }) => {
   };
 
   const handleAddTest = () => {
-    // Validate that all questions have a subtopic if the main subject is "ALL"
     const allQuestionsValid = newTest.questions.every((question) => {
       if (newTest.subject === "ALL") {
-        return question.subtopic !== ""; // Check if subtopic is selected
+        return question.subtopic !== "";
       }
-      return true; // If not "ALL", assume valid
+      return true;
     });
 
     if (!allQuestionsValid) {
@@ -145,22 +204,17 @@ const MockTestManagement = ({ user }) => {
       return;
     }
 
-    setMockTests([...mockTests, { ...newTest, id: mockTests.length + 1 }]);
-    setNewTest({
-      instituteNames: [],
-      domain: "",
-      subject: "",
-      duration: "",
-      questions: [
-        {
-          questionText: "",
-          options: ["", "", "", ""],
-          correctAnswer: "",
-          image: null,
-          subtopic: "", // Reset subtopic on new test
-        },
-      ],
-    });
+    setShowConfirmationModal(true); // Show modal if validation passes
+  };
+
+  const confirmSubmission = () => {
+    if (mockTests) {
+      setMockTests([...mockTests, { ...newTest, id: mockTests.length + 1 }]);
+      setShowModal(false);
+      navigate("/view"); // Navigate to the view page
+    } else {
+      console.error("mockTests is not defined or initialized as an array.");
+    }
   };
 
   const openModal = (image) => {
@@ -205,7 +259,7 @@ const MockTestManagement = ({ user }) => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-100">
+    <div className="flex flex-col min-h-screen">
       <div className="flex flex-row flex-grow">
         <Sidebar
           isCollapsed={isCollapsed}
@@ -224,9 +278,18 @@ const MockTestManagement = ({ user }) => {
           />
 
           <div className="p-6 md:p-8">
-            <h1 className="text-3xl font-bold mb-6 text-left">
-              Mock Test Management
-            </h1>
+            <div className="flex items-center justify-between mb-6">
+              <h1 className="text-3xl font-bold text-left">
+                Mock Test Management
+              </h1>
+              <Link to="/view">
+                {" "}
+                <FaEye
+                  className="cursor-pointer text-gray-600 hover:text-blue-500 transition-colors duration-300"
+                  size={24}
+                />
+              </Link>
+            </div>
             <div className="bg-white p-6 shadow-md rounded-lg mb-8">
               <h2 className="text-xl font-semibold mb-4">
                 Create New Mock Test
@@ -403,21 +466,31 @@ const MockTestManagement = ({ user }) => {
 
                   <div className="flex gap-4 mb-2">
                     {/* Question Text Area */}
-                    <div className="flex-grow">
+                    <div className="relative w-full">
+                      {" "}
+                      {/* Ensure the parent div has full width */}
+                      {/* Textarea for user input */}
                       <textarea
                         placeholder="Question Text"
-                        value={question.questionText}
-                        onChange={(e) =>
-                          handleQuestionChange(
-                            index,
-                            "questionText",
-                            e.target.value
-                          )
-                        }
+                        value={questionText}
+                        onChange={handleInputChange}
                         className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
                         rows="3"
                       />
+                      {/* Overlay div for rendering LaTeX in real-time */}
+                      <div
+                        className="absolute top-0 left-0 w-full h-full p-2 bg-transparent text-gray-700 pointer-events-none"
+                        style={{
+                          whiteSpace: "pre-wrap", // Preserve whitespace formatting
+                          wordWrap: "break-word",
+                          visibility: questionText ? "visible" : "hidden",
+                        }}
+                      >
+                        {/* Render LaTeX expressions in real-time using InlineMath */}
+                        <InlineMath>{questionText}</InlineMath>
+                      </div>
                     </div>
+
                     {/* Subtopic Dropdown for each question */}
                     <div className="flex-shrink-0">
                       <select
@@ -509,11 +582,14 @@ const MockTestManagement = ({ user }) => {
                     <div className="flex items-center gap-4">
                       <input
                         type="file"
+                        ref={fileInputRef} // Attach ref to input
                         onChange={(e) => {
-                          handleImageUpload(index, e.target.files[0]);
-                          setFileInputValue(e.target.value); // Update file input value to reflect the selected image
+                          const selectedFile = e.target.files[0];
+                          if (selectedFile) {
+                            handleImageUpload(index, selectedFile);
+                            setFileInputValue(selectedFile.name); // Update file input value to reflect the selected image name
+                          }
                         }}
-                        value={fileInputValue} // Bind the file input value to a state
                         className="border p-2 rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200 cursor-pointer"
                       />
                       {question.image && (
@@ -527,8 +603,10 @@ const MockTestManagement = ({ user }) => {
                           <button
                             onClick={() => {
                               removeImage(index); // Remove the image from the state
-                              handleImageUpload(index, null); // Pass null to handleImageUpload to reset the image
-                              setFileInputValue(""); // Reset the file input field
+                              setFileInputValue(""); // Clear the file name
+                              if (fileInputRef.current) {
+                                fileInputRef.current.value = null; // Clear file input using ref
+                              }
                             }}
                             className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full focus:outline-none"
                           >
@@ -541,20 +619,52 @@ const MockTestManagement = ({ user }) => {
                 </div>
               ))}
 
-              <div className="flex justify-between mt-4">
-                <button
-                  onClick={addQuestion}
-                  className="bg-blue-500 text-white p-2 rounded-md"
-                >
-                  Add Question
-                </button>
+              <div className="flex justify-between items-center mt-4">
+                <div className="flex gap-2">
+                  <button
+                    onClick={addQuestion}
+                    className="bg-blue-500 text-white p-2 rounded-md"
+                  >
+                    Add Question
+                  </button>
+
+                  <button
+                    onClick={handleSaveAndNext}
+                    className="bg-teal-500 text-white p-2 rounded-md"
+                  >
+                    Save and Next
+                  </button>
+                </div>
 
                 <button
                   onClick={handleAddTest}
                   className="bg-green-500 text-white p-2 rounded-md"
                 >
-                  Save Mock Test
+                  Submit Mock Test
                 </button>
+                {/* Confirmation Modal */}
+                {showConfirmationModal && (
+                  <div className="fixed inset-0 flex items-center justify-center bg-gray-700 bg-opacity-75">
+                    <div className="bg-white p-6 rounded-lg shadow-md text-center">
+                      <p>
+                        All questions are submitted. Do you want to proceed to
+                        the view page?
+                      </p>
+                      <button
+                        onClick={confirmSubmission}
+                        className="bg-blue-500 text-white px-4 py-2 rounded-md mt-4"
+                      >
+                        Yes
+                      </button>
+                      <button
+                        onClick={() => setShowConfirmationModal(false)}
+                        className="bg-gray-300 text-gray-800 px-4 py-2 rounded-md mt-4 ml-2"
+                      >
+                        No
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
