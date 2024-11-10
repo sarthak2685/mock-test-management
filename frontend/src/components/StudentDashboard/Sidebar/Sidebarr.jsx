@@ -1,5 +1,5 @@
 import React from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { FiUsers, FiBarChart } from "react-icons/fi";
 import { HomeIcon, ArrowLeftOnRectangleIcon } from "@heroicons/react/24/solid";
 import { FaTimes } from "react-icons/fa"; 
@@ -13,16 +13,25 @@ const Sidebarr = ({ isCollapsed, toggleSidebar }) => {
     navigate("/login");
   };
 
+  const handleHomeNavigation = () => {
+    // Set login cookies here
+    document.cookie = "userLoggedIn=true; path=/;";
+
+    // Navigate to the home page
+    navigate("/");
+  };
   return (
     <aside
       className={`bg-[#007bff] text-white fixed top-0 left-0 w-64 h-screen p-4 flex flex-col transition-transform duration-300 ${
         isCollapsed ? "-translate-x-full" : "translate-x-0"
       }`}
     >
+    
       <div className="flex items-center justify-between p-2 rounded-md mb-7">
-        <span className="text-2xl font-bold text-white">Mock Period</span>
-
-        {/* Show close button only in mobile view */}
+      <button onClick={handleHomeNavigation}>
+          <span className="text-2xl font-bold text-white">Mock Period</span>
+        </button>
+                {/* Show close button only in mobile view */}
         <button
           onClick={toggleSidebar}
           className={`text-white ${isCollapsed ? "hidden" : "block"} md:hidden`}
