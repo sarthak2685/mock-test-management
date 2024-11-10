@@ -20,7 +20,13 @@ const Login = () => {
       const response = await axios.post(`${config.apiUrl}/admin-student-owner/login/`, {
         mobileno: mobileNumber,
         password: password,
-      });
+      },
+      {
+      headers:{
+        'Content-Type': 'application/json',
+      }
+    }
+    );
 
       if (response.data.data && response.data.data.type) {
         const { type, user, mobileNumber,token } = response.data.data;
@@ -35,7 +41,7 @@ const Login = () => {
         } else if (type === 'admin') {
           navigate('/admin');
         } else if (type === 'student') {
-          navigate('/student-dashboard');
+          navigate('/');
         } else {
           setError("Unknown role. Please contact support.");
         }
