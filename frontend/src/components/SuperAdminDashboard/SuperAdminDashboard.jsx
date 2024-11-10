@@ -8,7 +8,7 @@ const SuperAdminDashboard = () => {
 
   useEffect(() => {
     // Retrieve user data from localStorage
-    const storedUser = localStorage.getItem('user');
+    const storedUser = localStorage.getItem("user");
     console.log("Stored User Data:", storedUser); // Log stored data
 
     if (storedUser) {
@@ -16,15 +16,44 @@ const SuperAdminDashboard = () => {
       setUser(parsedUser); // Set the user state
     }
   }, []);
-  
 
   const instituteData = [
-    { id: 1, name: "Tech University", duration: "1 Year", subscription: "Premium" },
-    { id: 2, name: "Green Valley College", duration: "6 Months", subscription: "Standard" },
-    { id: 3, name: "Harbor Institute", duration: "2 Years", subscription: "Enterprise" },
-    { id: 4, name: "Oceanic Academy", duration: "1 Year", subscription: "Standard" },
-    { id: 5, name: "Skyline Institute", duration: "3 Months", subscription: "Basic" },
-    { id: 6, name: "Mountainview College", duration: "1 Year", subscription: "Premium" },
+    {
+      id: 1,
+      name: "Tech University",
+      duration: "1 Year",
+      subscription: "Premium",
+    },
+    {
+      id: 2,
+      name: "Green Valley College",
+      duration: "6 Months",
+      subscription: "Standard",
+    },
+    {
+      id: 3,
+      name: "Harbor Institute",
+      duration: "2 Years",
+      subscription: "Enterprise",
+    },
+    {
+      id: 4,
+      name: "Oceanic Academy",
+      duration: "1 Year",
+      subscription: "Standard",
+    },
+    {
+      id: 5,
+      name: "Skyline Institute",
+      duration: "3 Months",
+      subscription: "Basic",
+    },
+    {
+      id: 6,
+      name: "Mountainview College",
+      duration: "1 Year",
+      subscription: "Premium",
+    },
   ];
 
   const toggleSidebar = () => {
@@ -62,7 +91,7 @@ const SuperAdminDashboard = () => {
         >
           <DashboardHeader user={user} toggleSidebar={toggleSidebar} />
 
-          <div className="p-3 md:p-4">
+          <div className="p-6 md:p-8">
             <h1 className="text-3xl md:text-3xl font-bold mb-6 text-left">
               Super Admin Dashboard
             </h1>
