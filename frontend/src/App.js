@@ -25,6 +25,7 @@ import StudentPerformances from "./components/StudentDashboard/StudentPerformanc
 import Profile from "./components/StudentDashboard/Profile.jsx";
 import Help from "./components/AdminDasboard/Help.jsx";
 import View from "./components/SuperAdminDashboard/View.jsx";
+import AdminList from "./components/SuperAdminDashboard/AdminList.jsx";
 import Chapters from "./components/Home/Chapeter.jsx";
 
 function App() {
@@ -55,6 +56,7 @@ function App() {
         <Route path="/create-test" element={<MockTestManagement />} />
         <Route path="/performance" element={<ChartComponent />} />
         <Route path="/admin-management" element={<AdminManagement />} />
+        <Route path="/admins-list" element={<AdminList />} />
         <Route
           path="/student-performance/:id"
           element={<StudentPerformance />}

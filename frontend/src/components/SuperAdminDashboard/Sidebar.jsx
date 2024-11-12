@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { FiUsers, FiBarChart } from "react-icons/fi";
 import { HomeIcon, ArrowLeftOnRectangleIcon } from "@heroicons/react/24/solid";
 import { FaTimes } from "react-icons/fa"; // Importing Font Awesome close icon
+import { HiUserGroup } from "react-icons/hi"; // Importing HiUserGroup icon for "Admins List"
 
 const Sidebar = ({ isCollapsed, toggleSidebar }) => {
   const navigate = useNavigate();
@@ -57,6 +58,19 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
           <span className="block">{isCollapsed ? "" : "Admin Management"}</span>
         </NavLink>
 
+        {/* Admins List Section with HiUserGroup icon */}
+        <NavLink
+          to="/admins-list"
+          className={({ isActive }) =>
+            `flex items-center py-2 px-4 mt-4 rounded hover:bg-blue-700 ${
+              isActive ? "bg-blue-700" : ""
+            }`
+          }
+        >
+          <HiUserGroup className="mr-2" /> {/* Changed to HiUserGroup icon */}
+          <span className="block">{isCollapsed ? "" : "Admins List"}</span>
+        </NavLink>
+
         <NavLink
           to="/create-test"
           className={({ isActive }) =>
@@ -66,7 +80,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
           }
         >
           <FiBarChart className="mr-2" />
-          <span className="block">{isCollapsed ? "" : "Create Mock Test"}</span>
+          <span className="block">{isCollapsed ? "" : "Create Test"}</span>
         </NavLink>
 
         {/* Separator Line */}
