@@ -1,31 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
+import { useUser } from './UserContext/UserContext';
+
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
+  const { users, logout } = useUser();
 
+
+  
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem('user'));
-    console.log(userData);
     if (userData) {
       setUser(userData);
-      Cookies.set('loginToken', 'true', { expires: 1 }); // Sets a login cookie
     }
-  }, []);
+  }, []); 
+  
 
-  const toggleMobileMenu = () => setMobileMenuOpen((prev) => !prev);
-  const toggleProfileMenu = () => setProfileMenuOpen((prev) => !prev);
-
+  // Function to trigger the logout process
   const handleLogout = () => {
-    localStorage.removeItem('user');
-    Cookies.remove('loginToken'); // Clear login cookies
-    setUser(null);
-    navigate('/login'); // Redirect to login after logout
+    logout();
+    navigate('/login');
+    //reload
+    window.location.reload();
   };
+
+  // Toggle the mobile menu visibility
+  const toggleMobileMenu = () => setMobileMenuOpen((prev) => !prev);
+
+  const toggleProfileMenu = () => setProfileMenuOpen((prev) => !prev);
 
   return (
     <nav className="bg-[#FCFCFC] text-black shadow-md border-b border-gray-200">
