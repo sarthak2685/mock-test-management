@@ -4,6 +4,7 @@ import {
   Route,
   useLocation,
 } from "react-router-dom";
+import { UserProvider } from '../src/components/UserContext/UserContext.js';
 import Navbar from "./components/Navbar.jsx";
 import Footer from "./components/Footer.jsx";
 import Home from "./components/Home.jsx";
@@ -38,6 +39,7 @@ function App() {
     ["/", "/login", "/contact"].includes(location.pathname);
 
   return (
+    <UserProvider>
     <div className="App">
       {/* Conditional Navbar and Footer */}
       {isNavbarFooterVisible && <Navbar />}
@@ -70,6 +72,7 @@ function App() {
 
       {isNavbarFooterVisible && <Footer />}
     </div>
+    </UserProvider>
   );
 }
 

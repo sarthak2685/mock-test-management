@@ -2,15 +2,17 @@ import React from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { FiUsers, FiBarChart } from "react-icons/fi";
 import { HomeIcon, ArrowLeftOnRectangleIcon } from "@heroicons/react/24/solid";
-import { FaTimes } from "react-icons/fa"; 
+import { FaTimes } from "react-icons/fa";
+import { useUser } from '../../../components/UserContext/UserContext';
+
 
 const Sidebarr = ({ isCollapsed, toggleSidebar }) => {
+  const { user, logout } = useUser();
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem("userData");
-    // Navigate to the login page
-    navigate("/login");
+    logout();
+    navigate('/login');
   };
 
   const handleHomeNavigation = () => {

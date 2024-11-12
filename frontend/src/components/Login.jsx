@@ -5,12 +5,14 @@ import { useNavigate } from 'react-router-dom';
 import config from '../config';
 import illustrationImage from '../assets/login.webp';
 
+
 const Login = () => {
   const [mobileNumber, setMobileNumber] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
