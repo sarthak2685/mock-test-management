@@ -6,26 +6,26 @@ function Subscription() {
   const plans = [
     {
       name: "Basic Plan",
-      price: "₹450",
+      price: "₹449",
       description: "Ideal for institutes with up to 50 students per month.",
       features: [
         { text: "Mock tests accessible for up to 50 students", available: true },
-        { text: "500+ Practice Questions for diverse topics", available: true },
-        { text: "Detailed Explanations for correct answers", available: false },
-        { text: "Basic Tracking of student progress", available: true },
-        { text: "Standard Support for setup and queries", available: null },
+        { text: "Full length Mock Test 10+", available: true },
+        { text: "chapter wise mock test" , available: true },
+        { text: "anylize growth and low scoring subject", available: true },
+        { text: "Instuite / Coaching Can take group mock test", available: true },
       ],
     },
     {
       name: "Standard Plan",
-      price: "₹599",
-      description: "Perfect for institutes with up to 100 students per month.",
+      price: "₹649",
+      description: "Perfect for institutes with up to 80 students per month.",
       features: [
-        { text: "Mock tests accessible for up to 100 students", available: true },
-        { text: "1000+ Practice Questions across subjects", available: true },
-        { text: "Detailed Explanations for all questions", available: true },
-        { text: "Advanced Tracking with performance insights", available: true },
-        { text: "Priority Support for faster assistance", available: null },
+        { text: "Mock tests accessible for up to 80 students", available: true },
+        { text: "Full length Mock Test 10+", available: true },
+        { text: "chapter wise mock test", available: true },
+        { text: "anylize growth and low scoring subject", available: true },
+        { text: "Instuite / Coaching Can take group mock test", available: true },
       ],
     },
   ];

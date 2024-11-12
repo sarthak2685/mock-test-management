@@ -7,6 +7,7 @@ import Message from './Home/message.jsx'
 import FAQ from "./Home/faq.jsx";
 import FreeMock from "./Home/free-mock.jsx";
 import Cookies from 'js-cookie';
+import Subject from "./Home/Subject.jsx";
 
 
 function Home() {
@@ -32,6 +33,7 @@ function Home() {
       <Banner />
       <Exam />
       {shouldRenderMockTest && <FreeMock />}
+      {shouldRenderMockTest &&< Subject />}
       <WhyUs />
       {shouldRenderMockTest &&<Subscription />}
       <FAQ />

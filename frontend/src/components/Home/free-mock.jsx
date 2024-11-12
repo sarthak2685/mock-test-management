@@ -101,7 +101,7 @@ const FreeMock = () => {
       },
     ],
   };
-  
+
 
   return (
     <div ref={ref} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -125,15 +125,15 @@ const FreeMock = () => {
               <h3 className="text-xl font-bold">{exam.name}</h3>
               <p className="font-semibold">{exam.exam}</p>
               <div className="flex items-start flex-col">
-              <div className="flex items-start mt-2">
-                <FaQuestionCircle className="text-blue-500 text-2xl mr-2 w-8" />
-                <p className="font-bold">Questions: <span className="font-semibold">{exam.questions}</span></p>
-              </div>
+                <div className="flex items-start mt-2">
+                  <FaQuestionCircle className="text-blue-500 text-2xl mr-2 w-8" />
+                  <p className="font-bold">Questions: <span className="font-semibold">{exam.questions}</span></p>
+                </div>
 
-              <div className="flex items-start mt-2">
-                <AiOutlineClockCircle className="text-blue-500 text-2xl mr-2 w-8" />
-                <p className="font-bold">Test Duration: <span className="font-semibold">{exam.timing}</span></p>
-              </div>
+                <div className="flex items-start mt-2">
+                  <AiOutlineClockCircle className="text-blue-500 text-2xl mr-2 w-8" />
+                  <p className="font-bold">Test Duration: <span className="font-semibold">{exam.timing}</span></p>
+                </div>
               </div>
 
               <Link to="/mock-demo">
