@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom"; // Import Link for navigation
+import { Link, useNavigate } from "react-router-dom";
+import { useUser } from "../UserContext/UserContext"; // Import user context
 
 // Import logos (ensure correct paths)
 import sscLogo from "../../assets/ssc-logo.png";
@@ -29,6 +30,8 @@ const logoMap = {
 const Exams = () => {
   const [count, setCount] = useState(1);
   const ref = useRef(null);
+  const { user } = useUser(); // Get user from context
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = (entries) => {
@@ -63,6 +66,15 @@ const Exams = () => {
     };
   }, [ref]);
 
+  // Handle card click based on user's status
+  const handleCardClick = (exam) => {
+    if (user && user.type === "student") {
+      navigate("/mock-test", { state: { exam } });
+    } else {
+      navigate("/login");
+    }
+  };
+
   return (
     <div ref={ref} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <h1 className="text-5xl font-extrabold text-black mb-4 text-center">
@@ -76,8 +88,16 @@ const Exams = () => {
         {examData.map((exam, index) => (
           <div
             key={index}
-            className="bg-white border rounded-md shadow-lg p-4 flex flex-col items-center transition-transform transform hover:scale-105 hover:shadow-2xl duration-300 ease-in-out"
+            className="relative bg-white border rounded-md shadow-lg p-4 flex flex-col items-center transition-transform transform hover:scale-105 hover:shadow-2xl duration-300 ease-in-out cursor-pointer"
+            onClick={() => handleCardClick(exam)}
           >
+            {/* Ribbon with Lock Icon */}
+            {(!user || user.type !== "student") && (
+                <div className="absolute top-0 right-0 -mr-3 -mt-3 bg-red-400 text-xs font-bold text-white py-1 px-3 rounded-full shadow-md">
+                Locked
+              </div>
+            )}
+
             <div className="w-24 h-24 rounded-full mb-4 flex items-center justify-center">
               <img
                 src={logoMap[exam.exam]}
@@ -90,13 +110,6 @@ const Exams = () => {
           </div>
         ))}
 
-        {/* Add a card that navigates to the MockDemo page
-        <Link to="/mock-demo">
-          <div className="bg-white border rounded-md shadow-lg p-4 flex flex-col items-center transition-transform transform hover:scale-105 hover:shadow-2xl duration-300 ease-in-out">
-            <h3 className="text-xl font-bold text-gray-800">Take a Mock Test</h3>
-            <p className="text-gray-600">Test your knowledge with our mock test.</p>
-          </div>
-        </Link> */}
       </div>
     </div>
   );

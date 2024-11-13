@@ -11,6 +11,12 @@ const institutes = ["Institute A", "Institute B", "Institute C"];
 const subjects = ["Mathematics", "Science", "History", "ALL"];
 const subtopics = ["Subtopic 1", "Subtopic 2", "Subtopic 3"];
 const domains = ["Domain 1", "Domain 2", "Domain 3"];
+const chapterOptions = [
+  { value: "chapter1", label: "Chapter 1" },
+  { value: "chapter2", label: "Chapter 2" },
+  { value: "chapter3", label: "Chapter 3" },
+  // Add more chapters as needed
+];
 
 const MockTestManagement = ({ user }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -20,6 +26,8 @@ const MockTestManagement = ({ user }) => {
     domain: "",
     subject: "",
     duration: "",
+    testName: "", // Add testName field
+    chapter: "ALL", // Set chapter to "ALL" by default
     questions: [
       {
         index: 0, // Add index to the first question
@@ -30,6 +38,8 @@ const MockTestManagement = ({ user }) => {
         subtopic: "",
       },
     ],
+    correctMark: "", // Initialize the correct mark field
+    negativeMark: "", // Initialize the negative mark field
   });
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(1); // Starting index for the next question
@@ -43,9 +53,30 @@ const MockTestManagement = ({ user }) => {
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
 
+  const [isLatexEnabled, setIsLatexEnabled] = useState(false);
+  const [latexStartIndex, setLatexStartIndex] = useState(null);
+
   const handleInputChange = (e) => {
-    setQuestionText(e.target.value);
+    const text = e.target.value;
+    setQuestionText(text);
   };
+
+  const handleToggleLatex = () => {
+    if (!isLatexEnabled) {
+      setLatexStartIndex(questionText.length); // Set the start for LaTeX rendering
+    } else {
+      setLatexStartIndex(null); // Reset when LaTeX is disabled
+    }
+    setIsLatexEnabled(!isLatexEnabled);
+  };
+
+  // Split text at the LaTeX starting point if enabled
+  const normalText =
+    latexStartIndex !== null
+      ? questionText.slice(0, latexStartIndex)
+      : questionText;
+  const latexText =
+    latexStartIndex !== null ? questionText.slice(latexStartIndex) : "";
 
   const toggleSidebar = () => {
     setIsCollapsed((prev) => !prev);
@@ -64,18 +95,42 @@ const MockTestManagement = ({ user }) => {
 
   const handleTestChange = (e) => {
     const { name, value } = e.target;
+
     // Show main subtopic dropdown when "ALL" is selected in subject dropdown
     if (name === "subject") {
       setShowMainSubtopic(value === "ALL");
     }
-    setNewTest({ ...newTest, [name]: value });
+
+    // Update the newTest state
+    setNewTest((prevTest) => ({
+      ...prevTest,
+      [name]: value, // Dynamically set the value of any field
+    }));
   };
 
-  const handleInstituteChange = (selectedOptions) => {
-    const selectedInstitutes = selectedOptions
-      ? selectedOptions.map((option) => option.value)
-      : [];
-    setNewTest({ ...newTest, instituteNames: selectedInstitutes });
+  const [selectedOptions, setSelectedOptions] = useState([]); // track selected options
+
+  const handleInstituteChange = (options) => {
+    // Check if "Select All" or "Deselect All" was clicked
+    if (options.some((option) => option.value === "selectAll")) {
+      // Select all options (excluding "Select All" and "Deselect All")
+      setSelectedOptions(instituteOptions);
+      setNewTest({
+        ...newTest,
+        instituteNames: instituteOptions.map((option) => option.value),
+      });
+    } else if (options.some((option) => option.value === "deselectAll")) {
+      // Deselect all options
+      setSelectedOptions([]);
+      setNewTest({ ...newTest, instituteNames: [] });
+    } else {
+      // Otherwise, handle normally
+      setSelectedOptions(options);
+      const selectedInstitutes = options
+        ? options.map((option) => option.value)
+        : [];
+      setNewTest({ ...newTest, instituteNames: selectedInstitutes });
+    }
   };
 
   const handleQuestionChange = (index, field, value, optionIndex) => {
@@ -150,15 +205,29 @@ const MockTestManagement = ({ user }) => {
       return;
     }
 
+    const currentQuestion = newTest.questions[currentQuestionIndex];
+
+    // Validate that all required fields are filled
+    if (
+      !currentQuestion.questionText ||
+      currentQuestion.options.some((option) => option.trim() === "") ||
+      !currentQuestion.correctAnswer
+    ) {
+      // Display a message or alert to prompt the user to fill in the data
+      alert(
+        "Please fill in all the required fields (Question Text, Options, Correct Answer) before proceeding."
+      );
+      return; // Prevent moving to the next question
+    }
+
     // Log the newTest to check if subject and other properties are available
     console.log("Saving and moving to the next question:", newTest);
 
     // Save the current question data (e.g., saving questions)
-    // This can involve saving to local state, database, etc.
     const savedQuestions = [...newTest.questions]; // Assuming you want to keep track of previous questions
 
     // Increment the index for the next question
-    const nextQuestionIndex = currentQuestionIndex;
+    const nextQuestionIndex = currentQuestionIndex + 1;
 
     // Proceed to reset the state for the next question
     setNewTest({
@@ -177,7 +246,7 @@ const MockTestManagement = ({ user }) => {
     });
 
     // Update the currentQuestionIndex to the next question
-    setCurrentQuestionIndex(nextQuestionIndex + 1);
+    setCurrentQuestionIndex(nextQuestionIndex);
 
     // Optionally, focus on the next question if needed
     // e.g., document.querySelector("input[name='questionText']").focus();
@@ -264,7 +333,7 @@ const MockTestManagement = ({ user }) => {
         <Sidebar
           isCollapsed={isCollapsed}
           toggleSidebar={toggleSidebar}
-          className="hidden md:block"
+          className={`md:block ${isCollapsed ? "hidden" : "block"} w-full`}
         />
 
         <div
@@ -278,35 +347,40 @@ const MockTestManagement = ({ user }) => {
           />
 
           <div className="p-6 md:p-8">
-            <div className="flex items-center justify-between mb-6">
-              <h1 className="text-3xl font-bold text-left">
-                Mock Test Management
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-left">
+                Test Management
               </h1>
               <Link to="/view">
-                {" "}
                 <FaEye
                   className="cursor-pointer text-gray-600 hover:text-blue-500 transition-colors duration-300"
-                  size={24}
+                  size={20} // Adjusted icon size for mobile
                 />
               </Link>
             </div>
-            <div className="bg-white p-6 shadow-md rounded-lg mb-8">
-              <h2 className="text-xl font-semibold mb-4">
-                Create New Mock Test
+
+            <div className="bg-white p-4 sm:p-6 shadow-md rounded-lg mb-8">
+              <h2 className="text-lg sm:text-xl font-semibold mb-3">
+                Create New Test
               </h2>
 
               {/* Dropdowns Layout */}
               <div className="mb-4">
-                <div className="flex gap-4 mb-4">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4">
                   {/* Institute Name Multi-Select */}
                   <div className="flex-grow">
                     <Select
                       isMulti
-                      options={instituteOptions}
+                      options={[
+                        { value: "selectAll", label: "Select All" },
+                        { value: "deselectAll", label: "Deselect All" },
+                        ...instituteOptions,
+                      ]}
                       onChange={handleInstituteChange}
                       className="basic-multi-select"
                       classNamePrefix="select"
                       placeholder="Select Institute(s)"
+                      value={selectedOptions} // track current selected options
                       styles={{
                         control: (base) => ({
                           ...base,
@@ -315,6 +389,25 @@ const MockTestManagement = ({ user }) => {
                           "&:hover": {
                             borderColor: "blue",
                           },
+                        }),
+                        option: (base, { data }) => ({
+                          ...base,
+                          display:
+                            data.value === "selectAll" ||
+                            data.value === "deselectAll"
+                              ? "inline-block"
+                              : "block",
+                          width:
+                            data.value === "selectAll" ||
+                            data.value === "deselectAll"
+                              ? "50%"
+                              : "100%", // Ensure equal width for select/deselect options
+                          textAlign: "center", // Center-align the labels
+                        }),
+                        menu: (base) => ({
+                          ...base,
+                          display: "flex",
+                          flexDirection: "column",
                         }),
                       }}
                     />
@@ -340,9 +433,48 @@ const MockTestManagement = ({ user }) => {
                   </div>
                 </div>
 
-                <div className="flex gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  {/* Test Name Input */}
+                  <div>
+                    <input
+                      type="text"
+                      name="testName"
+                      value={newTest.testName}
+                      onChange={(e) => {
+                        const updatedTestName = e.target.value;
+                        setNewTest((prevTest) => ({
+                          ...prevTest,
+                          testName: updatedTestName,
+                        }));
+                      }}
+                      placeholder="Enter Test Name/Chapter Name"
+                      className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
+                    />
+                  </div>
+
+                  {/* Duration Input */}
+                  <div>
+                    <select
+                      name="duration"
+                      value={newTest.duration}
+                      onChange={handleTestChange}
+                      className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
+                    >
+                      <option value="" disabled>
+                        Select Duration
+                      </option>
+                      {["30 mins", "60 mins", "90 mins", "120 mins"].map(
+                        (duration) => (
+                          <option key={duration} value={duration}>
+                            {duration}
+                          </option>
+                        )
+                      )}
+                    </select>
+                  </div>
+
                   {/* Subject Dropdown */}
-                  <div className="flex-grow">
+                  <div>
                     <select
                       name="subject"
                       value={newTest.subject}
@@ -386,33 +518,75 @@ const MockTestManagement = ({ user }) => {
                     </select>
                   </div>
 
-                  {/* Duration Input */}
-                  <div className="flex-grow">
+                  {/* Chapter Dropdown */}
+                  <div>
                     <select
-                      name="duration"
-                      value={newTest.duration}
-                      onChange={handleTestChange}
+                      name="chapter"
+                      value={newTest.chapter || "ALL"} // Default to "ALL" if newTest.chapter is empty
+                      onChange={(e) => {
+                        const selectedChapter = e.target.value;
+                        setNewTest((prevTest) => ({
+                          ...prevTest,
+                          chapter: selectedChapter,
+                        }));
+                      }}
                       className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
                     >
-                      <option value="" disabled>
-                        Select Duration
-                      </option>
-                      {/* Replace the array below with your desired time options */}
-                      {["30 mins", "60 mins", "90 mins", "120 mins"].map(
-                        (duration) => (
-                          <option key={duration} value={duration}>
-                            {duration}
-                          </option>
-                        )
-                      )}
+                      {/* "All" option */}
+                      <option value="ALL">All Chapter</option>
+                      {/* Other chapter options */}
+                      {chapterOptions.map((chapter) => (
+                        <option key={chapter.value} value={chapter.value}>
+                          {chapter.label}
+                        </option>
+                      ))}
                     </select>
+                  </div>
+                </div>
+
+                {/* Correct Mark and Negative Mark Inputs in Same Row */}
+                <div className="flex gap-4 mt-3">
+                  {/* Correct Mark Input */}
+                  <div className="flex-grow">
+                    <input
+                      type="number"
+                      name="correctMark"
+                      value={newTest.correctMark}
+                      onChange={(e) => {
+                        const updatedCorrectMark = e.target.value;
+                        setNewTest((prevTest) => ({
+                          ...prevTest,
+                          correctMark: updatedCorrectMark,
+                        }));
+                      }}
+                      placeholder="Correct Mark"
+                      className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
+                    />
+                  </div>
+
+                  {/* Negative Mark Input */}
+                  <div className="flex-grow">
+                    <input
+                      type="number"
+                      name="negativeMark"
+                      value={newTest.negativeMark}
+                      onChange={(e) => {
+                        const updatedNegativeMark = e.target.value;
+                        setNewTest((prevTest) => ({
+                          ...prevTest,
+                          negativeMark: updatedNegativeMark,
+                        }));
+                      }}
+                      placeholder="Negative Mark"
+                      className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
+                    />
                   </div>
                 </div>
 
                 {/* Show main subtopic dropdown when "ALL" is selected */}
                 {newTest.subject === "ALL" && (
-                  <div className="mt-4">
-                    <h3 className="text-md font-semibold mb-2">
+                  <div className="mt-3 sm:mt-4">
+                    <h3 className="text-sm sm:text-md font-semibold mb-2">
                       Select Subtopic for Mock Test
                     </h3>
                     <select
@@ -446,53 +620,64 @@ const MockTestManagement = ({ user }) => {
             </div>
 
             {/* Questions Section */}
-            <div className="bg-white p-6 shadow-md rounded-lg mb-8">
-              <h2 className="text-xl font-semibold mb-4">Questions</h2>
+            <div className="bg-white p-3 sm:p-6 shadow-md rounded-lg mb-3 sm:mb-8">
+              <h2 className="text-md sm:text-xl font-semibold mb-2 sm:mb-4">
+                Questions
+              </h2>
 
               {newTest.questions.map((question, index) => (
                 <div
                   key={index}
-                  className="mb-4 border p-4 rounded-md shadow-md bg-gray-50"
+                  className="mb-2 sm:mb-4 border p-2 sm:p-4 rounded-md shadow-md bg-gray-50"
                 >
-                  <div className="flex justify-between items-center mb-2">
-                    <h4 className="font-bold text-lg">Question {index + 1}</h4>
+                  <div className="flex justify-between items-center mb-1 sm:mb-2">
+                    <h4 className="font-semibold text-sm sm:text-lg">
+                      Question {index + 1}
+                    </h4>
                     <button
                       onClick={() => handleDeleteQuestion(index)}
-                      className="text-red-500 hover:underline"
+                      className="text-red-500 text-xs sm:text-base hover:underline"
                     >
                       <FaTrashAlt />
                     </button>
                   </div>
 
-                  <div className="flex gap-4 mb-2">
+                  <div className="flex flex-col sm:flex-row gap-1 sm:gap-4 mb-1 sm:mb-2">
                     {/* Question Text Area */}
                     <div className="relative w-full">
-                      {" "}
-                      {/* Ensure the parent div has full width */}
-                      {/* Textarea for user input */}
                       <textarea
                         placeholder="Question Text"
                         value={questionText}
                         onChange={handleInputChange}
-                        className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
+                        className="border p-1 sm:p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 text-xs sm:text-base"
                         rows="3"
                       />
-                      {/* Overlay div for rendering LaTeX in real-time */}
+
+                      {/* Toggle for LaTeX Rendering */}
+                      <button
+                        onClick={handleToggleLatex}
+                        className="text-xs mt-2 text-blue-500 underline"
+                      >
+                        {isLatexEnabled ? "Disable LaTeX" : "Enable LaTeX"}
+                      </button>
+
+                      {/* Inline LaTeX Rendering */}
                       <div
-                        className="absolute top-0 left-0 w-full h-full p-2 bg-transparent text-gray-700 pointer-events-none"
+                        className="absolute top-0 left-0 w-full h-full p-1 sm:p-2 text-gray-700 pointer-events-none transition-opacity opacity-100"
                         style={{
-                          whiteSpace: "pre-wrap", // Preserve whitespace formatting
+                          whiteSpace: "pre-wrap",
                           wordWrap: "break-word",
-                          visibility: questionText ? "visible" : "hidden",
                         }}
                       >
-                        {/* Render LaTeX expressions in real-time using InlineMath */}
-                        <InlineMath>{questionText}</InlineMath>
+                        {normalText}
+                        {isLatexEnabled && latexText && (
+                          <InlineMath>{latexText}</InlineMath>
+                        )}
                       </div>
                     </div>
 
-                    {/* Subtopic Dropdown for each question */}
-                    <div className="flex-shrink-0">
+                    {/* Subtopic Dropdown */}
+                    <div className="flex-shrink-0 w-full sm:w-auto">
                       <select
                         value={question.subtopic}
                         onChange={(e) =>
@@ -502,12 +687,12 @@ const MockTestManagement = ({ user }) => {
                             e.target.value
                           )
                         }
-                        className={`border p-2 rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200 ${
+                        className={`border p-1 sm:p-2 w-full sm:w-auto rounded-md focus:outline-none focus:ring focus:ring-blue-400 text-xs sm:text-base ${
                           newTest.subject === "ALL"
                             ? ""
                             : "bg-gray-200 cursor-not-allowed"
                         }`}
-                        disabled={newTest.subject !== "ALL"} // Disable when subject is not ALL
+                        disabled={newTest.subject !== "ALL"}
                       >
                         <option value="" disabled>
                           Select Subtopic
@@ -521,8 +706,8 @@ const MockTestManagement = ({ user }) => {
                     </div>
                   </div>
 
-                  {/* Options Input - Align options horizontally */}
-                  <div className="flex gap-4 mb-2">
+                  {/* Options Input */}
+                  <div className="flex flex-col sm:flex-row gap-1 sm:gap-4 mb-1 sm:mb-2">
                     {question.options.map((option, optionIndex) => (
                       <div key={optionIndex} className="flex-grow">
                         <input
@@ -537,14 +722,14 @@ const MockTestManagement = ({ user }) => {
                               optionIndex
                             )
                           }
-                          className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
+                          className="border p-1 sm:p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 text-xs sm:text-base"
                         />
                       </div>
                     ))}
                   </div>
 
                   {/* Correct Answer Dropdown */}
-                  <div className="flex gap-4 mb-2">
+                  <div className="flex flex-col sm:flex-row gap-1 sm:gap-4 mb-1 sm:mb-2">
                     <select
                       value={question.correctAnswer}
                       onChange={(e) =>
@@ -557,7 +742,7 @@ const MockTestManagement = ({ user }) => {
                       disabled={question.options.some(
                         (option) => option.trim() === ""
                       )}
-                      className={`border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200 ${
+                      className={`border p-1 sm:p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 text-xs sm:text-base ${
                         question.options.some((option) => option.trim() === "")
                           ? "bg-gray-200 cursor-not-allowed"
                           : ""
@@ -576,10 +761,10 @@ const MockTestManagement = ({ user }) => {
 
                   {/* Image Upload Section */}
                   <div className="mt-4">
-                    <label className="block text-gray-700 font-semibold mb-2">
+                    <label className="block text-gray-700 font-semibold mb-2 text-sm sm:text-base">
                       Upload Image
                     </label>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4 flex-col sm:flex-row">
                       <input
                         type="file"
                         ref={fileInputRef} // Attach ref to input
@@ -590,14 +775,14 @@ const MockTestManagement = ({ user }) => {
                             setFileInputValue(selectedFile.name); // Update file input value to reflect the selected image name
                           }
                         }}
-                        className="border p-2 rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200 cursor-pointer"
+                        className="border p-1 sm:p-2 rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200 cursor-pointer text-xs sm:text-sm"
                       />
                       {question.image && (
                         <div className="relative">
                           <img
                             src={question.image}
                             alt="Uploaded"
-                            className="h-32 w-32 object-cover rounded-md shadow-md cursor-pointer"
+                            className="h-20 w-20 sm:h-32 sm:w-32 object-cover rounded-md shadow-md cursor-pointer"
                             onClick={() => openModal(question.image)}
                           />
                           <button
@@ -608,7 +793,7 @@ const MockTestManagement = ({ user }) => {
                                 fileInputRef.current.value = null; // Clear file input using ref
                               }
                             }}
-                            className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full focus:outline-none"
+                            className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full focus:outline-none text-xs sm:text-sm"
                           >
                             <FaTrashAlt />
                           </button>
@@ -619,49 +804,51 @@ const MockTestManagement = ({ user }) => {
                 </div>
               ))}
 
-              <div className="flex justify-between items-center mt-4">
-                <div className="flex gap-2">
+              {/* Buttons Section */}
+              <div className="flex flex-col sm:flex-row justify-between items-center mt-3 sm:mt-4">
+                <div className="flex flex-row gap-1 w-full sm:w-auto">
                   <button
                     onClick={addQuestion}
-                    className="bg-blue-500 text-white p-2 rounded-md"
+                    className="bg-blue-500 text-white p-2 rounded-md w-full sm:w-auto h-8 sm:h-auto text-xs sm:text-base"
                   >
                     Add Question
                   </button>
-
                   <button
                     onClick={handleSaveAndNext}
-                    className="bg-teal-500 text-white p-2 rounded-md"
+                    className="bg-teal-500 text-white p-2 rounded-md w-full sm:w-auto h-8 sm:h-auto text-xs sm:text-base"
                   >
                     Save and Next
                   </button>
                 </div>
-
                 <button
                   onClick={handleAddTest}
-                  className="bg-green-500 text-white p-2 rounded-md"
+                  className="bg-green-500 text-white p-2 rounded-md w-full sm:w-auto mt-2 sm:mt-0 text-xs sm:text-base"
                 >
-                  Submit Mock Test
+                  Submit Test
                 </button>
+
                 {/* Confirmation Modal */}
                 {showConfirmationModal && (
-                  <div className="fixed inset-0 flex items-center justify-center bg-gray-700 bg-opacity-75">
-                    <div className="bg-white p-6 rounded-lg shadow-md text-center">
-                      <p>
+                  <div className="fixed inset-0 flex items-center justify-center bg-gray-700 bg-opacity-50 sm:bg-opacity-75">
+                    <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md text-center w-10/12 max-w-md sm:max-w-lg">
+                      <p className="text-sm sm:text-base">
                         All questions are submitted. Do you want to proceed to
                         the view page?
                       </p>
-                      <button
-                        onClick={confirmSubmission}
-                        className="bg-blue-500 text-white px-4 py-2 rounded-md mt-4"
-                      >
-                        Yes
-                      </button>
-                      <button
-                        onClick={() => setShowConfirmationModal(false)}
-                        className="bg-gray-300 text-gray-800 px-4 py-2 rounded-md mt-4 ml-2"
-                      >
-                        No
-                      </button>
+                      <div className="flex justify-center mt-4">
+                        <button
+                          onClick={confirmSubmission}
+                          className="bg-blue-500 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-md text-sm sm:text-base mr-2"
+                        >
+                          Yes
+                        </button>
+                        <button
+                          onClick={() => setShowConfirmationModal(false)}
+                          className="bg-gray-300 text-gray-800 px-3 py-1.5 sm:px-4 sm:py-2 rounded-md text-sm sm:text-base"
+                        >
+                          No
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -672,17 +859,17 @@ const MockTestManagement = ({ user }) => {
           {/* Image Modal */}
           {isModalOpen && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-              <div className="bg-white p-4 rounded-lg relative max-w-3xl max-h-[90vh] overflow-auto">
+              <div className="bg-white p-4 rounded-lg relative max-w-full max-h-[90vh] overflow-auto w-full sm:max-w-3xl sm:max-h-[90vh] mx-4">
                 <button
                   onClick={closeModal}
-                  className="absolute top-2 right-2 text-red-500 text-2xl" // Increased text size to text-2xl
+                  className="absolute top-2 right-2 text-red-500 text-xl sm:text-2xl"
                 >
                   &times;
                 </button>
                 <img
                   src={selectedImage}
                   alt="Selected"
-                  className="max-w-full max-h-full object-contain" // Keeps the aspect ratio
+                  className="w-full h-auto object-contain"
                 />
               </div>
             </div>

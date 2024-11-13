@@ -91,38 +91,45 @@ const SuperAdminDashboard = () => {
         >
           <DashboardHeader user={user} toggleSidebar={toggleSidebar} />
 
-          <div className="p-6 md:p-8">
-            <h1 className="text-3xl md:text-3xl font-bold mb-6 text-left">
+          <div className="p-2 md:p-6">
+            <h1 className="text-2xl md:text-3xl font-bold mb-4 text-left">
               Super Admin Dashboard
             </h1>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
+            {/* Info Cards - Grid Layout */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 mb-4">
               <div className="bg-white shadow-md rounded-lg p-3">
-                <h2 className="text-base md:text-lg">Total Institutes</h2>
-                <p className="text-xl md:text-2xl font-bold">20</p>
+                <h2 className="text-xs sm:text-lg md:text-base">
+                  Total Institutes
+                </h2>
+                <p className="text-sm sm:text-xl md:text-2xl font-bold">20</p>
               </div>
               <div className="bg-white shadow-md rounded-lg p-3">
-                <h2 className="text-base md:text-lg">Active Institutes</h2>
-                <p className="text-xl md:text-2xl font-bold">5</p>
+                <h2 className="text-xs sm:text-lg md:text-base">
+                  Active Institutes
+                </h2>
+                <p className="text-sm sm:text-xl md:text-2xl font-bold">5</p>
               </div>
             </div>
 
+            {/* Institutes List */}
             <div className="bg-white shadow-lg rounded-lg p-3">
-              <h2 className="text-2xl md:text-2xl font-semibold mb-3 text-gray-800">
+              <h2 className="text-lg sm:text-2xl md:text-2xl font-semibold mb-3 text-gray-800">
                 Institutes List
               </h2>
 
+              {/* Table */}
               <div className="overflow-x-auto rounded-lg">
                 <table className="min-w-full leading-normal border border-gray-300 rounded-lg overflow-hidden">
                   <thead className="bg-gradient-to-r from-[#007bff] to-[#0056b3] text-white">
                     <tr>
-                      <th className="px-3 py-2 md:px-4 md:py-3 border-b border-gray-200 text-left text-xs font-semibold uppercase tracking-wider">
+                      <th className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-left text-xs font-semibold uppercase tracking-wider">
                         Institute Name
                       </th>
-                      <th className="px-3 py-2 md:px-4 md:py-3 border-b border-gray-200 text-left text-xs font-semibold uppercase tracking-wider">
+                      <th className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-left text-xs font-semibold uppercase tracking-wider">
                         Duration
                       </th>
-                      <th className="px-3 py-2 md:px-4 md:py-3 border-b border-gray-200 text-left text-xs font-semibold uppercase tracking-wider">
+                      <th className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-left text-xs font-semibold uppercase tracking-wider">
                         Subscription
                       </th>
                     </tr>
@@ -135,17 +142,17 @@ const SuperAdminDashboard = () => {
                           institute.id % 2 === 0 ? "bg-white" : "bg-gray-50"
                         }`}
                       >
-                        <td className="px-3 py-2 md:px-4 md:py-3 border-b border-gray-200 text-sm">
+                        <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
                           <p className="text-gray-900 font-medium whitespace-no-wrap">
                             {institute.name}
                           </p>
                         </td>
-                        <td className="px-3 py-2 md:px-4 md:py-3 border-b border-gray-200 text-sm">
+                        <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
                           <p className="text-gray-900 font-bold whitespace-no-wrap">
                             {institute.duration}
                           </p>
                         </td>
-                        <td className="px-3 py-2 md:px-4 md:py-3 border-b border-gray-200 text-sm">
+                        <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
                           <p className="text-gray-700 whitespace-no-wrap">
                             {institute.subscription}
                           </p>
