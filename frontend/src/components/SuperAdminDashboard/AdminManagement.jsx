@@ -19,7 +19,14 @@ import { FaFileCsv } from "react-icons/fa";
 const AdminManagement = ({ user }) => {
   const [admins, setAdmins] = useState([]);
   const [newAdmins, setNewAdmins] = useState([
-    { name: "", username: "", password: "", phone: "", email: "" },
+    {
+      name: "",
+      username: "",
+      password: "",
+      phone: "",
+      email: "",
+      subscriptionPlan: "",
+    },
   ]);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -32,6 +39,40 @@ const AdminManagement = ({ user }) => {
   const toggleSidebar = () => {
     setIsCollapsed((prev) => !prev);
   };
+
+  const [subscriptionPlans, setSubscriptionPlans] = useState([]);
+  const API_BASE_URL = "https://mockexam.pythonanywhere.com/licences";
+
+  const fetchPlans = async () => {
+    if (!token) {
+      console.log("No token found, unable to fetch subscription plans.");
+      return;
+    }
+
+    try {
+      const response = await axios.get(API_BASE_URL, {
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (Array.isArray(response.data)) {
+        setSubscriptionPlans(response.data);
+      } else {
+        console.error("no plan available", response.data);
+      }
+    } catch (error) {
+      console.log("Error fetching subscription plans:", error);
+      if (error.response) {
+        console.log("Error Response:", error.response); // Check the response error
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchPlans();
+  }, []); // Run once when the component mounts
 
   useEffect(() => {
     const fetchAdmins = async () => {
@@ -87,7 +128,14 @@ const AdminManagement = ({ user }) => {
   const handleAddAdminField = () => {
     setNewAdmins([
       ...newAdmins,
-      { name: "", username: "", password: "", phone: "", email: "" },
+      {
+        name: "",
+        username: "",
+        password: "",
+        phone: "",
+        email: "",
+        subscriptionPlan: "",
+      },
     ]);
   };
 
@@ -111,7 +159,8 @@ const AdminManagement = ({ user }) => {
           !admin.username ||
           !admin.password ||
           !admin.phone ||
-          !admin.email
+          !admin.email ||
+          !admin.subscriptionPlan
       )
     ) {
       setError(
@@ -132,6 +181,7 @@ const AdminManagement = ({ user }) => {
               institute_name: admin.username,
               email_id: admin.email,
               password_encoded: admin.password,
+              licence: admin.subscriptionPlan,
             },
             {
               headers: {
@@ -153,7 +203,14 @@ const AdminManagement = ({ user }) => {
       // Update the admins state
       setAdmins([...admins, ...newAdminData]);
       setNewAdmins([
-        { name: "", username: "", password: "", phone: "", email: "" },
+        {
+          name: "",
+          username: "",
+          password: "",
+          phone: "",
+          email: "",
+          subscriptionPlan: "",
+        },
       ]);
       setError("");
     } catch (error) {
@@ -164,7 +221,6 @@ const AdminManagement = ({ user }) => {
       setError("Failed to add admins. Please try again.");
     }
   };
-
   const handleRemoveAdmin = async (id) => {
     try {
       await axios.delete(`${config.apiUrl}/vendor-admin-crud/${id}`); // Adjust the endpoint as needed
@@ -208,6 +264,7 @@ const AdminManagement = ({ user }) => {
   const totalPages = Math.ceil(filteredAdmins.length / adminsPerPage);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  console.log("hero", subscriptionPlans);
 
   const handleExport = () => {
     const csvContent =
@@ -341,7 +398,7 @@ const AdminManagement = ({ user }) => {
                     <div className="relative">
                       <FaCogs className="absolute left-3 top-3 text-gray-400 sm:left-2 sm:top-2 sm:text-xs lg:left-3 lg:top-3 lg:text-sm" />
                       <select
-                        value={admin.subscriptionPlan}
+                        value={admin.subscriptionPlan || ""} // Ensure admin.subscriptionPlan is controlled
                         onChange={(e) =>
                           handleAdminChange(
                             index,
@@ -352,9 +409,18 @@ const AdminManagement = ({ user }) => {
                         className="border text-gray-400 p-2 pl-10 mb-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 sm:p-1 sm:pl-8 sm:mb-1 sm:text-xs lg:p-2 lg:pl-10 lg:mb-2 lg:text-sm"
                       >
                         <option value="">Select Subscription Plan</option>
-                        <option value="basic">Basic</option>
-                        <option value="premium">Premium</option>
-                        <option value="enterprise">Enterprise</option>
+                        {/* Check if subscriptionPlans is an array and has length */}
+                        {Array.isArray(subscriptionPlans) &&
+                        subscriptionPlans.length > 0 ? (
+                          subscriptionPlans.map((plan) => (
+                            <option key={plan.id} value={plan.id}>
+                              {plan.name || "Unnamed Subscription"}{" "}
+                              {/* Fallback to "Unnamed Subscription" if name is null */}
+                            </option>
+                          ))
+                        ) : (
+                          <option disabled>No plans available</option>
+                        )}
                       </select>
                     </div>
                   </div>
