@@ -38,6 +38,8 @@ const MockTestManagement = ({ user }) => {
         subtopic: "",
       },
     ],
+    correctMark: "", // Initialize the correct mark field
+    negativeMark: "", // Initialize the negative mark field
   });
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(1); // Starting index for the next question
@@ -51,9 +53,30 @@ const MockTestManagement = ({ user }) => {
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
 
+  const [isLatexEnabled, setIsLatexEnabled] = useState(false);
+  const [latexStartIndex, setLatexStartIndex] = useState(null);
+
   const handleInputChange = (e) => {
-    setQuestionText(e.target.value);
+    const text = e.target.value;
+    setQuestionText(text);
   };
+
+  const handleToggleLatex = () => {
+    if (!isLatexEnabled) {
+      setLatexStartIndex(questionText.length); // Set the start for LaTeX rendering
+    } else {
+      setLatexStartIndex(null); // Reset when LaTeX is disabled
+    }
+    setIsLatexEnabled(!isLatexEnabled);
+  };
+
+  // Split text at the LaTeX starting point if enabled
+  const normalText =
+    latexStartIndex !== null
+      ? questionText.slice(0, latexStartIndex)
+      : questionText;
+  const latexText =
+    latexStartIndex !== null ? questionText.slice(latexStartIndex) : "";
 
   const toggleSidebar = () => {
     setIsCollapsed((prev) => !prev);
@@ -72,11 +95,17 @@ const MockTestManagement = ({ user }) => {
 
   const handleTestChange = (e) => {
     const { name, value } = e.target;
+
     // Show main subtopic dropdown when "ALL" is selected in subject dropdown
     if (name === "subject") {
       setShowMainSubtopic(value === "ALL");
     }
-    setNewTest({ ...newTest, [name]: value });
+
+    // Update the newTest state
+    setNewTest((prevTest) => ({
+      ...prevTest,
+      [name]: value, // Dynamically set the value of any field
+    }));
   };
 
   const [selectedOptions, setSelectedOptions] = useState([]); // track selected options
@@ -504,7 +533,7 @@ const MockTestManagement = ({ user }) => {
                       className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
                     >
                       {/* "All" option */}
-                      <option value="ALL">All</option>
+                      <option value="ALL">All Chapter</option>
                       {/* Other chapter options */}
                       {chapterOptions.map((chapter) => (
                         <option key={chapter.value} value={chapter.value}>
@@ -512,6 +541,45 @@ const MockTestManagement = ({ user }) => {
                         </option>
                       ))}
                     </select>
+                  </div>
+                </div>
+
+                {/* Correct Mark and Negative Mark Inputs in Same Row */}
+                <div className="flex gap-4 mt-3">
+                  {/* Correct Mark Input */}
+                  <div className="flex-grow">
+                    <input
+                      type="number"
+                      name="correctMark"
+                      value={newTest.correctMark}
+                      onChange={(e) => {
+                        const updatedCorrectMark = e.target.value;
+                        setNewTest((prevTest) => ({
+                          ...prevTest,
+                          correctMark: updatedCorrectMark,
+                        }));
+                      }}
+                      placeholder="Correct Mark"
+                      className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
+                    />
+                  </div>
+
+                  {/* Negative Mark Input */}
+                  <div className="flex-grow">
+                    <input
+                      type="number"
+                      name="negativeMark"
+                      value={newTest.negativeMark}
+                      onChange={(e) => {
+                        const updatedNegativeMark = e.target.value;
+                        setNewTest((prevTest) => ({
+                          ...prevTest,
+                          negativeMark: updatedNegativeMark,
+                        }));
+                      }}
+                      placeholder="Negative Mark"
+                      className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
+                    />
                   </div>
                 </div>
 
@@ -584,17 +652,27 @@ const MockTestManagement = ({ user }) => {
                         className="border p-1 sm:p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 text-xs sm:text-base"
                         rows="3"
                       />
-                      {/* LaTeX Rendering */}
+
+                      {/* Toggle for LaTeX Rendering */}
+                      <button
+                        onClick={handleToggleLatex}
+                        className="text-xs mt-2 text-blue-500 underline"
+                      >
+                        {isLatexEnabled ? "Disable LaTeX" : "Enable LaTeX"}
+                      </button>
+
+                      {/* Inline LaTeX Rendering */}
                       <div
-                        className={`absolute top-0 left-0 w-full h-full p-1 sm:p-2 text-gray-700 pointer-events-none transition-all ${
-                          questionText ? "opacity-100" : "opacity-0"
-                        }`}
+                        className="absolute top-0 left-0 w-full h-full p-1 sm:p-2 text-gray-700 pointer-events-none transition-opacity opacity-100"
                         style={{
                           whiteSpace: "pre-wrap",
                           wordWrap: "break-word",
                         }}
                       >
-                        <InlineMath>{questionText}</InlineMath>
+                        {normalText}
+                        {isLatexEnabled && latexText && (
+                          <InlineMath>{latexText}</InlineMath>
+                        )}
                       </div>
                     </div>
 

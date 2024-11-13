@@ -1,10 +1,46 @@
 import React, { useState, useEffect } from "react";
 import DashboardHeader from "../SuperAdminDashboard/Header";
 import Sidebar from "../SuperAdminDashboard/Sidebar";
+import axios from "axios";
 
 const AdminList = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [user, setUser] = useState(null); // State to hold user data
+  const [subscriptionPlans, setSubscriptionPlans] = useState([]); // State to store subscription plans
+  const [token, setToken] = useState(localStorage.getItem("token")); // Assuming token is stored in localStorage
+  const API_BASE_URL = "https://mockexam.pythonanywhere.com/licences"; // Your API endpoint
+
+  // Fetch subscription plans from API
+  const fetchPlans = async () => {
+    if (!token) {
+      console.log("No token found, unable to fetch subscription plans.");
+      return;
+    }
+
+    try {
+      const response = await axios.get(API_BASE_URL, {
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (Array.isArray(response.data)) {
+        setSubscriptionPlans(response.data);
+      } else {
+        console.error("No plans available", response.data);
+      }
+    } catch (error) {
+      console.log("Error fetching subscription plans:", error);
+      if (error.response) {
+        console.log("Error Response:", error.response); // Check the response error
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchPlans(); // Fetch subscription plans when component mounts
+  }, []);
 
   useEffect(() => {
     // Retrieve user data from localStorage
@@ -22,35 +58,35 @@ const AdminList = () => {
       id: 1,
       name: "Tech University",
       duration: "1 Year",
-      subscription: "Premium",
+      subscriptionId: 1, // Reference to subscription plan
       subscriptionEnd: "2024-11-20", // Expiring soon
     },
     {
       id: 2,
       name: "Green Valley College",
       duration: "6 Months",
-      subscription: "Standard",
+      subscriptionId: 2, // Reference to subscription plan
       subscriptionEnd: "2024-11-25", // Expiring soon
     },
     {
       id: 3,
       name: "Harbor Institute",
       duration: "2 Years",
-      subscription: "Enterprise",
+      subscriptionId: 3, // Reference to subscription plan
       subscriptionEnd: "2025-06-15", // Not expiring soon
     },
     {
       id: 4,
       name: "Sunshine Academy",
       duration: "3 Years",
-      subscription: "Basic",
+      subscriptionId: 4, // Reference to subscription plan
       subscriptionEnd: "2024-12-10", // Expiring soon
     },
     {
       id: 5,
       name: "Mountain College",
       duration: "1 Year",
-      subscription: "Premium",
+      subscriptionId: 1, // Reference to subscription plan
       subscriptionEnd: "2025-05-01", // Not expiring soon
     },
   ];
@@ -151,7 +187,7 @@ const AdminList = () => {
                       </td>
                       <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
                         <div className="flex items-center space-x-2">
-                          <button className="bg-red-500 text-white py-2 px-4 rounded-md mb-2">
+                          <button className="bg-red-500 text-white py-2 px-4 rounded-md">
                             Renew
                           </button>
                           <p className="text-red-500 text-xs mb-0">
@@ -162,48 +198,58 @@ const AdminList = () => {
                     </tr>
 
                     {/* Dynamic rows for institutes */}
-                    {instituteData.map((institute) => (
-                      <tr
-                        key={institute.id}
-                        className={`hover:bg-gray-100 transition-colors ${
-                          institute.id % 2 === 0 ? "bg-white" : "bg-gray-50"
-                        }`}
-                      >
-                        <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
-                          <p className="text-gray-900 font-medium whitespace-no-wrap">
-                            {institute.name}
-                          </p>
-                        </td>
-                        <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
-                          <p className="text-gray-900 font-bold whitespace-no-wrap">
-                            {institute.duration}
-                          </p>
-                        </td>
-                        <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
-                          <p className="text-gray-700 whitespace-no-wrap">
-                            {institute.subscription}
-                          </p>
-                        </td>
-                        <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
-                          {/* Conditional Button Rendering */}
-                          {isSubscriptionExpiring(institute.subscriptionEnd) ? (
-                            <div className="flex items-center space-x-2">
-                              <button className="bg-red-500 text-white py-2 px-4 rounded-md">
-                                Renew
+                    {instituteData.map((institute) => {
+                      // Get the subscription name from subscriptionPlans based on subscriptionId
+                      const subscription = subscriptionPlans.find(
+                        (plan) => plan.id === institute.subscriptionId
+                      );
+
+                      return (
+                        <tr
+                          key={institute.id}
+                          className={`hover:bg-gray-100 transition-colors bg-white`}
+                        >
+                          <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
+                            <p className="text-gray-900 font-medium whitespace-no-wrap">
+                              {institute.name}
+                            </p>
+                          </td>
+                          <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
+                            <p className="text-gray-900 font-bold whitespace-no-wrap">
+                              {institute.duration}
+                            </p>
+                          </td>
+                          <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
+                            {/* Display subscription name */}
+                            <p className="text-gray-700 whitespace-no-wrap">
+                              {subscription
+                                ? subscription.name
+                                : "Unknown Plan"}
+                            </p>
+                          </td>
+                          <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
+                            {/* Conditional Button Rendering */}
+                            {isSubscriptionExpiring(
+                              institute.subscriptionEnd
+                            ) ? (
+                              <div className="flex items-center space-x-2">
+                                <button className="bg-red-500 text-white py-2 px-4 rounded-md">
+                                  Renew
+                                </button>
+                                <p className="text-red-500 text-xs mb-0">
+                                  Subscription is expiring on{" "}
+                                  {institute.subscriptionEnd}.
+                                </p>
+                              </div>
+                            ) : (
+                              <button className="bg-blue-500 text-white py-2 px-4 rounded-md">
+                                Update
                               </button>
-                              <p className="text-red-500 text-xs">
-                                Subscription is expiring on{" "}
-                                {institute.subscriptionEnd}.
-                              </p>
-                            </div>
-                          ) : (
-                            <button className="bg-blue-500 text-white py-2 px-4 rounded-md">
-                              Update
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
