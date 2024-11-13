@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
-import { useNavigate } from 'react-router-dom';
-
+import { useNavigate } from "react-router-dom";
+import { useUser } from "../UserContext/UserContext";
+import { AiFillLock } from "react-icons/ai";
 
 import Maths from "../../assets/mathh.png";
 import Reasoning from "../../assets/reasoning.png";
 import Science from "../../assets/science.png";
 import Gk from "../../assets/gk.png";
-import English from "../../assets/english.png"; 
-
+import English from "../../assets/english.png";
 
 const examData = [
   { name: "Maths", exam: "Chapter 1-10" },
@@ -29,6 +28,8 @@ const logoMap = {
 const Subject = () => {
   const [count, setCount] = useState(1);
   const ref = useRef(null);
+  const { user } = useUser();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = (entries) => {
@@ -62,10 +63,13 @@ const Subject = () => {
       }
     };
   }, [ref]);
-  const navigate = useNavigate();
 
   const handleCardClick = (subjectName) => {
-    navigate(`/chapters/${subjectName}`);
+    if (user && user.type === "student") {
+      navigate(`/chapters/${subjectName}`);
+    } else {
+      navigate("/login");
+    }
   };
 
   return (
@@ -81,10 +85,20 @@ const Subject = () => {
         {examData.map((exam, index) => (
           <div
             key={index}
-            className="bg-gradient-to-r from-blue-100 to-blue-200 shadow-lg rounded-lg p-6 flex flex-col items-center transition-transform transform hover:scale-105 hover:rotate-1 hover:shadow-2xl duration-300 ease-in-out"
+            className={`relative bg-gradient-to-r from-blue-100 to-blue-200 shadow-lg rounded-lg p-6 flex flex-col items-center 
+              transition-transform transform hover:scale-105 hover:rotate-1 hover:shadow-2xl duration-300 ease-in-out ${
+                !user ? "cursor-pointer" : "cursor-default"
+              }`}
             onClick={() => handleCardClick(exam.name)}
           >
-            <div className="w-24 h-24 rounded-full mb-6 flex items-center justify-center bg-white shadow-md">
+            {/* Center Ribbon with Lock Icon */}
+            {!user && (
+                <div className="absolute top-0 right-0 -mr-3 -mt-3 bg-red-400 text-xs font-bold text-white py-1 px-3 rounded-full shadow-md">
+             Locked
+           </div>
+            )}
+
+            <div className="relative w-24 h-24 rounded-full mb-6 flex items-center justify-center bg-white shadow-md">
               <img
                 src={logoMap[exam.name]}
                 alt={`${exam.name} logo`}
@@ -95,8 +109,6 @@ const Subject = () => {
             <p className="text-gray-600 mb-4">{exam.exam}</p>
           </div>
         ))}
-        
-        
       </div>
     </div>
   );
