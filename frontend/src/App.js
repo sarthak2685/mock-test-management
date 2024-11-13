@@ -27,6 +27,7 @@ import Help from "./components/AdminDasboard/Help.jsx";
 import View from "./components/SuperAdminDashboard/View.jsx";
 import AdminList from "./components/SuperAdminDashboard/AdminList.jsx";
 import Chapters from "./components/Home/Chapeter.jsx";
+import MockTest from "./components/Home/Mock/MockTest.jsx";
 
 function App() {
   const location = useLocation();
@@ -72,6 +73,8 @@ function App() {
         <Route path="/help" element={<Help />} />
         <Route path="/view" element={<View />} />
         <Route path="/chapters/:subjectName" element={<Chapters />} />
+        <Route path="/mock-test" element={<MockTest />} />
+
       </Routes>
 
       {isNavbarFooterVisible && <Footer />}
