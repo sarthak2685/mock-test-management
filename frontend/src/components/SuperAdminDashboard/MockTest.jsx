@@ -32,9 +32,13 @@ const MockTestManagement = ({ user }) => {
       {
         index: 0, // Add index to the first question
         questionText: "",
-        options: ["", "", "", ""],
+        options: [
+          { text: "", image: null }, // Option 1: Text + Image
+          { text: "", image: null }, // Option 2: Text + Image
+          { text: "", image: null }, // Option 3: Text + Image
+          { text: "", image: null }, // Option 4: Text + Image
+        ],
         correctAnswer: "",
-        image: null,
         subtopic: "",
       },
     ],
@@ -42,41 +46,16 @@ const MockTestManagement = ({ user }) => {
     negativeMark: "", // Initialize the negative mark field
   });
 
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(1); // Starting index for the next question
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0); // Starting index for the next question
   const [selectedImage, setSelectedImage] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showMainSubtopic, setShowMainSubtopic] = useState(false);
   const [fileInputValue, setFileInputValue] = useState(""); // Track file input value
   const fileInputRef = useRef(null);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
-  const [questionText, setQuestionText] = useState("");
+  //const [questionText, setQuestionText] = useState("");
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
-
-  const [isLatexEnabled, setIsLatexEnabled] = useState(false);
-  const [latexStartIndex, setLatexStartIndex] = useState(null);
-
-  const handleInputChange = (e) => {
-    const text = e.target.value;
-    setQuestionText(text);
-  };
-
-  const handleToggleLatex = () => {
-    if (!isLatexEnabled) {
-      setLatexStartIndex(questionText.length); // Set the start for LaTeX rendering
-    } else {
-      setLatexStartIndex(null); // Reset when LaTeX is disabled
-    }
-    setIsLatexEnabled(!isLatexEnabled);
-  };
-
-  // Split text at the LaTeX starting point if enabled
-  const normalText =
-    latexStartIndex !== null
-      ? questionText.slice(0, latexStartIndex)
-      : questionText;
-  const latexText =
-    latexStartIndex !== null ? questionText.slice(latexStartIndex) : "";
 
   const toggleSidebar = () => {
     setIsCollapsed((prev) => !prev);
@@ -137,14 +116,14 @@ const MockTestManagement = ({ user }) => {
     const updatedQuestions = [...newTest.questions];
 
     if (field === "options") {
-      updatedQuestions[index].options[optionIndex] = value;
+      updatedQuestions[index].options[optionIndex].text = value; // Update the text of the option
     } else {
       updatedQuestions[index][field] = value;
     }
 
-    // Check if any options are empty
+    // Check if any options' text is empty
     const anyOptionEmpty = updatedQuestions[index].options.some(
-      (option) => option.trim() === ""
+      (option) => option.text.trim() === "" // Access 'text' and apply trim() on it
     );
 
     // Only reset correctAnswer if there's an empty option
@@ -187,7 +166,12 @@ const MockTestManagement = ({ user }) => {
         ...newTest.questions,
         {
           questionText: "",
-          options: ["", "", "", ""],
+          options: [
+            { text: "", image: null }, // Option 1: Text + Image
+            { text: "", image: null }, // Option 2: Text + Image
+            { text: "", image: null }, // Option 3: Text + Image
+            { text: "", image: null }, // Option 4: Text + Image
+          ],
           correctAnswer: "",
           image: null,
           subtopic: "", // Add subtopic field to the new question
@@ -197,59 +181,90 @@ const MockTestManagement = ({ user }) => {
     });
   };
 
+  const [questionText, setQuestionText] = useState("");
+  const [options, setOptions] = useState(["", "", "", ""]);
+  const [correctAnswer, setCorrectAnswer] = useState("");
+  const [subtopic, setSubtopic] = useState("");
+  const [image, setImage] = useState(null);
+
   // Function to handle the "Save and Next" button
   const handleSaveAndNext = () => {
     // Check if newTest or the required fields are undefined or empty
-    if (!newTest || !newTest.subject) {
-      console.error("Subject is missing in newTest.");
+    if (!newTest || !newTest.subject || !Array.isArray(newTest.questions)) {
+      console.error("Subject or questions are missing in newTest.");
+      return;
+    }
+
+    // Ensure that the currentQuestionIndex is within the bounds of the questions array
+    if (
+      currentQuestionIndex < 0 ||
+      currentQuestionIndex >= newTest.questions.length
+    ) {
+      console.error("Invalid currentQuestionIndex:", currentQuestionIndex);
       return;
     }
 
     const currentQuestion = newTest.questions[currentQuestionIndex];
 
     // Validate that all required fields are filled
-    if (
-      !currentQuestion.questionText ||
-      currentQuestion.options.some((option) => option.trim() === "") ||
-      !currentQuestion.correctAnswer
-    ) {
-      // Display a message or alert to prompt the user to fill in the data
+    const hasEmptyOption = currentQuestion.options.some(
+      (option) => option.trim() === ""
+    );
+    const isValid =
+      currentQuestion.questionText &&
+      !hasEmptyOption &&
+      currentQuestion.correctAnswer;
+
+    if (!isValid) {
       alert(
         "Please fill in all the required fields (Question Text, Options, Correct Answer) before proceeding."
       );
       return; // Prevent moving to the next question
     }
 
-    // Log the newTest to check if subject and other properties are available
-    console.log("Saving and moving to the next question:", newTest);
+    // Save the current question data (keeping existing questions)
+    const savedQuestions = [...newTest.questions]; // Keep track of saved questions
 
-    // Save the current question data (e.g., saving questions)
-    const savedQuestions = [...newTest.questions]; // Assuming you want to keep track of previous questions
+    // Update the current question in the savedQuestions array
+    savedQuestions[currentQuestionIndex] = {
+      ...savedQuestions[currentQuestionIndex],
+      questionText: currentQuestion.questionText, // Save the current questionText
+      options: currentQuestion.options, // Save the current options
+      correctAnswer: currentQuestion.correctAnswer, // Save the correct answer
+      subtopic: currentQuestion.subtopic, // Save the subtopic
+      image: currentQuestion.image, // Save the image if necessary
+    };
 
-    // Increment the index for the next question
+    // Log the saved question data
+    console.log("Saved Question Data:", savedQuestions[currentQuestionIndex]);
+
+    // Ensure there's a new empty question for the next set
     const nextQuestionIndex = currentQuestionIndex + 1;
+    if (savedQuestions.length <= nextQuestionIndex) {
+      savedQuestions.push({
+        questionText: "", // Empty question text
+        options: ["", "", "", ""], // Empty options
+        correctAnswer: "", // Empty correct answer
+        subtopic: "", // Empty subtopic
+        image: null, // No image initially
+      });
+    }
 
-    // Proceed to reset the state for the next question
+    // Update the newTest state with saved questions
     setNewTest({
-      ...newTest, // Keep existing data
-      questions: [
-        ...savedQuestions, // Keep previously saved questions
-        {
-          index: nextQuestionIndex, // Set index for the new question
-          questionText: "", // Reset for the next question
-          options: ["", "", "", ""], // Reset options
-          correctAnswer: "", // Reset correct answer
-          image: null, // Reset image
-          subtopic: "", // Reset subtopic
-        },
-      ],
+      ...newTest, // Keep existing data (e.g., subject, other questions)
+      questions: savedQuestions, // Keep the previously saved questions
     });
 
     // Update the currentQuestionIndex to the next question
     setCurrentQuestionIndex(nextQuestionIndex);
 
-    // Optionally, focus on the next question if needed
-    // e.g., document.querySelector("input[name='questionText']").focus();
+    // Reset the fields for the next question
+    setQuestionText(""); // Clear question text input
+    setOptions(["", "", "", ""]); // Clear options
+    setCorrectAnswer(""); // Clear correct answer input
+    setSubtopic(""); // Clear subtopic input
+    setImage(null); // Reset image if necessary
   };
 
   const handleDeleteQuestion = (index) => {
@@ -294,6 +309,43 @@ const MockTestManagement = ({ user }) => {
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedImage(null);
+  };
+
+  const [isDropdownOpen, setDropdownOpen] = useState(false);
+
+  const isDropdownEnabled = newTest.questions[0].options.some(
+    (option) => (option.text && option.text.trim() !== "") || option.image
+  );
+
+  // Function to delete image for a specific option
+  const deleteOptionImage = (currentQuestionIndex, optionIndex) => {
+    // Clear the image from the option
+    const updatedQuestions = [...newTest.questions];
+    updatedQuestions[currentQuestionIndex].options[optionIndex].image = null;
+    setNewTest({ ...newTest, questions: updatedQuestions });
+  };
+
+  const handleSelectChange = (selectedOption) => {
+    const updatedQuestions = [...newTest.questions];
+    updatedQuestions[0].correctAnswer = selectedOption; // Store the entire option object
+    setNewTest({ ...newTest, questions: updatedQuestions });
+    setDropdownOpen(false); // Close the dropdown after selection
+  };
+
+  const handleOptionTextChange = (questionIndex, optionIndex, newText) => {
+    const updatedQuestions = [...newTest.questions];
+    updatedQuestions[questionIndex].options[optionIndex].text = newText;
+    setNewTest({ ...newTest, questions: updatedQuestions });
+  };
+
+  const handleImageUploadOption = (e, questionIndex, optionIndex) => {
+    const file = e.target.files[0];
+    const imageUrl = URL.createObjectURL(file); // Get the image URL
+
+    const updatedQuestions = [...newTest.questions];
+    updatedQuestions[questionIndex].options[optionIndex].image = imageUrl; // Update the image for the option
+
+    setNewTest({ ...newTest, questions: updatedQuestions });
   };
 
   const instituteOptions = institutes.map((institute) => ({
@@ -625,17 +677,15 @@ const MockTestManagement = ({ user }) => {
                 Questions
               </h2>
 
-              {newTest.questions.map((question, index) => (
-                <div
-                  key={index}
-                  className="mb-2 sm:mb-4 border p-2 sm:p-4 rounded-md shadow-md bg-gray-50"
-                >
+              {/* Render only the current question */}
+              {newTest.questions[currentQuestionIndex] && (
+                <div className="mb-2 sm:mb-4 border p-2 sm:p-4 rounded-md shadow-md bg-gray-50">
                   <div className="flex justify-between items-center mb-1 sm:mb-2">
                     <h4 className="font-semibold text-sm sm:text-lg">
-                      Question {index + 1}
+                      Question {currentQuestionIndex + 1}
                     </h4>
                     <button
-                      onClick={() => handleDeleteQuestion(index)}
+                      onClick={() => handleDeleteQuestion(currentQuestionIndex)}
                       className="text-red-500 text-xs sm:text-base hover:underline"
                     >
                       <FaTrashAlt />
@@ -647,42 +697,34 @@ const MockTestManagement = ({ user }) => {
                     <div className="relative w-full">
                       <textarea
                         placeholder="Question Text"
-                        value={questionText}
-                        onChange={handleInputChange}
+                        value={
+                          newTest.questions[currentQuestionIndex]
+                            ?.questionText || ""
+                        }
+                        onChange={(e) => {
+                          const updatedQuestions = [...newTest.questions];
+                          updatedQuestions[currentQuestionIndex].questionText =
+                            e.target.value;
+                          setNewTest((prevState) => ({
+                            ...prevState,
+                            questions: updatedQuestions,
+                          }));
+                        }}
                         className="border p-1 sm:p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 text-xs sm:text-base"
                         rows="3"
                       />
-
-                      {/* Toggle for LaTeX Rendering */}
-                      <button
-                        onClick={handleToggleLatex}
-                        className="text-xs mt-2 text-blue-500 underline"
-                      >
-                        {isLatexEnabled ? "Disable LaTeX" : "Enable LaTeX"}
-                      </button>
-
-                      {/* Inline LaTeX Rendering */}
-                      <div
-                        className="absolute top-0 left-0 w-full h-full p-1 sm:p-2 text-gray-700 pointer-events-none transition-opacity opacity-100"
-                        style={{
-                          whiteSpace: "pre-wrap",
-                          wordWrap: "break-word",
-                        }}
-                      >
-                        {normalText}
-                        {isLatexEnabled && latexText && (
-                          <InlineMath>{latexText}</InlineMath>
-                        )}
-                      </div>
                     </div>
 
                     {/* Subtopic Dropdown */}
                     <div className="flex-shrink-0 w-full sm:w-auto">
                       <select
-                        value={question.subtopic}
+                        value={
+                          newTest.questions[currentQuestionIndex]?.subtopic ||
+                          ""
+                        }
                         onChange={(e) =>
                           handleQuestionChange(
-                            index,
+                            currentQuestionIndex,
                             "subtopic",
                             e.target.value
                           )
@@ -708,89 +750,181 @@ const MockTestManagement = ({ user }) => {
 
                   {/* Options Input */}
                   <div className="flex flex-col sm:flex-row gap-1 sm:gap-4 mb-1 sm:mb-2">
-                    {question.options.map((option, optionIndex) => (
-                      <div key={optionIndex} className="flex-grow">
-                        <input
-                          type="text"
-                          placeholder={`Option ${optionIndex + 1}`}
-                          value={option}
-                          onChange={(e) =>
-                            handleQuestionChange(
-                              index,
-                              "options",
-                              e.target.value,
-                              optionIndex
-                            )
-                          }
-                          className="border p-1 sm:p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 text-xs sm:text-base"
-                        />
+                    {newTest.questions[currentQuestionIndex].options.map(
+                      (option, optionIndex) => (
+                        <div key={optionIndex} className="flex-grow">
+                          {/* Card for Each Option */}
+                          <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 ease-in-out">
+                            {/* Option Input Field (Text) */}
+                            <input
+                              type="text"
+                              placeholder={`Option ${optionIndex + 1}`}
+                              value={option.text}
+                              onChange={(e) =>
+                                handleOptionTextChange(
+                                  currentQuestionIndex,
+                                  optionIndex,
+                                  e.target.value
+                                )
+                              }
+                              className="border p-1 sm:p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 text-xs sm:text-base"
+                            />
+
+                            {/* Image Upload for Each Option */}
+                            <div className="mt-2">
+                              <input
+                                type="file"
+                                onChange={(e) =>
+                                  handleImageUploadOption(
+                                    e,
+                                    currentQuestionIndex,
+                                    optionIndex
+                                  )
+                                }
+                                className="border p-1 sm:p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 text-xs sm:text-base"
+                              />
+                              {option.image && (
+                                <div className="relative mt-2">
+                                  <img
+                                    src={option.image}
+                                    alt={`Option ${optionIndex + 1}`}
+                                    className="w-16 h-16 object-cover rounded-lg cursor-pointer"
+                                    onClick={() => openModal(option.image)} // Open modal on image click
+                                  />
+                                  {/* Trash Icon to Delete Image */}
+                                  <button
+                                    onClick={() =>
+                                      deleteOptionImage(
+                                        currentQuestionIndex,
+                                        optionIndex
+                                      )
+                                    }
+                                    className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full focus:outline-none text-xs sm:text-sm"
+                                  >
+                                    <FaTrashAlt />
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    )}
+
+                    {/* Modal for Enlarged Image */}
+                    {isModalOpen && (
+                      <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                        <div className="bg-white p-4 rounded-lg relative max-w-full max-h-[90vh] overflow-auto w-full sm:max-w-3xl sm:max-h-[90vh] mx-4">
+                          <button
+                            onClick={closeModal}
+                            className="absolute top-2 right-2 text-red-500 text-xl sm:text-2xl"
+                          >
+                            &times;
+                          </button>
+                          <img
+                            src={selectedImage}
+                            alt="Selected"
+                            className="w-full h-auto object-contain"
+                          />
+                        </div>
                       </div>
-                    ))}
+                    )}
                   </div>
 
                   {/* Correct Answer Dropdown */}
-                  <div className="flex flex-col sm:flex-row gap-1 sm:gap-4 mb-1 sm:mb-2">
-                    <select
-                      value={question.correctAnswer}
-                      onChange={(e) =>
-                        handleQuestionChange(
-                          index,
-                          "correctAnswer",
-                          e.target.value
-                        )
-                      }
-                      disabled={question.options.some(
-                        (option) => option.trim() === ""
+                  <div className="flex flex-col gap-1 sm:gap-4 mb-1 sm:mb-2 w-full">
+                    <div className="relative w-full">
+                      <div
+                        onClick={() =>
+                          isDropdownEnabled && setDropdownOpen(!isDropdownOpen)
+                        }
+                        className={`border p-2 w-full rounded-md focus:outline-none ${
+                          isDropdownEnabled
+                            ? "bg-gray-100 cursor-pointer focus:ring focus:ring-blue-400"
+                            : "bg-gray-200 cursor-not-allowed"
+                        } text-xs sm:text-base flex items-center justify-between`}
+                      >
+                        {newTest.questions[0].correctAnswer ? (
+                          newTest.questions[0].correctAnswer.image ? (
+                            <img
+                              src={newTest.questions[0].correctAnswer.image}
+                              alt="Selected option"
+                              className="w-6 h-6 object-cover rounded-full mr-2"
+                            />
+                          ) : (
+                            newTest.questions[0].correctAnswer.text
+                          )
+                        ) : (
+                          "Select Correct Answer"
+                        )}
+                        <span className="ml-2 text-gray-500">&#9662;</span>{" "}
+                        {/* Down arrow */}
+                      </div>
+
+                      {isDropdownOpen && isDropdownEnabled && (
+                        <div className="absolute top-full left-0 w-full bg-white border border-gray-300 mt-2 rounded-md shadow-lg z-10">
+                          {newTest.questions[0].options.map(
+                            (option, optionIndex) => (
+                              <div
+                                key={optionIndex}
+                                onClick={() => handleSelectChange(option)}
+                                className="flex items-center p-2 cursor-pointer hover:bg-gray-100"
+                              >
+                                {option.image && (
+                                  <img
+                                    src={option.image}
+                                    alt={`Option ${optionIndex + 1}`}
+                                    className="w-6 h-6 object-cover rounded-full mr-2"
+                                  />
+                                )}
+                                {option.text}
+                              </div>
+                            )
+                          )}
+                        </div>
                       )}
-                      className={`border p-1 sm:p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 text-xs sm:text-base ${
-                        question.options.some((option) => option.trim() === "")
-                          ? "bg-gray-200 cursor-not-allowed"
-                          : ""
-                      }`}
-                    >
-                      <option value="" disabled>
-                        Select Correct Answer
-                      </option>
-                      {question.options.map((option, optionIndex) => (
-                        <option key={optionIndex} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                    </select>
+                    </div>
                   </div>
 
                   {/* Image Upload Section */}
                   <div className="mt-4">
                     <label className="block text-gray-700 font-semibold mb-2 text-sm sm:text-base">
-                      Upload Image
+                      Upload Image For Question
                     </label>
                     <div className="flex items-center gap-4 flex-col sm:flex-row">
                       <input
                         type="file"
-                        ref={fileInputRef} // Attach ref to input
+                        ref={fileInputRef}
                         onChange={(e) => {
                           const selectedFile = e.target.files[0];
                           if (selectedFile) {
-                            handleImageUpload(index, selectedFile);
-                            setFileInputValue(selectedFile.name); // Update file input value to reflect the selected image name
+                            handleImageUpload(
+                              currentQuestionIndex,
+                              selectedFile
+                            );
+                            setFileInputValue(selectedFile.name);
                           }
                         }}
                         className="border p-1 sm:p-2 rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200 cursor-pointer text-xs sm:text-sm"
                       />
-                      {question.image && (
+                      {newTest.questions[currentQuestionIndex].image && (
                         <div className="relative">
                           <img
-                            src={question.image}
+                            src={newTest.questions[currentQuestionIndex].image}
                             alt="Uploaded"
                             className="h-20 w-20 sm:h-32 sm:w-32 object-cover rounded-md shadow-md cursor-pointer"
-                            onClick={() => openModal(question.image)}
+                            onClick={() =>
+                              openModal(
+                                newTest.questions[currentQuestionIndex].image
+                              )
+                            }
                           />
                           <button
                             onClick={() => {
-                              removeImage(index); // Remove the image from the state
-                              setFileInputValue(""); // Clear the file name
+                              removeImage(currentQuestionIndex);
+                              setFileInputValue("");
                               if (fileInputRef.current) {
-                                fileInputRef.current.value = null; // Clear file input using ref
+                                fileInputRef.current.value = null;
                               }
                             }}
                             className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full focus:outline-none text-xs sm:text-sm"
@@ -802,7 +936,7 @@ const MockTestManagement = ({ user }) => {
                     </div>
                   </div>
                 </div>
-              ))}
+              )}
 
               {/* Buttons Section */}
               <div className="flex flex-col sm:flex-row justify-between items-center mt-3 sm:mt-4">
@@ -826,32 +960,6 @@ const MockTestManagement = ({ user }) => {
                 >
                   Submit Test
                 </button>
-
-                {/* Confirmation Modal */}
-                {showConfirmationModal && (
-                  <div className="fixed inset-0 flex items-center justify-center bg-gray-700 bg-opacity-50 sm:bg-opacity-75">
-                    <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md text-center w-10/12 max-w-md sm:max-w-lg">
-                      <p className="text-sm sm:text-base">
-                        All questions are submitted. Do you want to proceed to
-                        the view page?
-                      </p>
-                      <div className="flex justify-center mt-4">
-                        <button
-                          onClick={confirmSubmission}
-                          className="bg-blue-500 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-md text-sm sm:text-base mr-2"
-                        >
-                          Yes
-                        </button>
-                        <button
-                          onClick={() => setShowConfirmationModal(false)}
-                          className="bg-gray-300 text-gray-800 px-3 py-1.5 sm:px-4 sm:py-2 rounded-md text-sm sm:text-base"
-                        >
-                          No
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           </div>
