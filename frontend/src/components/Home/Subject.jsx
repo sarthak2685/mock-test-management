@@ -91,11 +91,10 @@ const Subject = () => {
               }`}
             onClick={() => handleCardClick(exam.name)}
           >
-            {/* Center Ribbon with Lock Icon */}
-            {!user && (
+             {(!user || user.type !== "student") && (
                 <div className="absolute top-0 right-0 -mr-3 -mt-3 bg-red-400 text-xs font-bold text-white py-1 px-3 rounded-full shadow-md">
-             Locked
-           </div>
+                Locked
+              </div>
             )}
 
             <div className="relative w-24 h-24 rounded-full mb-6 flex items-center justify-center bg-white shadow-md">
