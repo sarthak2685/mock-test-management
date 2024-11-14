@@ -22,28 +22,29 @@ const MockTestManagement = ({ user }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [mockTests, setMockTests] = useState([]);
   const [newTest, setNewTest] = useState({
-    instituteNames: [],
-    domain: "",
-    subject: "",
-    duration: "",
-    testName: "", // Add testName field
-    chapter: "ALL", // Set chapter to "ALL" by default
+    instituteNames: [], // Array for institute names
+    domain: "", // String for domain name
+    subject: "", // String for subject
+    duration: "", // String for duration
+    testName: "", // String for test name
+    chapter: "ALL", // Default chapter set to "ALL"
     questions: [
       {
-        index: 0, // Add index to the first question
-        questionText: "",
+        index: 0, // Index for tracking question order
+        questionText: "", // Text of the question
         options: [
-          { text: "", image: null }, // Option 1: Text + Image
-          { text: "", image: null }, // Option 2: Text + Image
-          { text: "", image: null }, // Option 3: Text + Image
-          { text: "", image: null }, // Option 4: Text + Image
+          // Array of option objects for the question
+          { text: "", image: null }, // Option 1
+          { text: "", image: null }, // Option 2
+          { text: "", image: null }, // Option 3
+          { text: "", image: null }, // Option 4
         ],
-        correctAnswer: "",
-        subtopic: "",
+        correctAnswer: "", // The correct answer for the question
+        subtopic: "", // Subtopic associated with the question
       },
     ],
-    correctMark: "", // Initialize the correct mark field
-    negativeMark: "", // Initialize the negative mark field
+    correctMark: "", // Marks for a correct answer
+    negativeMark: "", // Marks to deduct for an incorrect answer
   });
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0); // Starting index for the next question
@@ -159,7 +160,8 @@ const MockTestManagement = ({ user }) => {
   };
 
   // Function to add a new question
-  const addQuestion = () => {
+  {
+    /*const addQuestion = () => {
     setNewTest({
       ...newTest,
       questions: [
@@ -179,7 +181,8 @@ const MockTestManagement = ({ user }) => {
         },
       ],
     });
-  };
+  };*/
+  }
 
   const [questionText, setQuestionText] = useState("");
   const [options, setOptions] = useState(["", "", "", ""]);
@@ -189,13 +192,11 @@ const MockTestManagement = ({ user }) => {
 
   // Function to handle the "Save and Next" button
   const handleSaveAndNext = () => {
-    // Check if newTest or the required fields are undefined or empty
     if (!newTest || !newTest.subject || !Array.isArray(newTest.questions)) {
       console.error("Subject or questions are missing in newTest.");
       return;
     }
 
-    // Ensure that the currentQuestionIndex is within the bounds of the questions array
     if (
       currentQuestionIndex < 0 ||
       currentQuestionIndex >= newTest.questions.length
@@ -205,11 +206,10 @@ const MockTestManagement = ({ user }) => {
     }
 
     const currentQuestion = newTest.questions[currentQuestionIndex];
-
-    // Validate that all required fields are filled
     const hasEmptyOption = currentQuestion.options.some(
-      (option) => option.trim() === ""
+      (option) => typeof option === "string" && option.trim() === ""
     );
+
     const isValid =
       currentQuestion.questionText &&
       !hasEmptyOption &&
@@ -219,52 +219,54 @@ const MockTestManagement = ({ user }) => {
       alert(
         "Please fill in all the required fields (Question Text, Options, Correct Answer) before proceeding."
       );
-      return; // Prevent moving to the next question
+      return;
     }
 
-    // Save the current question data (keeping existing questions)
-    const savedQuestions = [...newTest.questions]; // Keep track of saved questions
+    // Copy questions array to modify
+    const savedQuestions = [...newTest.questions];
 
-    // Update the current question in the savedQuestions array
+    // Update the current question data and add the index field
     savedQuestions[currentQuestionIndex] = {
       ...savedQuestions[currentQuestionIndex],
-      questionText: currentQuestion.questionText, // Save the current questionText
-      options: currentQuestion.options, // Save the current options
-      correctAnswer: currentQuestion.correctAnswer, // Save the correct answer
-      subtopic: currentQuestion.subtopic, // Save the subtopic
-      image: currentQuestion.image, // Save the image if necessary
+      index: currentQuestionIndex, // Add index here
+      questionText: currentQuestion.questionText,
+      options: currentQuestion.options,
+      correctAnswer: currentQuestion.correctAnswer,
+      subtopic: currentQuestion.subtopic,
+      image: currentQuestion.image,
     };
 
-    // Log the saved question data
-    console.log("Saved Question Data:", savedQuestions[currentQuestionIndex]);
+    // Log the saved question data, now including the index field
+    console.log(
+      `Saved Question Data for Question ${currentQuestionIndex + 1}:`,
+      savedQuestions[currentQuestionIndex]
+    );
 
-    // Ensure there's a new empty question for the next set
+    // Prepare for the next question
     const nextQuestionIndex = currentQuestionIndex + 1;
     if (savedQuestions.length <= nextQuestionIndex) {
       savedQuestions.push({
-        questionText: "", // Empty question text
-        options: ["", "", "", ""], // Empty options
-        correctAnswer: "", // Empty correct answer
-        subtopic: "", // Empty subtopic
-        image: null, // No image initially
+        index: nextQuestionIndex, // Add index for the new question
+        questionText: "",
+        options: ["", "", "", ""],
+        correctAnswer: "",
+        subtopic: "",
+        image: null,
       });
     }
 
-    // Update the newTest state with saved questions
     setNewTest({
-      ...newTest, // Keep existing data (e.g., subject, other questions)
-      questions: savedQuestions, // Keep the previously saved questions
+      ...newTest,
+      questions: savedQuestions,
     });
 
-    // Update the currentQuestionIndex to the next question
     setCurrentQuestionIndex(nextQuestionIndex);
-
-    // Reset the fields for the next question
-    setQuestionText(""); // Clear question text input
-    setOptions(["", "", "", ""]); // Clear options
-    setCorrectAnswer(""); // Clear correct answer input
-    setSubtopic(""); // Clear subtopic input
-    setImage(null); // Reset image if necessary
+    setCorrectAnswer("");
+    setDropdownOpen(false);
+    setQuestionText("");
+    setOptions(["", "", "", ""]);
+    setSubtopic("");
+    setImage(null);
   };
 
   const handleDeleteQuestion = (index) => {
@@ -325,16 +327,36 @@ const MockTestManagement = ({ user }) => {
     setNewTest({ ...newTest, questions: updatedQuestions });
   };
 
-  const handleSelectChange = (selectedOption) => {
+  // Handle selection of an answer from dropdown
+  const handleSelectChange = (option) => {
     const updatedQuestions = [...newTest.questions];
-    updatedQuestions[0].correctAnswer = selectedOption; // Store the entire option object
-    setNewTest({ ...newTest, questions: updatedQuestions });
-    setDropdownOpen(false); // Close the dropdown after selection
+    updatedQuestions[currentQuestionIndex] = {
+      ...updatedQuestions[currentQuestionIndex],
+      correctAnswer: option, // Set the selected option as the correct answer
+    };
+    setNewTest({
+      ...newTest,
+      questions: updatedQuestions,
+    });
+    setDropdownOpen(false); // Close dropdown after selection
   };
 
   const handleOptionTextChange = (questionIndex, optionIndex, newText) => {
-    const updatedQuestions = [...newTest.questions];
-    updatedQuestions[questionIndex].options[optionIndex].text = newText;
+    // Create a deep copy of the questions array to maintain immutability
+    const updatedQuestions = newTest.questions.map((question, qIndex) => {
+      if (qIndex === questionIndex) {
+        // Clone the question and update the specific option's text
+        return {
+          ...question,
+          options: question.options.map((option, oIndex) =>
+            oIndex === optionIndex ? { ...option, text: newText } : option
+          ),
+        };
+      }
+      return question;
+    });
+
+    // Update the state with the modified questions array
     setNewTest({ ...newTest, questions: updatedQuestions });
   };
 
@@ -342,8 +364,9 @@ const MockTestManagement = ({ user }) => {
     const file = e.target.files[0];
     const imageUrl = URL.createObjectURL(file); // Get the image URL
 
+    // Update the image for the option
     const updatedQuestions = [...newTest.questions];
-    updatedQuestions[questionIndex].options[optionIndex].image = imageUrl; // Update the image for the option
+    updatedQuestions[questionIndex].options[optionIndex].image = imageUrl;
 
     setNewTest({ ...newTest, questions: updatedQuestions });
   };
@@ -602,10 +625,12 @@ const MockTestManagement = ({ user }) => {
                   <div className="flex-grow">
                     <input
                       type="number"
+                      step="0.01" // Allows decimal inputs
                       name="correctMark"
                       value={newTest.correctMark}
                       onChange={(e) => {
-                        const updatedCorrectMark = e.target.value;
+                        const updatedCorrectMark =
+                          parseFloat(e.target.value) || ""; // Parse as float or empty if NaN
                         setNewTest((prevTest) => ({
                           ...prevTest,
                           correctMark: updatedCorrectMark,
@@ -620,13 +645,22 @@ const MockTestManagement = ({ user }) => {
                   <div className="flex-grow">
                     <input
                       type="number"
+                      step="0.01" // Allows decimal inputs
                       name="negativeMark"
                       value={newTest.negativeMark}
                       onChange={(e) => {
-                        const updatedNegativeMark = e.target.value;
+                        let updatedNegativeMark = e.target.value;
+
+                        // Ensure the value has a negative sign
+                        if (
+                          !updatedNegativeMark.startsWith("-") &&
+                          updatedNegativeMark !== ""
+                        ) {
+                          updatedNegativeMark = `-${updatedNegativeMark}`;
+                        }
                         setNewTest((prevTest) => ({
                           ...prevTest,
-                          negativeMark: updatedNegativeMark,
+                          negativeMark: parseFloat(updatedNegativeMark) || "", // Parse as float or empty if NaN
                         }));
                       }}
                       placeholder="Negative Mark"
@@ -759,7 +793,7 @@ const MockTestManagement = ({ user }) => {
                             <input
                               type="text"
                               placeholder={`Option ${optionIndex + 1}`}
-                              value={option.text}
+                              value={option.text || ""} // Use option.text or "" if it's undefined
                               onChange={(e) =>
                                 handleOptionTextChange(
                                   currentQuestionIndex,
@@ -832,58 +866,60 @@ const MockTestManagement = ({ user }) => {
                   </div>
 
                   {/* Correct Answer Dropdown */}
-                  <div className="flex flex-col gap-1 sm:gap-4 mb-1 sm:mb-2 w-full">
-                    <div className="relative w-full">
-                      <div
-                        onClick={() =>
-                          isDropdownEnabled && setDropdownOpen(!isDropdownOpen)
-                        }
-                        className={`border p-2 w-full rounded-md focus:outline-none ${
-                          isDropdownEnabled
-                            ? "bg-gray-100 cursor-pointer focus:ring focus:ring-blue-400"
-                            : "bg-gray-200 cursor-not-allowed"
-                        } text-xs sm:text-base flex items-center justify-between`}
-                      >
-                        {newTest.questions[0].correctAnswer ? (
-                          newTest.questions[0].correctAnswer.image ? (
-                            <img
-                              src={newTest.questions[0].correctAnswer.image}
-                              alt="Selected option"
-                              className="w-6 h-6 object-cover rounded-full mr-2"
-                            />
-                          ) : (
-                            newTest.questions[0].correctAnswer.text
-                          )
+                  <div className="relative w-full">
+                    <div
+                      onClick={() =>
+                        isDropdownEnabled && setDropdownOpen(!isDropdownOpen)
+                      }
+                      className={`border p-2 w-full rounded-md focus:outline-none ${
+                        isDropdownEnabled
+                          ? "bg-gray-100 cursor-pointer focus:ring focus:ring-blue-400"
+                          : "bg-gray-200 cursor-not-allowed"
+                      } text-xs sm:text-base flex items-center justify-between`}
+                    >
+                      {newTest.questions[currentQuestionIndex].correctAnswer ? (
+                        newTest.questions[currentQuestionIndex].correctAnswer
+                          .image ? (
+                          <img
+                            src={
+                              newTest.questions[currentQuestionIndex]
+                                .correctAnswer.image
+                            }
+                            alt="Selected option"
+                            className="w-6 h-6 object-cover rounded-full mr-2"
+                          />
                         ) : (
-                          "Select Correct Answer"
-                        )}
-                        <span className="ml-2 text-gray-500">&#9662;</span>{" "}
-                        {/* Down arrow */}
-                      </div>
-
-                      {isDropdownOpen && isDropdownEnabled && (
-                        <div className="absolute top-full left-0 w-full bg-white border border-gray-300 mt-2 rounded-md shadow-lg z-10">
-                          {newTest.questions[0].options.map(
-                            (option, optionIndex) => (
-                              <div
-                                key={optionIndex}
-                                onClick={() => handleSelectChange(option)}
-                                className="flex items-center p-2 cursor-pointer hover:bg-gray-100"
-                              >
-                                {option.image && (
-                                  <img
-                                    src={option.image}
-                                    alt={`Option ${optionIndex + 1}`}
-                                    className="w-6 h-6 object-cover rounded-full mr-2"
-                                  />
-                                )}
-                                {option.text}
-                              </div>
-                            )
-                          )}
-                        </div>
+                          newTest.questions[currentQuestionIndex].correctAnswer
+                            .text
+                        )
+                      ) : (
+                        "Select Correct Answer"
                       )}
+                      <span className="ml-2 text-gray-500">&#9662;</span>
                     </div>
+
+                    {isDropdownOpen && isDropdownEnabled && (
+                      <div className="absolute top-full left-0 w-full bg-white border border-gray-300 mt-2 rounded-md shadow-lg z-10">
+                        {newTest.questions[currentQuestionIndex].options.map(
+                          (option, optionIndex) => (
+                            <div
+                              key={optionIndex}
+                              onClick={() => handleSelectChange(option)}
+                              className="flex items-center p-2 cursor-pointer hover:bg-gray-100"
+                            >
+                              {option.image && (
+                                <img
+                                  src={option.image}
+                                  alt={`Option ${optionIndex + 1}`}
+                                  className="w-6 h-6 object-cover rounded-full mr-2"
+                                />
+                              )}
+                              {option.text}
+                            </div>
+                          )
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* Image Upload Section */}
@@ -941,12 +977,12 @@ const MockTestManagement = ({ user }) => {
               {/* Buttons Section */}
               <div className="flex flex-col sm:flex-row justify-between items-center mt-3 sm:mt-4">
                 <div className="flex flex-row gap-1 w-full sm:w-auto">
-                  <button
+                  {/*<button
                     onClick={addQuestion}
                     className="bg-blue-500 text-white p-2 rounded-md w-full sm:w-auto h-8 sm:h-auto text-xs sm:text-base"
                   >
                     Add Question
-                  </button>
+                  </button>*/}
                   <button
                     onClick={handleSaveAndNext}
                     className="bg-teal-500 text-white p-2 rounded-md w-full sm:w-auto h-8 sm:h-auto text-xs sm:text-base"
@@ -960,6 +996,31 @@ const MockTestManagement = ({ user }) => {
                 >
                   Submit Test
                 </button>
+                {/* Confirmation Modal */}
+                {showConfirmationModal && (
+                  <div className="fixed inset-0 flex items-center justify-center bg-gray-700 bg-opacity-50 sm:bg-opacity-75">
+                    <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md text-center w-10/12 max-w-md sm:max-w-lg">
+                      <p className="text-sm sm:text-base">
+                        All questions are submitted. Do you want to proceed to
+                        the view page?
+                      </p>
+                      <div className="flex justify-center mt-4">
+                        <button
+                          onClick={confirmSubmission}
+                          className="bg-blue-500 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-md text-sm sm:text-base mr-2"
+                        >
+                          Yes
+                        </button>
+                        <button
+                          onClick={() => setShowConfirmationModal(false)}
+                          className="bg-gray-300 text-gray-800 px-3 py-1.5 sm:px-4 sm:py-2 rounded-md text-sm sm:text-base"
+                        >
+                          No
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
