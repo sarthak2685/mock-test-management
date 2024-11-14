@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaBars, FaTimes, FaChevronDown } from "react-icons/fa";
 import QuestionNavigation from "../Mock/navigation";
 import Timer from "../Mock/timer";
@@ -9,6 +9,7 @@ const MobileQuizLayout = ({
   handleOptionChange,
   handleNext,
   handlePrevious,
+  handleSaveNext,
   handleMarkForReview,
   handleSubmit,
   score,
@@ -23,13 +24,23 @@ const MobileQuizLayout = ({
   selectedOption,
 }) => {
   const [showNavigation, setShowNavigation] = useState(false);
-  const [showSidebar, setShowSidebar] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  // Function to close dropdown on outside click
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (dropdownOpen && !e.target.closest(".dropdown")) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => document.removeEventListener("mousedown", handleOutsideClick);
+  }, [dropdownOpen]);
 
   return (
     <div className="flex flex-col bg-gray-100 min-h-screen relative">
       {/* Main Content */}
-      <div className={`flex-1 ${showSidebar ? "ml-64" : ""} transition-all duration-300`}>
+      <div className="flex-1 transition-all duration-300">
         
         {/* Header with Timer and Sidebar Toggle */}
         <div className="sticky top-0 bg-white p-4 flex items-center justify-between shadow-md z-10 border-b border-gray-200">
@@ -46,8 +57,8 @@ const MobileQuizLayout = ({
 
         {/* Section Navigation Modal */}
         {showNavigation && (
-          <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center z-20">
-            <div className="bg-white mt-40 rounded-lg p-6 w-11/12 max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl max-h-3/4 overflow-y-auto shadow-lg">
+          <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center z-30">
+            <div className="bg-white rounded-lg p-6 w-11/12 max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl max-h-3/4 overflow-y-auto shadow-lg">
               <h3 className="text-center text-lg font-semibold mb-4 text-gray-700 relative">
                 Sections
                 <button
@@ -60,7 +71,7 @@ const MobileQuizLayout = ({
               </h3>
 
               {/* Custom Dropdown for Section Selection */}
-              <div className="relative w-full max-w-xs mx-auto mb-4">
+              <div className="relative w-full max-w-xs mx-auto mb-4 dropdown">
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                   className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2 flex justify-between items-center text-gray-700"
@@ -70,7 +81,7 @@ const MobileQuizLayout = ({
                 </button>
                 
                 {dropdownOpen && (
-                  <div className="absolute z-30 w-full bg-white border border-gray-300 rounded-lg mt-1 shadow-lg max-h-60 overflow-y-auto">
+                  <div className="absolute z-40 w-full bg-white border border-gray-300 rounded-lg mt-1 shadow-lg max-h-60 overflow-y-auto">
                     {quizData.map((section, index) => (
                       <div
                         key={index}
@@ -94,7 +105,10 @@ const MobileQuizLayout = ({
                   <QuestionNavigation
                     questions={currentSection.questions}
                     selectedQuestionIndex={currentQuestionIndex}
-                    onSelectQuestion={(index) => setCurrentQuestionIndex(index)}
+                    onSelectQuestion={(index) => {
+                      setCurrentQuestionIndex(index);
+                      setShowNavigation(false);
+                    }}
                     onSubmit={handleSubmit}
                     sectionName={currentSection.section}
                     answeredQuestions={answeredQuestions[currentSectionIndex] || []}
@@ -117,17 +131,21 @@ const MobileQuizLayout = ({
                 {currentQuestion?.question}
               </p>
 
-              <div className="space-y-3 mb-4">
+              <div className="space-y-3 grid grid-cols-1 my-10">
                 {currentQuestion?.options.map((option, index) => (
-                  <label key={index} className="flex items-center space-x-3">
-                    <input
-                      type="radio"
-                      name="option"
-                      value={option}
-                      checked={selectedOption === option}
-                      onChange={() => handleOptionChange(option)}
-                      className="form-radio text-blue-500"
-                    />
+                  <label key={index} className={`border border-gray-300 rounded-lg p-4 flex items-center justify-center text-center cursor-pointer ${
+                    selectedOption === option
+                      ? "bg-blue-100 border-blue-500"
+                      : "hover:bg-gray-100"
+                  }`}>
+                       <input
+                        type="radio"
+                        name="option"
+                        value={option}
+                        checked={selectedOption === option}
+                        onChange={() => handleOptionChange(option)}
+                        className="hidden"
+                      />
                     <span className="text-gray-600">{option}</span>
                   </label>
                 ))}
@@ -160,15 +178,15 @@ const MobileQuizLayout = ({
             </button>
             <button
               onClick={handleNext}
+              className="flex-1 bg-gray-300 text-gray-700 px-2 py-2 rounded-lg transition hover:bg-gray-400"
+            >
+              Next
+            </button>
+            <button
+              onClick={handleSaveNext}
               className="flex-1 bg-green-500 text-white px-2 py-2 rounded-lg transition hover:bg-green-600"
             >
               Save & Next
-            </button>
-            <button
-              onClick={handleSubmit}
-              className="flex-1 bg-yellow-500 text-white px-2 py-2 rounded-lg transition hover:bg-yellow-600"
-            >
-              Review Summary
             </button>
           </div>
         )}
