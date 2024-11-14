@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from 'react';
+import { RiInformation2Line } from 'react-icons/ri'; // Importing the new icon
 
 const QuestionNavigation = ({
   questions,
@@ -10,14 +11,76 @@ const QuestionNavigation = ({
   markedForReview = [],
 }) => {
   const [showMarkedOnly, setShowMarkedOnly] = useState(false);
+  const [showInstructions, setShowInstructions] = useState(false); // State to show instructions
+  const prevSectionName = useRef(sectionName);
 
-  // Filter questions based on "Show Marked Only" toggle
+  // Toggle function for instructions
+  const toggleInstructions = () => {
+    setShowInstructions(!showInstructions);
+  };
+
+  useEffect(() => {
+    if (prevSectionName.current !== sectionName) {
+      onSelectQuestion(0);
+      prevSectionName.current = sectionName;
+    }
+  }, [sectionName, onSelectQuestion]);
+
   const filteredQuestions = showMarkedOnly
     ? questions.filter((_, i) => markedForReview.includes(i))
     : questions;
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
+    <div className="bg-white p-6 rounded-lg shadow-lg">
+      {/* Instruction about buttons */}
+      <div className="mb-8 flex justify-between items-center">
+        <button
+          onClick={toggleInstructions}
+          className="text-blue-500 hover:text-blue-700 text-xl flex items-center space-x-2"
+        >
+          <RiInformation2Line className="w-6 h-6" /> {/* Using the new icon */}
+          <span>Instructions</span>
+        </button>
+       
+      </div>
+
+      {/* Conditional rendering of instructions */}
+      {showInstructions && (
+        <div className="mb-4 p-4 bg-blue-50 rounded-md">
+          <p className="text-sm text-gray-600">
+            Here are the instructions for taking the test. Please read them carefully before proceeding.
+            {/* You can customize the instructions here */}
+          </p>
+        </div>
+      )}
+
+      {/* Grid with Question Statuses */}
+      <div className="grid grid-cols-2 gap-4">
+        {/* Current Question */}
+        <div className="flex items-center space-x-2 p-2 bg-blue-50 rounded-lg shadow-sm">
+          <span className="w-6 h-6 bg-blue-500 rounded-md"></span>
+          <span className="text-md font-medium text-gray-700">Current Question</span>
+        </div>
+
+        {/* Answered */}
+        <div className="flex items-center space-x-2 p-2 bg-green-50 rounded-lg shadow-sm">
+          <span className="w-6 h-6 bg-green-500 rounded-md"></span>
+          <span className="text-md font-medium text-gray-700">Answered</span>
+        </div>
+
+        {/* Marked for Review */}
+        <div className="flex items-center space-x-2 p-2 bg-red-50 rounded-lg shadow-sm">
+          <span className="w-6 h-6 bg-red-500 rounded-md"></span>
+          <span className="text-md font-medium text-gray-700">Marked for Review</span>
+        </div>
+
+        {/* Not Answered */}
+        <div className="flex items-center space-x-2 p-2 bg-gray-50 rounded-lg shadow-sm">
+          <span className="w-6 h-6 bg-gray-400 rounded-md"></span>
+          <span className="text-md font-medium text-gray-700">Not Answered</span>
+        </div>
+      </div>
+
       {/* Section Title with Border */}
       <h3 className="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">
         {sectionName}
@@ -40,7 +103,7 @@ const QuestionNavigation = ({
       </div>
 
       {/* Question Navigation Grid */}
-      <div className="grid grid-cols-4 sm:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 mb-6">
+      <div className="grid grid-cols-4 xl:grid-cols-5 gap-4 my-10">
         {filteredQuestions.map((_, i) => (
           <button
             key={i}
@@ -61,7 +124,7 @@ const QuestionNavigation = ({
             }`}
             className={`w-10 h-10 rounded-md font-bold transition duration-200 focus:outline-none focus:ring ${
               selectedQuestionIndex === i
-                ? "bg-blue-500 text-white ring-2 ring-blue-300" // Current selected question
+                ? "bg-blue-200 text-blue-700 ring-2 ring-blue-300" // Current selected question
                 : markedForReview.includes(i)
                 ? "bg-red-500 text-white" // Marked for review
                 : answeredQuestions[i] !== undefined
