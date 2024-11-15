@@ -51,7 +51,7 @@ const Chapters = () => {
                   </p>
                 </div>
                 <Link
-                  to={`/take-test/${chapter.id}`}
+                  to={`/instruction`}
                   className="inline-block bg-[#007bff] text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300 text-center"
                 >
                   Take Test

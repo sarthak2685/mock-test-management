@@ -29,6 +29,7 @@ import AdminList from "./components/SuperAdminDashboard/AdminList.jsx";
 import Chapters from "./components/Home/Chapeter.jsx";
 import MockTest from "./components/Home/Mock/MockTest.jsx";
 import ScoreCard from "./components/Home/Mock/Score.jsx";
+import Instructions from "./components/Home/Mock/Instructions.jsx";
 
 function App() {
   const location = useLocation();
@@ -76,6 +77,7 @@ function App() {
           <Route path="/chapters/:subjectName" element={<Chapters />} />
           <Route path="/mock-test" element={<MockTest />} />
           <Route path="/score" element={<ScoreCard />} />
+          <Route path="/instruction" element={<Instructions />} />
         </Routes>
 
         {isNavbarFooterVisible && <Footer />}

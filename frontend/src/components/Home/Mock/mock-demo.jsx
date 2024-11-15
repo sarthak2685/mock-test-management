@@ -4,7 +4,7 @@ import { quizData } from "../Mock/quiz";
 import QuestionNavigation from "../Mock/navigation";
 import MobileQuizLayout from "./MobileQuizLayout";
 import { FaBrain, FaBook, FaCalculator, FaLanguage } from "react-icons/fa"; // Icons for sections
-import { MdTimer } from "react-icons/md";
+
 
 const MockDemo = () => {
   const user = {
@@ -26,7 +26,7 @@ const MockDemo = () => {
 
   const currentSection = quizData[currentSectionIndex];
   const currentQuestion = currentSection.questions[currentQuestionIndex];
-  const isMobile = useMediaQuery({ query: "(max-width: 1024px)" });
+  const isMobile = useMediaQuery({ query: "(max-width: 768px)" });
 
   useEffect(() => {
     setSelectedOption(
@@ -151,6 +151,7 @@ const MockDemo = () => {
       <div
         style={{
           backgroundColor: "white",
+          borderRadius:"5px",
           border: "1px solid #ccc",
           display: "flex",
           alignItems: "center",
@@ -237,13 +238,13 @@ const MockDemo = () => {
       selectedOption={selectedOption}
     />
   ) : (
-    <div className="flex flex-col items-center bg-gray-100 p-4 min-h-full">
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 w-full max-w-full">
+    <div className="flex flex-col items-center bg-gray-100  min-h-full">
+      <div className="grid  lg:grid-cols-12 gap-4 w-full max-w-full">
         <div className="lg:col-span-9 col-span-full bg-white rounded-lg shadow-lg">
           {!submitted ? (
             <>
               {/* Section Navigation */}
-              <div className="col-span-full flex flex-row grid grid-cols-4 space-x-4 py-4 px-8 bg-gray-100 rounded-lg shadow-md">
+              <div className="col-span-full grid grid-cols-4 space-x-4 py-4 px-8 bg-gray-100 rounded-lg shadow-md">
                 {quizData.map((section, index) => (
                   <button
                     key={index}
@@ -277,9 +278,9 @@ const MockDemo = () => {
                     <h2 className="font-semibold">-1 marks</h2>
                   </div>
                 </div>
-                <div className="col-span-2 space-x-2 flex flex-row items-center justify-center">
+                <div className="col-span-2 space-x-2 flex flex-row items-center justify-center ">
                   <span className="text-[#007bff]">View in: </span>
-                  <LanguageDropdown />
+                  <LanguageDropdown/>
                 </div>
                 <div className="col-span-2 flex items-center justify-end">
                   <Timer />
@@ -318,14 +319,14 @@ const MockDemo = () => {
                   ))}
                 </div>
 
-                <div className="grid grid-cols-12 items-center  mt-[20%]">
+                <div className="grid grid-cols-12 items-center  lg:mt-[25%] xl:mt-[20%] 2xl:mt-[17%]">
                   <button
                     onClick={handleMarkForReview}
-                    className="bg-red-500 text-white px-5 py-3 col-span-2 rounded-lg shadow-md hover:bg-red-600"
+                    className="bg-red-500 text-white px-5 py-3 col-span-3 rounded-lg shadow-md hover:bg-red-600"
                   >
                     Mark for Review
                   </button>
-                  <div className="col-span-2" />
+                  <div className="col-span-1" />
                   <div className="grid grid-cols-2 col-span-4 items-center space-x-4  gap-10">
                     <button
                       onClick={handlePrevious}
@@ -359,7 +360,7 @@ const MockDemo = () => {
                       Next
                     </button>
                   </div>
-                  <div className="col-span-2" />
+                  <div className="col-span-1" />
 
                   <button
                     onClick={handleSubmitNext}
@@ -368,7 +369,7 @@ const MockDemo = () => {
                         currentSection.questions.length - 1 &&
                       currentSectionIndex === quizData.length - 1
                     }
-                    className={`px-5 py-3 col-span-2 rounded-lg shadow-md ${
+                    className={`px-5 py-3 col-span-3 rounded-lg shadow-md ${
                       currentQuestionIndex ===
                         currentSection.questions.length - 1 &&
                       currentSectionIndex === quizData.length - 1
