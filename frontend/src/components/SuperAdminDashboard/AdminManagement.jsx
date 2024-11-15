@@ -41,7 +41,7 @@ const AdminManagement = ({ user }) => {
   };
 
   const [subscriptionPlans, setSubscriptionPlans] = useState([]);
-  const API_BASE_URL = "https://mockexam.pythonanywhere.com/licences";
+  // const API_BASE_URL = "https://mockexam.pythonanywhere.com/licences";
 
   const fetchPlans = async () => {
     if (!token) {
@@ -50,17 +50,21 @@ const AdminManagement = ({ user }) => {
     }
 
     try {
-      const response = await axios.get(API_BASE_URL, {
+      const response = await fetch(`${config.apiUrl}/licences`, {
+        method: "GET",
         headers: {
           Authorization: `Token ${token}`,
           "Content-Type": "application/json",
         },
       });
+      const result = await response.json();
 
-      if (Array.isArray(response.data)) {
-        setSubscriptionPlans(response.data);
+      // console.log("Request",result)
+
+      if (Array.isArray(result)) {
+        setSubscriptionPlans(result);
       } else {
-        console.error("no plan available", response.data);
+        console.error("no plan available", result);
       }
     } catch (error) {
       console.log("Error fetching subscription plans:", error);
@@ -222,16 +226,22 @@ const AdminManagement = ({ user }) => {
     }
   };
   const handleRemoveAdmin = async (id) => {
-    try {
-      await axios.delete(`${config.apiUrl}/vendor-admin-crud/${id}`); // Adjust the endpoint as needed
-      setAdmins(admins.filter((admin) => admin.id !== id));
-    } catch (error) {
-      console.error("Error deleting admin:", error);
-      setError("Failed to delete admin. Please try again.");
+    console.log("Admin ID:", id); // Add this line
+    if (!id) {
+       console.error("ID is undefined");
+       setError("Invalid admin ID.");
+       return;
     }
-  };
-
-  const handleChangePassword = async (id) => {
+    try {
+       await axios.delete(`${config.apiUrl}/vendor-admin-crud/${id}`);
+       setAdmins(admins.filter((admin) => admin.id !== id));
+    } catch (error) {
+       console.error("Error deleting admin:", error);
+       setError("Failed to delete admin. Please try again.");
+    }
+ };
+ 
+    const handleChangePassword = async (id) => {
     const newPassword = prompt("Enter new password:");
     if (newPassword) {
       try {
@@ -283,6 +293,8 @@ const AdminManagement = ({ user }) => {
     link.click();
     document.body.removeChild(link);
   };
+  console.log("Admin",currentAdmins);
+
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -396,33 +408,31 @@ const AdminManagement = ({ user }) => {
 
                     {/* Subscription Plan Dropdown */}
                     <div className="relative">
-                      <FaCogs className="absolute left-3 top-3 text-gray-400 sm:left-2 sm:top-2 sm:text-xs lg:left-3 lg:top-3 lg:text-sm" />
-                      <select
-                        value={admin.subscriptionPlan || ""} // Ensure admin.subscriptionPlan is controlled
-                        onChange={(e) =>
-                          handleAdminChange(
-                            index,
-                            "subscriptionPlan",
-                            e.target.value
-                          )
-                        }
-                        className="border text-gray-400 p-2 pl-10 mb-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 sm:p-1 sm:pl-8 sm:mb-1 sm:text-xs lg:p-2 lg:pl-10 lg:mb-2 lg:text-sm"
-                      >
-                        <option value="">Select Subscription Plan</option>
-                        {/* Check if subscriptionPlans is an array and has length */}
-                        {Array.isArray(subscriptionPlans) &&
-                        subscriptionPlans.length > 0 ? (
-                          subscriptionPlans.map((plan) => (
-                            <option key={plan.id} value={plan.id}>
-                              {plan.name || "Unnamed Subscription"}{" "}
-                              {/* Fallback to "Unnamed Subscription" if name is null */}
-                            </option>
-                          ))
-                        ) : (
-                          <option disabled>No plans available</option>
-                        )}
-                      </select>
-                    </div>
+  <FaCogs className="absolute left-3 top-3 text-gray-400 sm:left-2 sm:top-2 sm:text-xs lg:left-3 lg:top-3 lg:text-sm" />
+  <select
+    value={admin.subscriptionPlan || ""} // Controlled input for subscriptionPlan
+    onChange={(e) =>
+      handleAdminChange(
+        index,
+        "subscriptionPlan",
+        e.target.value
+      )
+    }
+    className="border text-gray-400 p-2 pl-10 mb-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 sm:p-1 sm:pl-8 sm:mb-1 sm:text-xs lg:p-2 lg:pl-10 lg:mb-2 lg:text-sm"
+  >
+    <option value="">Select Subscription Plan</option>
+    {Array.isArray(subscriptionPlans) && subscriptionPlans.length > 0 ? (
+      subscriptionPlans.map((plan) => (
+        <option key={plan.id} value={plan.id}>
+          {plan.name || "Unnamed Subscription"}
+        </option>
+      ))
+    ) : (
+      <option disabled>No plans available</option>
+    )}
+  </select>
+</div>
+
                   </div>
                 </div>
               ))}

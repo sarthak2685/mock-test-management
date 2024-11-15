@@ -9,7 +9,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
   
   const handleLogout = () => {
     localStorage.removeItem("user");
-    window.location.href = "/login"; // Replace with your login route
+    window.location.href = "/login"; 
   };
 
   return (

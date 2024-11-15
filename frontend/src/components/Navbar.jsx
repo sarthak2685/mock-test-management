@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import Cookies from 'js-cookie';
-import { useUser } from './UserContext/UserContext';
-
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
+import { useUser } from "./UserContext/UserContext";
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -11,20 +10,17 @@ const Navbar = () => {
   const navigate = useNavigate();
   const { users, logout } = useUser();
 
-
-  
   useEffect(() => {
-    const userData = JSON.parse(localStorage.getItem('user'));
+    const userData = JSON.parse(localStorage.getItem("user"));
     if (userData) {
       setUser(userData);
     }
-  }, []); 
-  
+  }, []);
 
   // Function to trigger the logout process
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate("/login");
     //reload
     window.location.reload();
   };
@@ -47,11 +43,14 @@ const Navbar = () => {
           </div>
 
           <div className="hidden md:flex items-center space-x-9">
-            <Link to="/contact" className="hover:text-[#007bff] px-3 py-2 text-xl font-medium">
+            <Link
+              to="/contact"
+              className="hover:text-[#007bff] px-3 py-2 text-xl font-medium"
+            >
               Contact
             </Link>
 
-            {user && user.type === 'student' ? (
+            {user && user.type === "student" ? (
               <div className="relative">
                 <div
                   className="cursor-pointer flex items-center space-x-2"
@@ -65,7 +64,7 @@ const Navbar = () => {
                     />
                   ) : (
                     <div className="w-10 h-10 rounded-full bg-[#007bff] flex items-center justify-center text-white font-semibold">
-                      {user.user ? user.user.charAt(0).toUpperCase() : ''}
+                      {user.user ? user.user.charAt(0).toUpperCase() : ""}
                     </div>
                   )}
                 </div>
@@ -80,7 +79,10 @@ const Navbar = () => {
                       Dashboard
                     </Link>
                     <button
-                      onClick={() => { handleLogout(); setProfileMenuOpen(false); }}
+                      onClick={() => {
+                        handleLogout();
+                        setProfileMenuOpen(false);
+                      }}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
                     >
                       Logout
@@ -134,7 +136,7 @@ const Navbar = () => {
             Contact
           </Link>
 
-          {user && user.role === 'student' ? (
+          {user && user.role === "student" ? (
             <div className="relative">
               <div
                 className="flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium cursor-pointer"
@@ -148,7 +150,7 @@ const Navbar = () => {
                   />
                 ) : (
                   <div className="w-8 h-8 rounded-full bg-[#007bff] flex items-center justify-center text-white font-semibold">
-                    {user.user ? user.user.charAt(0).toUpperCase() : ''}
+                    {user.user ? user.user.charAt(0).toUpperCase() : ""}
                   </div>
                 )}
                 <span>{user.user}</span>
@@ -159,12 +161,18 @@ const Navbar = () => {
                   <Link
                     to="/student-dashboard"
                     className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
-                    onClick={() => { setProfileMenuOpen(false); setMobileMenuOpen(false); }}
+                    onClick={() => {
+                      setProfileMenuOpen(false);
+                      setMobileMenuOpen(false);
+                    }}
                   >
                     Dashboard
                   </Link>
                   <button
-                    onClick={() => { handleLogout(); setMobileMenuOpen(false); }}
+                    onClick={() => {
+                      handleLogout();
+                      setMobileMenuOpen(false);
+                    }}
                     className="block w-full text-left px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
                   >
                     Logout

@@ -9,7 +9,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem("userData");
+    localStorage.removeItem("user");
     // Navigate to the login page
     navigate("/login");
   };

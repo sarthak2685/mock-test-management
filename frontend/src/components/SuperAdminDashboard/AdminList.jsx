@@ -2,94 +2,57 @@ import React, { useState, useEffect } from "react";
 import DashboardHeader from "../SuperAdminDashboard/Header";
 import Sidebar from "../SuperAdminDashboard/Sidebar";
 import axios from "axios";
+import config from "../../config";
 
 const AdminList = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [user, setUser] = useState(null); // State to hold user data
-  const [subscriptionPlans, setSubscriptionPlans] = useState([]); // State to store subscription plans
-  const [token, setToken] = useState(localStorage.getItem("token")); // Assuming token is stored in localStorage
-  const API_BASE_URL = "https://mockexam.pythonanywhere.com/licences"; // Your API endpoint
+  const [user, setUser] = useState(null);
+  const [subscriptionPlans, setSubscriptionPlans] = useState([]);
+  const [admins, setAdmins] = useState([]);
+  const S = JSON.parse(localStorage.getItem("user"));
+  const token = S.token;
 
-  // Fetch subscription plans from API
-  const fetchPlans = async () => {
-    if (!token) {
-      console.log("No token found, unable to fetch subscription plans.");
-      return;
-    }
-
-    try {
-      const response = await axios.get(API_BASE_URL, {
-        headers: {
-          Authorization: `Token ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (Array.isArray(response.data)) {
-        setSubscriptionPlans(response.data);
-      } else {
-        console.error("No plans available", response.data);
-      }
-    } catch (error) {
-      console.log("Error fetching subscription plans:", error);
-      if (error.response) {
-        console.log("Error Response:", error.response); // Check the response error
-      }
-    }
-  };
-
-  useEffect(() => {
-    fetchPlans(); // Fetch subscription plans when component mounts
-  }, []);
 
   useEffect(() => {
     // Retrieve user data from localStorage
     const storedUser = localStorage.getItem("user");
-    console.log("Stored User Data:", storedUser); // Log stored data
-
     if (storedUser) {
-      const parsedUser = JSON.parse(storedUser); // Parse the stored user data
-      setUser(parsedUser); // Set the user state
+      const parsedUser = JSON.parse(storedUser);
+      setUser(parsedUser);
     }
   }, []);
 
-  const instituteData = [
-    {
-      id: 1,
-      name: "Tech University",
-      duration: "1 Year",
-      subscriptionId: 1, // Reference to subscription plan
-      subscriptionEnd: "2024-11-20", // Expiring soon
-    },
-    {
-      id: 2,
-      name: "Green Valley College",
-      duration: "6 Months",
-      subscriptionId: 2, // Reference to subscription plan
-      subscriptionEnd: "2024-11-25", // Expiring soon
-    },
-    {
-      id: 3,
-      name: "Harbor Institute",
-      duration: "2 Years",
-      subscriptionId: 3, // Reference to subscription plan
-      subscriptionEnd: "2025-06-15", // Not expiring soon
-    },
-    {
-      id: 4,
-      name: "Sunshine Academy",
-      duration: "3 Years",
-      subscriptionId: 4, // Reference to subscription plan
-      subscriptionEnd: "2024-12-10", // Expiring soon
-    },
-    {
-      id: 5,
-      name: "Mountain College",
-      duration: "1 Year",
-      subscriptionId: 1, // Reference to subscription plan
-      subscriptionEnd: "2025-05-01", // Not expiring soon
-    },
-  ];
+  useEffect(() => {
+    const fetchAdmins = async () => {
+      try {
+        const response = await fetch(`${config.apiUrl}/vendor-admin-crud/`, {
+          method: "GET",
+          headers: {
+            Authorization: `Token ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Error: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        console.log("Fetched Data:", result);
+
+        // Assuming result.data contains the list of admins with subscription info
+        if (Array.isArray(result.data)) {
+          setAdmins(result.data);
+        } else {
+          console.error("Expected an array but received:", result.data);
+        }
+      } catch (error) {
+        console.error("Error fetching admins:", error);
+      }
+    };
+
+    fetchAdmins();
+  }, [token]);
 
   const toggleSidebar = () => {
     setIsCollapsed((prev) => !prev);
@@ -114,39 +77,23 @@ const AdminList = () => {
   const isSubscriptionExpiring = (expiryDate) => {
     const currentDate = new Date();
     const expiry = new Date(expiryDate);
-    const oneWeekLater = new Date(
-      currentDate.setDate(currentDate.getDate() + 7)
-    );
-    console.log("Expiry:", expiry, "One Week Later:", oneWeekLater); // Log for debugging
+    const oneWeekLater = new Date(currentDate.setDate(currentDate.getDate() + 7));
     return expiry <= oneWeekLater;
   };
 
   return (
     <div className="flex flex-col min-h-screen">
       <div className="flex flex-row flex-grow">
-        <Sidebar
-          isCollapsed={isCollapsed}
-          toggleSidebar={toggleSidebar}
-          className="hidden md:block"
-        />
+        <Sidebar isCollapsed={isCollapsed} toggleSidebar={toggleSidebar} className="hidden md:block" />
 
-        <div
-          className={`flex-grow transition-all duration-300 ease-in-out ${
-            isCollapsed ? "ml-0" : "ml-64"
-          }`}
-        >
+        <div className={`flex-grow transition-all duration-300 ease-in-out ${isCollapsed ? "ml-0" : "ml-64"}`}>
           <DashboardHeader user={user} toggleSidebar={toggleSidebar} />
 
           <div className="p-2 md:p-6">
-            <h1 className="text-2xl md:text-3xl font-bold mb-4 text-left">
-              Admin List
-            </h1>
+            <h1 className="text-2xl md:text-3xl font-bold mb-4 text-left">Admin List</h1>
 
             {/* Institutes List */}
             <div className="bg-white shadow-lg rounded-lg p-3">
-              <h2 className="text-lg sm:text-2xl md:text-2xl font-semibold mb-3 text-gray-800">
-                Institutes List
-              </h2>
 
               {/* Table */}
               <div className="overflow-x-auto rounded-lg">
@@ -168,83 +115,31 @@ const AdminList = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {/* Test row for showing the Renew button */}
-                    <tr className="hover:bg-gray-100 transition-colors bg-white">
-                      <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
-                        <p className="text-gray-900 font-medium whitespace-no-wrap">
-                          Test Institute
-                        </p>
-                      </td>
-                      <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
-                        <p className="text-gray-900 font-bold whitespace-no-wrap">
-                          1 Year
-                        </p>
-                      </td>
-                      <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
-                        <p className="text-gray-700 whitespace-no-wrap">
-                          Premium
-                        </p>
-                      </td>
-                      <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
-                        <div className="flex items-center space-x-2">
-                          <button className="bg-red-500 text-white py-2 px-4 rounded-md">
-                            Renew
-                          </button>
-                          <p className="text-red-500 text-xs mb-0">
-                            Subscription is expiring on 2024-11-20.
-                          </p>
-                        </div>
-                      </td>
-                    </tr>
-
-                    {/* Dynamic rows for institutes */}
-                    {instituteData.map((institute) => {
-                      // Get the subscription name from subscriptionPlans based on subscriptionId
-                      const subscription = subscriptionPlans.find(
-                        (plan) => plan.id === institute.subscriptionId
-                      );
+                    {admins.map((admin) => {
 
                       return (
-                        <tr
-                          key={institute.id}
-                          className={`hover:bg-gray-100 transition-colors bg-white`}
-                        >
+                        <tr key={admin.id} className="hover:bg-gray-100 transition-colors bg-white">
                           <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
-                            <p className="text-gray-900 font-medium whitespace-no-wrap">
-                              {institute.name}
-                            </p>
+                            <p className="text-gray-900 font-medium whitespace-no-wrap">{admin.name}</p>
                           </td>
                           <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
-                            <p className="text-gray-900 font-bold whitespace-no-wrap">
-                              {institute.duration}
-                            </p>
+                            <p className="text-gray-900 font-bold whitespace-no-wrap">{admin.duration || "30 Days"}</p>
                           </td>
                           <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
-                            {/* Display subscription name */}
                             <p className="text-gray-700 whitespace-no-wrap">
-                              {subscription
-                                ? subscription.name
-                                : "Unknown Plan"}
+                              {admin.licence || "No Plan" }
                             </p>
                           </td>
                           <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
-                            {/* Conditional Button Rendering */}
-                            {isSubscriptionExpiring(
-                              institute.subscriptionEnd
-                            ) ? (
+                            {isSubscriptionExpiring(admin.subscriptionEnd) ? (
                               <div className="flex items-center space-x-2">
-                                <button className="bg-red-500 text-white py-2 px-4 rounded-md">
-                                  Renew
-                                </button>
+                                <button className="bg-red-500 text-white py-2 px-4 rounded-md">Renew</button>
                                 <p className="text-red-500 text-xs mb-0">
-                                  Subscription is expiring on{" "}
-                                  {institute.subscriptionEnd}.
+                                  Subscription is expiring on {admin.subscriptionEnd}.
                                 </p>
                               </div>
                             ) : (
-                              <button className="bg-blue-500 text-white py-2 px-4 rounded-md">
-                                Update
-                              </button>
+                              <button className="bg-blue-500 text-white py-2 px-4 rounded-md">Update</button>
                             )}
                           </td>
                         </tr>
