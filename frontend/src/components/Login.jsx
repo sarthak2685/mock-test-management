@@ -1,49 +1,54 @@
-import React, { useState } from 'react';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import config from '../config';
-import illustrationImage from '../assets/login.webp';
-
+import React, { useState } from "react";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import config from "../config";
+import illustrationImage from "../assets/login.webp";
 
 const Login = () => {
-  const [mobileNumber, setMobileNumber] = useState('');
-  const [password, setPassword] = useState('');
+  const [mobileNumber, setMobileNumber] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-  
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(`${config.apiUrl}/admin-student-owner/login/`, {
-        mobileno: mobileNumber,
-        password: password,
-      },
-      {
-      headers:{
-        'Content-Type': 'application/json',
-      }
-    }
-    );
+      const response = await axios.post(
+        `${config.apiUrl}/admin-student-owner/login/`,
+        {
+          mobileno: mobileNumber,
+          password: password,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (response.data.data && response.data.data.type) {
-        const { type, user, mobileNumber,token } = response.data.data;
+        const { type, user, mobileNumber, token } = response.data.data;
 
         // Save user data to localStorage
-        localStorage.setItem('user', JSON.stringify({ type, user, mobileNumber, token }));
-        // console.log("User Data Stored in LocalStorage:", JSON.parse(localStorage.getItem('user')));
+        localStorage.setItem(
+          "user",
+          JSON.stringify({ type, user, mobileNumber, token })
+        );
 
-        // Navigate based on role
-        if (type === 'owner') {
-          navigate('/super-admin');
-        } else if (type === 'admin') {
-          navigate('/admin');
-        } else if (type === 'student') {
-          navigate('/');
+        // Navigate and refresh based on role
+        if (type === "owner") {
+          navigate("/super-admin");
+          setTimeout(() => window.location.reload(), 0); // Refresh page
+        } else if (type === "admin") {
+          navigate("/admin");
+          setTimeout(() => window.location.reload(), 0); // Refresh page
+        } else if (type === "student") {
+          navigate("/");
+          setTimeout(() => window.location.reload(), 0); // Refresh page
         } else {
           setError("Unknown role. Please contact support.");
         }
@@ -81,7 +86,7 @@ const Login = () => {
 
             <div className="relative">
               <input
-                type={showPassword ? 'text' : 'password'}
+                type={showPassword ? "text" : "password"}
                 id="password"
                 name="password"
                 className="w-full border-b-2 border-gray-300 py-2 px-4 focus:outline-none focus:border-blue-500 transition duration-300"
@@ -105,7 +110,10 @@ const Login = () => {
               </a>
             </div>
 
-            <button type="submit" className="w-full bg-[#007bff] hover:bg-blue-700 text-white font-semibold py-3 rounded-md transition duration-300">
+            <button
+              type="submit"
+              className="w-full bg-[#007bff] hover:bg-blue-700 text-white font-semibold py-3 rounded-md transition duration-300"
+            >
               Log In
             </button>
           </form>
