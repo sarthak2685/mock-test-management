@@ -28,6 +28,7 @@ import View from "./components/SuperAdminDashboard/View.jsx";
 import AdminList from "./components/SuperAdminDashboard/AdminList.jsx";
 import Chapters from "./components/Home/Chapeter.jsx";
 import MockTest from "./components/Home/Mock/MockTest.jsx";
+import Instructions from "./components/Home/Mock/Instructions.jsx";
 
 function App() {
   const location = useLocation();
@@ -58,22 +59,18 @@ function App() {
         <Route path="/performance" element={<ChartComponent />} />
         <Route path="/admin-management" element={<AdminManagement />} />
         <Route path="/admins-list" element={<AdminList />} />
-        <Route
-          path="/student-performance/:id"
-          element={<StudentPerformance />}
-        />
+        <Route path="/student-performance/:id" element={<StudentPerformance />} />
         <Route path="/mock-demo" element={<MockDemo />} />
         <Route path="/student-dashboard" element={<Dashboards />} />
         <Route path="/student-performance" element={<Performances />} />
-        <Route
-          path="/student-performances/:id"
-          element={<StudentPerformances />}
-        />
+        <Route path="/student-performances/:id" element={<StudentPerformances />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/help" element={<Help />} />
         <Route path="/view" element={<View />} />
         <Route path="/chapters/:subjectName" element={<Chapters />} />
         <Route path="/mock-test" element={<MockTest />} />
+        <Route path="/Instructions" element={<Instructions/>} />
+
 
       </Routes>
 

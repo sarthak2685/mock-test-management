@@ -31,7 +31,7 @@ const QuestionNavigation = ({
     : questions;
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-lg">
+    <div className="bg-white p-7 rounded-lg shadow-lg">
       {/* Instruction about buttons */}
       <div className="mb-8 flex justify-between items-center">
         <button
@@ -103,7 +103,7 @@ const QuestionNavigation = ({
       </div>
 
       {/* Question Navigation Grid */}
-      <div className="grid grid-cols-4 xl:grid-cols-5 gap-4 my-10">
+      <div className="grid grid-cols-4 md:grid-cols-5 gap-4 my-10">
         {filteredQuestions.map((_, i) => (
           <button
             key={i}

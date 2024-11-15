@@ -136,7 +136,7 @@ const FreeMock = () => {
                 </div>
               </div>
 
-              <Link to="/mock-demo">
+              <Link to="/Instructions">
                 <button className="mt-4 px-4 py-2 items-center bg-[#007bff] text-white rounded-md hover:bg-blue-600 transition-colors">
                   Start Test
                 </button>

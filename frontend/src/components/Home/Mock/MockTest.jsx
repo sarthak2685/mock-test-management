@@ -44,7 +44,7 @@ const MockTest = () => {
                   </p>
                 </div>
                 <Link
-                  to={`/start-test/${test.id}`}
+                  to="/Instructions"
                   className="inline-block bg-[#007bff] text-white font-semibold py-1 px-3 rounded-lg hover:bg-blue-700 transition duration-300 text-center text-sm"
                 >
                   Start Test
