@@ -6,6 +6,7 @@ import Select from "react-select";
 import { Link, useNavigate } from "react-router-dom";
 import { InlineMath } from "react-katex"; // For inline math rendering
 import "katex/dist/katex.min.css"; // KaTeX styles
+import config from "../../config";
 
 const institutes = ["Institute A", "Institute B", "Institute C"];
 const subjects = ["Mathematics", "Science", "History", "ALL"];
@@ -57,6 +58,9 @@ const MockTestManagement = ({ user }) => {
   //const [questionText, setQuestionText] = useState("");
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
+  const S = JSON.parse(localStorage.getItem("user"));
+  const token = S.token;
+  const [subjects, setSubjects] = useState([]);
 
   const toggleSidebar = () => {
     setIsCollapsed((prev) => !prev);
@@ -371,6 +375,154 @@ const MockTestManagement = ({ user }) => {
     setNewTest({ ...newTest, questions: updatedQuestions });
   };
 
+  const [domains, setDomains] = useState([]);
+
+  const fetchDomains = async () => {
+    if (!token) {
+      console.log("No token found, unable to fetch Domain.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${config.apiUrl}/exams/`, {
+        method: "GET",
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      const result = await response.json();
+
+      console.log("Request", result);
+
+      if (Array.isArray(result)) {
+        setDomains(result);
+      } else {
+        console.error("no domain available", result);
+      }
+    } catch (error) {
+      console.log("Error fetching Domain:", error);
+      if (error.response) {
+        console.log("Error Response:", error.response); // Check the response error
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchDomains();
+  }, []); // Run once when the component mounts
+
+  const fetchSubjects = async () => {
+    if (!token) {
+      console.log("No token found, unable to fetch Domain.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${config.apiUrl}/exam-subjects/`, {
+        method: "GET",
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      const result = await response.json();
+
+      console.log("Request", result);
+
+      if (Array.isArray(result)) {
+        const allOption = { name: "ALL", id: "all" };
+        setSubjects([allOption, ...result]);
+      } else {
+        console.error("no subject available", result);
+      }
+    } catch (error) {
+      console.log("Error fetching Subject:", error);
+      if (error.response) {
+        console.log("Error Response:", error.response); // Check the response error
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchSubjects();
+  }, []);
+
+  const [subTopic, setSubTopic] = useState([]);
+
+  const fetchSubtopic = async () => {
+    if (!token) {
+      console.log("No token found, unable to fetch Domain.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${config.apiUrl}/exam-subjects/`, {
+        method: "GET",
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      const result = await response.json();
+
+      console.log("Request Subtopic", result);
+
+      if (Array.isArray(result)) {
+        setSubTopic(result);
+      } else {
+        console.error("no subject available", result);
+      }
+    } catch (error) {
+      console.log("Error fetching Subject:", error);
+      if (error.response) {
+        console.log("Error Response:", error.response); // Check the response error
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchSubtopic();
+  }, []);
+
+  const [chapters, setChapters] = useState([]);
+
+  const fetchChapters = async () => {
+    if (!token) {
+      console.log("No token found, unable to fetch Domain.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${config.apiUrl}/exam-subject-chapters/`, {
+        method: "GET",
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      const result = await response.json();
+
+      console.log("Request Chapter", result);
+
+      if (Array.isArray(result)) {
+        const allOption = { name: "ALL Chapter", id: "all" };
+        setChapters([allOption, ...result]);
+      } else {
+        console.error("no Chapter available", result);
+      }
+    } catch (error) {
+      console.log("Error fetching Chapter:", error);
+      if (error.response) {
+        console.log("Error Response:", error.response); // Check the response error
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchChapters();
+  }, []); // Run once when the component mounts
+
   const instituteOptions = institutes.map((institute) => ({
     value: institute,
     label: institute,
@@ -489,7 +641,7 @@ const MockTestManagement = ({ user }) => {
                   </div>
 
                   {/* Domain Dropdown */}
-                  <div className="flex-grow">
+                  <div className="flex-grow" onClick={fetchDomains}>
                     <select
                       name="domain"
                       value={newTest.domain}
@@ -499,9 +651,9 @@ const MockTestManagement = ({ user }) => {
                       <option value="" disabled>
                         Select Domain
                       </option>
-                      {domainOptions.map((domain) => (
-                        <option key={domain.value} value={domain.value}>
-                          {domain.label}
+                      {domains.map((domain) => (
+                        <option key={domain.id} value={domain.name}>
+                          {domain.name}
                         </option>
                       ))}
                     </select>
@@ -549,7 +701,7 @@ const MockTestManagement = ({ user }) => {
                   </div>
 
                   {/* Subject Dropdown */}
-                  <div>
+                  <div onClick={fetchSubjects}>
                     <select
                       name="subject"
                       value={newTest.subject}
@@ -585,16 +737,16 @@ const MockTestManagement = ({ user }) => {
                       <option value="" disabled>
                         Select Subject
                       </option>
-                      {subjectOptions.map((subject) => (
-                        <option key={subject.value} value={subject.value}>
-                          {subject.label}
+                      {subjects.map((subject) => (
+                        <option key={subject.id} value={subject.name}>
+                          {subject.name} {/* Use 'name' property directly */}
                         </option>
                       ))}
                     </select>
                   </div>
 
                   {/* Chapter Dropdown */}
-                  <div>
+                  <div onClick={fetchChapters}>
                     <select
                       name="chapter"
                       value={newTest.chapter || "ALL"} // Default to "ALL" if newTest.chapter is empty
@@ -608,11 +760,13 @@ const MockTestManagement = ({ user }) => {
                       className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
                     >
                       {/* "All" option */}
-                      <option value="ALL">All Chapter</option>
+                      <option value="" disabled>
+                        Select Chapter
+                      </option>
                       {/* Other chapter options */}
-                      {chapterOptions.map((chapter) => (
-                        <option key={chapter.value} value={chapter.value}>
-                          {chapter.label}
+                      {chapters.map((chapter) => (
+                        <option key={chapter.id} value={chapter.name}>
+                          {chapter.name}
                         </option>
                       ))}
                     </select>
@@ -671,7 +825,7 @@ const MockTestManagement = ({ user }) => {
 
                 {/* Show main subtopic dropdown when "ALL" is selected */}
                 {newTest.subject === "ALL" && (
-                  <div className="mt-3 sm:mt-4">
+                  <div className="mt-3 sm:mt-4" onClick={fetchSubtopic}>
                     <h3 className="text-sm sm:text-md font-semibold mb-2">
                       Select Subtopic for Mock Test
                     </h3>
@@ -694,9 +848,9 @@ const MockTestManagement = ({ user }) => {
                       <option value="" disabled>
                         Select Subtopic
                       </option>
-                      {subtopicOptions.map((subtopic) => (
-                        <option key={subtopic.value} value={subtopic.value}>
-                          {subtopic.label}
+                      {subTopic.map((subtopic) => (
+                        <option key={subtopic.id} value={subtopic.name}>
+                          {subtopic.name}
                         </option>
                       ))}
                     </select>
