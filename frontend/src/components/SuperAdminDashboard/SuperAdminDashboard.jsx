@@ -116,13 +116,21 @@ const SuperAdminDashboard = () => {
                           <p className="text-gray-900 font-medium whitespace-no-wrap">{admin.name}</p>
                         </td>
                         <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
-                          <p className="text-gray-900 font-bold whitespace-no-wrap">{admin.duration || "30 Days"}</p>
+                          <p className="text-gray-900 font-bold whitespace-no-wrap">
+                            {admin.licence && admin.licence.licence_expiry ? admin.licence.licence_expiry : ""} Month
+                          </p>
                         </td>
                         <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
                           <p className="text-gray-700 whitespace-no-wrap">
-                            {admin.licence || "No Plan"}
+                            {admin.licence && admin.licence.name ? admin.licence.name : "No Plan"}
+                            {admin.licence?.date_expiry && new Date(admin.licence?.date_expiry) < new Date() && admin.licence?.name && (
+                              <span className="text-red-500 ml-4">Expired</span>
+                            )}
                           </p>
+
+
                         </td>
+
                       </tr>
                     ))}
                   </tbody>

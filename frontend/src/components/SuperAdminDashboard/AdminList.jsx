@@ -123,25 +123,53 @@ const AdminList = () => {
                             <p className="text-gray-900 font-medium whitespace-no-wrap">{admin.name}</p>
                           </td>
                           <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
-                            <p className="text-gray-900 font-bold whitespace-no-wrap">{admin.duration || "30 Days"}</p>
-                          </td>
-                          <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
-                            <p className="text-gray-700 whitespace-no-wrap">
-                              {admin.licence || "No Plan" }
+                            <p className="text-gray-900 font-bold whitespace-no-wrap">
+                              {admin.licence && admin.licence.licence_expiry ? admin.licence.licence_expiry : ""} Month
+
                             </p>
                           </td>
                           <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
-                            {isSubscriptionExpiring(admin.subscriptionEnd) ? (
-                              <div className="flex items-center space-x-2">
-                                <button className="bg-red-500 text-white py-2 px-4 rounded-md">Renew</button>
-                                <p className="text-red-500 text-xs mb-0">
-                                  Subscription is expiring on {admin.subscriptionEnd}.
-                                </p>
-                              </div>
-                            ) : (
-                              <button className="bg-blue-500 text-white py-2 px-4 rounded-md">Update</button>
-                            )}
+                            <p className="text-gray-700 whitespace-no-wrap">
+                              {admin.licence && admin.licence.name ? admin.licence.name : "No Plan"}
+                            </p>
                           </td>
+                          <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
+  {(() => {
+    const expiryDate = admin.date_expiry; // Fetch expiry date from the API
+    const today = new Date();
+    const expiry = new Date(expiryDate);
+    const formattedExpiryDate = expiry.toISOString().split('T')[0];
+
+    if (expiry < today) {
+      // Expired
+      return (
+        <div className="flex items-center space-x-2">
+          <button className="bg-red-500 text-white py-2 px-4 rounded-md">Renew</button>
+          <p className="text-red-500 text-xs mb-0">
+            Expired on {formattedExpiryDate}.
+          </p>
+        </div>
+      );
+    } else if (isSubscriptionExpiring(expiryDate)) {
+      // About to expire
+      return (
+        <div className="flex items-center space-x-2">
+          <button className="bg-red-500 text-white py-2 px-4 rounded-md">Renew</button>
+          <p className="text-red-500 text-xs mb-0">
+            Subscription is expiring on {formattedExpiryDate}.
+          </p>
+        </div>
+      );
+    } else {
+      // Active
+      return (
+        <button className="bg-blue-500 text-white py-2 px-4 rounded-md">Update</button>
+      );
+    }
+  })()}
+</td>
+
+
                         </tr>
                       );
                     })}

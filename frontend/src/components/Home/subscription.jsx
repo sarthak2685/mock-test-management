@@ -10,7 +10,7 @@ function Subscription() {
       description: "Ideal for institutes with up to 50 students per month.",
       features: [
         { text: "Mock tests accessible for up to 50 students", available: true },
-        { text: "Full length Mock Test 10+", available: true },
+        { text: "Full length Mock Test 10", available: true },
         { text: "chapter wise mock test" , available: true },
         { text: "anylize growth and low scoring subject", available: true },
         { text: "Instuite / Coaching Can take group mock test", available: true },
