@@ -4,8 +4,12 @@ import { useNavigate } from "react-router-dom";
 const Instructions = () => {
   const [isChecked, setIsChecked] = useState(false);
   const [step, setStep] = useState(1);
-  const [language, setLanguage] = useState(localStorage.getItem("selectedLanguage") || "");
-  const [optionalSubject, setOptionalSubject] = useState(localStorage.getItem("selectedOptionalSubject") || "");
+  const [language, setLanguage] = useState(
+    localStorage.getItem("selectedLanguage") || ""
+  );
+  const [optionalSubject, setOptionalSubject] = useState(
+    localStorage.getItem("selectedOptionalSubject") || ""
+  );
   const [error1, setError1] = useState("");
   const [error2, setError2] = useState("");
   const navigate = useNavigate();
@@ -65,12 +69,32 @@ const Instructions = () => {
     },
     { subject: "GENERAL AWARENESS", questions: 25, marks: 50, time: 15 },
     { subject: "QUANTITATIVE APTITUDE", questions: 25, marks: 50, time: 15 },
-
   ];
+
+  const optionalSubjectData = {
+    subject: optionalSubject || "Optional Subject",
+    questions: 25,
+    marks: 50,
+    time: 15,
+  };
+    // Calculate totals
+    const totalQuestions =
+    subjectData.reduce((acc, subject) => acc + subject.questions, 0) +
+    (optionalSubject ? optionalSubjectData.questions : 0);
+  const totalMarks =
+    subjectData.reduce((acc, subject) => acc + subject.marks, 0) +
+    (optionalSubject ? optionalSubjectData.marks : 0);
+  const totalTime =
+    subjectData.reduce((acc, subject) => acc + subject.time, 0) +
+    (optionalSubject ? optionalSubjectData.time : 0);
+
+
   useEffect(() => {
     // Retrieve selections from local storage on component mount
     const storedLanguage = localStorage.getItem("selectedLanguage");
-    const storedOptionalSubject = localStorage.getItem("selectedOptionalSubject");
+    const storedOptionalSubject = localStorage.getItem(
+      "selectedOptionalSubject"
+    );
     if (storedLanguage) {
       setLanguage(storedLanguage);
     }
@@ -225,21 +249,32 @@ const Instructions = () => {
                         </option>
                       </select>
                     </td>
-                    <td className="px-2 sm:px-4 py-2 border border-gray-300">
-                      25
-                    </td>
-                    <td className="px-2 sm:px-4 py-2 border border-gray-300">
-                      50
-                    </td>
-                    <td className="px-2 sm:px-4 py-2 border border-gray-300">
-                      15 min
-                    </td>
-                  </tr>
+                <td className="px-2 sm:px-4 py-2 border border-gray-300">
+                  {optionalSubjectData.questions}
+                </td>
+                <td className="px-2 sm:px-4 py-2 border border-gray-300">
+                  {optionalSubjectData.marks}
+                </td>
+                <td className="px-2 sm:px-4 py-2 border border-gray-300">
+                  {optionalSubjectData.time} min
+                </td>
+              </tr>
+              <tr className="font-semibold">
+                <td className="px-4 py-2 border border-gray-300">Total</td>
+                <td className="px-4 py-2 border border-gray-300">
+                  {totalQuestions}
+                </td>
+                <td className="px-4 py-2 border border-gray-300">
+                  {totalMarks}
+                </td>
+                <td className="px-4 py-2 border border-gray-300">
+                  {totalTime} min
+                </td>
+              </tr>
                 </tbody>
               </table>
             </div>
             {error2 && <p className="text-red-500 text-sm mb-4">{error2}</p>}
-
           </>
         )}
 
@@ -261,7 +296,7 @@ const Instructions = () => {
               Marking Scheme:
             </h2>
             <ul className="list-disc list-inside space-y-2 text-gray-700">
-              <li>2 marks for each correct answer.</li>
+              <li>4 marks for each correct answer.</li>
               <li>1/4th negative marking for incorrect answers.</li>
               <li>No penalty for un-attempted questions.</li>
             </ul>
@@ -296,11 +331,6 @@ const Instructions = () => {
           <button
             onClick={handleNextStep}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-
-
-
-
-
           >
             {step === 2 ? "Proceed to Test" : "Next"}
           </button>

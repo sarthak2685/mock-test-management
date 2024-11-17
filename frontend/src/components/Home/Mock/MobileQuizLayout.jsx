@@ -90,9 +90,9 @@ const MobileQuizLayout = ({
 
   // Timer Component
   const Timer = () => {
-    const totalTime = 10 * 60;
+    const totalTime = 60 * 60;
     const [timeLeft, setTimeLeft] = useState(totalTime);
-    const warningTime = 1 * 60;
+    const warningTime = 5 * 60;
 
     useEffect(() => {
       if (timeLeft > 0) {
@@ -232,18 +232,12 @@ const MobileQuizLayout = ({
 
         {/* Main Question Content */}
         <div className="p-4 flex-1">
-          {!submitted ? (
+          <>
+          
             <div className="bg-white rounded-lg shadow p-6">
-              <div className="grid grid-col-2">
-                <div className="col-span-1">
-                  <h2 className="text-xl font-semibold text-blue-600 mb-2">
-                    Question {currentQuestionIndex + 1}
-                  </h2>
-                  <p className="mb-4 text-gray-700 leading-relaxed">
-                    {currentQuestion?.question}
-                  </p>
-                </div>
-                <div className="col-span-1 flex items-center space-x-1 ">
+                  <h2 className="flex justify-between">
+                    <span className=" text-xl justify-start font-semibold text-blue-600 mb-2">Question {currentQuestionIndex + 1}</span>
+                    <div className=" flex items-center justify-end space-x-1 ">
                   <div className="flex items-center justify-center p-2 bg-green-200 text-green-700 rounded-lg">
                     <h2 className="text-xs sm:font-semibold">+4 marks</h2>
                   </div>
@@ -251,7 +245,11 @@ const MobileQuizLayout = ({
                     <h2 className="text-xs sm:font-semibold">-1 marks</h2>
                   </div>
                 </div>
-              </div>
+                  </h2>
+                  <p className="mb-4 text-gray-700 leading-relaxed">
+                    {currentQuestion?.question}
+                  </p>
+                
 
               <div className="space-y-3 grid grid-cols-1 my-10">
                 {currentQuestion?.options.map((option, index) => (
@@ -276,14 +274,8 @@ const MobileQuizLayout = ({
                 ))}
               </div>
             </div>
-          ) : (
-            <div className="bg-white rounded-lg shadow p-6 text-center">
-              <h2 className="text-xl font-bold text-blue-600">
-                Quiz Submitted!
-              </h2>
-              <p className="mt-4 text-lg text-gray-700">Your Score: {score}</p>
-            </div>
-          )}
+            </>
+         
         </div>
 
         {/* Bottom Navigation */}
