@@ -430,19 +430,14 @@ const MockTestManagement = ({ user }) => {
       });
       const result = await response.json();
 
-      console.log("Request", result);
-
       if (Array.isArray(result)) {
-        const allOption = { name: "ALL", id: "all" };
+        const allOption = { name: "ALL Subjects", id: "ALL" };
         setSubjects([allOption, ...result]);
       } else {
-        console.error("no subject available", result);
+        console.error("No Subject Available", result);
       }
     } catch (error) {
       console.log("Error fetching Subject:", error);
-      if (error.response) {
-        console.log("Error Response:", error.response); // Check the response error
-      }
     }
   };
 
@@ -511,7 +506,7 @@ const MockTestManagement = ({ user }) => {
         const allOption = { name: "ALL Chapter", id: "all" };
         setChapters([allOption, ...result]);
       } else {
-        console.error("no Chapter available", result);
+        console.error("No Chapter available", result);
       }
     } catch (error) {
       console.log("Error fetching Chapter:", error);
@@ -605,8 +600,9 @@ const MockTestManagement = ({ user }) => {
       const payload = {
         test_name: newTest.testName,
         exam_duration: newTest.duration,
-        name: newTest.domain,
+        for_exam: newTest.domain,
         institutes: selectedOptions.map((option) => option.value),
+        for_exam_subject: newTest.selectedSubjects || [],
         for_exam_subject_chapter: newTest.chapter
           ? [newTest.chapter.id]
           : ["ALL"],
@@ -788,16 +784,25 @@ const MockTestManagement = ({ user }) => {
                   <div className="flex-grow" onClick={fetchDomains}>
                     <select
                       name="domain"
-                      value={newTest.domain}
-                      onChange={handleTestChange}
+                      value={newTest.domain || ""} // Use empty string when no value is selected
+                      onChange={(e) => {
+                        const selectedDomainId = e.target.value;
+
+                        setNewTest((prevTest) => ({
+                          ...prevTest,
+                          domain: selectedDomainId, // Store domain ID directly
+                          chapter: null, // Reset chapter selection when domain changes
+                        }));
+                      }}
                       className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
                     >
                       <option value="" disabled>
                         Select Domain
                       </option>
                       {domains.map((domain) => (
-                        <option key={domain.id} value={domain.name}>
-                          {domain.name}
+                        <option key={domain.id} value={domain.id}>
+                          {domain.name}{" "}
+                          {/* Display the name, but send the ID */}
                         </option>
                       ))}
                     </select>
@@ -825,23 +830,22 @@ const MockTestManagement = ({ user }) => {
 
                   {/* Duration Input */}
                   <div>
-                    <select
+                    <input
+                      type="number"
                       name="duration"
-                      value={newTest.duration}
-                      onChange={handleTestChange}
+                      id="duration"
+                      value={newTest.duration || ""}
+                      onChange={(e) => {
+                        const value = e.target.value;
+
+                        setNewTest((prevTest) => ({
+                          ...prevTest,
+                          duration: value, // Update duration value
+                        }));
+                      }}
+                      placeholder="Enter duration in minutes"
                       className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
-                    >
-                      <option value="" disabled>
-                        Select Duration
-                      </option>
-                      {["30 mins", "60 mins", "90 mins", "120 mins"].map(
-                        (duration) => (
-                          <option key={duration} value={duration}>
-                            {duration}
-                          </option>
-                        )
-                      )}
-                    </select>
+                    />
                   </div>
 
                   {/* Subject Dropdown */}
@@ -850,22 +854,21 @@ const MockTestManagement = ({ user }) => {
                       name="subject"
                       value={newTest.subject}
                       onChange={(e) => {
-                        const selectedSubject = e.target.value;
+                        const selectedSubjectId = e.target.value;
 
-                        // Update the subject field
                         setNewTest((prevTest) => ({
                           ...prevTest,
-                          subject: selectedSubject,
+                          subject: selectedSubjectId,
+                          selectedSubjects: prevTest.selectedSubjects
+                            ? [...prevTest.selectedSubjects, selectedSubjectId]
+                            : [selectedSubjectId],
                         }));
 
-                        handleTestChange(e);
-
-                        // Reset subtopic and question subtopics only if a specific subject is selected
-                        if (selectedSubject !== "ALL") {
+                        if (selectedSubjectId !== "ALL") {
                           const updatedQuestions = newTest.questions.map(
                             (question) => ({
                               ...question,
-                              subtopic: "", // Reset subtopic for all questions
+                              subtopic: "", // Reset subtopics
                             })
                           );
 
@@ -882,8 +885,8 @@ const MockTestManagement = ({ user }) => {
                         Select Subject
                       </option>
                       {subjects.map((subject) => (
-                        <option key={subject.id} value={subject.name}>
-                          {subject.name} {/* Use 'name' property directly */}
+                        <option key={subject.id} value={subject.id}>
+                          {subject.name}
                         </option>
                       ))}
                     </select>
@@ -893,7 +896,7 @@ const MockTestManagement = ({ user }) => {
                   <div onClick={fetchChapters}>
                     <select
                       name="chapter"
-                      value={newTest.chapter?.id || "ALL"} // Use "ALL" as a fallback
+                      value={newTest.chapter?.id || ""} // No default value if disabled
                       onChange={(e) => {
                         const selectedChapterId = e.target.value;
                         const selectedChapter = chapters.find(
@@ -902,13 +905,15 @@ const MockTestManagement = ({ user }) => {
 
                         setNewTest((prevTest) => ({
                           ...prevTest,
-                          chapter: selectedChapter || {
-                            id: "ALL",
-                            name: "ALL",
-                          }, // Default to "ALL"
+                          chapter: selectedChapter || null, // Set to null if no selection
                         }));
                       }}
-                      className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
+                      disabled={!!newTest.domain} // Disable when domain is selected
+                      className={`border p-2 w-full rounded-md transition duration-200 ${
+                        newTest.domain
+                          ? "bg-gray-200 cursor-not-allowed focus:ring-0" // Adjust styles when disabled
+                          : "focus:outline-none focus:ring focus:ring-blue-400"
+                      }`}
                     >
                       <option value="" disabled>
                         Select Chapter
@@ -976,7 +981,7 @@ const MockTestManagement = ({ user }) => {
                 {newTest.subject === "ALL" && (
                   <div className="mt-3 sm:mt-4" onClick={fetchSubtopic}>
                     <h3 className="text-sm sm:text-md font-semibold mb-2">
-                      Select Subtopic for Mock Test
+                      Select Sub-Subject for Mock Test
                     </h3>
                     <select
                       name="mainSubtopic"
@@ -985,14 +990,14 @@ const MockTestManagement = ({ user }) => {
                           ? ""
                           : "bg-gray-200 cursor-not-allowed"
                       }`}
-                      onChange={(e) => {
+                      onChange={(e) =>
                         setNewTest({
                           ...newTest,
                           mainSubtopic: e.target.value,
-                        });
-                      }}
-                      value={newTest.mainSubtopic} // Control the value of the dropdown
-                      disabled={newTest.subject !== "ALL"} // Disable when subject is not ALL
+                        })
+                      }
+                      value={newTest.mainSubtopic}
+                      disabled={newTest.subject !== "ALL"}
                     >
                       <option value="" disabled>
                         Select Subtopic
@@ -1059,6 +1064,12 @@ const MockTestManagement = ({ user }) => {
                           newTest.questions[currentQuestionIndex]?.subtopic ||
                           ""
                         }
+                        onClick={() => {
+                          // Fetch subtopics only if "ALL" is selected
+                          if (newTest.subject === "ALL") {
+                            fetchSubtopic();
+                          }
+                        }}
                         onChange={(e) =>
                           handleQuestionChange(
                             currentQuestionIndex,
@@ -1074,14 +1085,76 @@ const MockTestManagement = ({ user }) => {
                         disabled={newTest.subject !== "ALL"}
                       >
                         <option value="" disabled>
-                          Select Subtopic
+                          Select Sub-Subject
                         </option>
-                        {subtopicOptions.map((subtopic) => (
-                          <option key={subtopic.value} value={subtopic.value}>
-                            {subtopic.label}
+                        {subTopic.map((subtopic) => (
+                          <option key={subtopic.id} value={subtopic.name}>
+                            {subtopic.name}
                           </option>
                         ))}
                       </select>
+                    </div>
+                  </div>
+
+                  {/* Image Upload Section */}
+                  <div className="mt-2 mb-6">
+                    <label className="block text-gray-700 font-semibold mb-2 text-sm sm:text-base">
+                      Upload PNG Image For Question
+                    </label>
+                    <div className="flex items-center gap-4 flex-col sm:flex-row">
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        accept=".png,image/png" // Restrict to PNG files only
+                        onChange={(e) => {
+                          const selectedFile = e.target.files[0];
+                          if (selectedFile) {
+                            // Validate file type
+                            if (selectedFile.type === "image/png") {
+                              handleImageUpload(
+                                currentQuestionIndex,
+                                selectedFile
+                              );
+                              setFileInputValue(selectedFile.name);
+                            } else {
+                              alert(
+                                "Only PNG files are allowed. Please upload a valid PNG image."
+                              );
+                              // Reset the input value
+                              if (fileInputRef.current) {
+                                fileInputRef.current.value = null;
+                              }
+                            }
+                          }
+                        }}
+                        className="border p-1 sm:p-2 rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200 cursor-pointer text-xs sm:text-sm"
+                      />
+                      {newTest.questions[currentQuestionIndex].image && (
+                        <div className="relative">
+                          <img
+                            src={newTest.questions[currentQuestionIndex].image}
+                            alt="Uploaded"
+                            className="h-20 w-20 sm:h-32 sm:w-32 object-cover rounded-md shadow-md cursor-pointer"
+                            onClick={() =>
+                              openModal(
+                                newTest.questions[currentQuestionIndex].image
+                              )
+                            }
+                          />
+                          <button
+                            onClick={() => {
+                              removeImage(currentQuestionIndex);
+                              setFileInputValue("");
+                              if (fileInputRef.current) {
+                                fileInputRef.current.value = null;
+                              }
+                            }}
+                            className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full focus:outline-none text-xs sm:text-sm"
+                          >
+                            <FaTrashAlt />
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -1171,7 +1244,7 @@ const MockTestManagement = ({ user }) => {
                   </div>
 
                   {/* Correct Answer Dropdown */}
-                  <div className="relative w-full">
+                  <div className="relative w-full mt-6">
                     <div
                       onClick={() =>
                         isDropdownEnabled && setDropdownOpen(!isDropdownOpen)
@@ -1225,56 +1298,6 @@ const MockTestManagement = ({ user }) => {
                         )}
                       </div>
                     )}
-                  </div>
-
-                  {/* Image Upload Section */}
-                  <div className="mt-4">
-                    <label className="block text-gray-700 font-semibold mb-2 text-sm sm:text-base">
-                      Upload Image For Question
-                    </label>
-                    <div className="flex items-center gap-4 flex-col sm:flex-row">
-                      <input
-                        type="file"
-                        ref={fileInputRef}
-                        onChange={(e) => {
-                          const selectedFile = e.target.files[0];
-                          if (selectedFile) {
-                            handleImageUpload(
-                              currentQuestionIndex,
-                              selectedFile
-                            );
-                            setFileInputValue(selectedFile.name);
-                          }
-                        }}
-                        className="border p-1 sm:p-2 rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200 cursor-pointer text-xs sm:text-sm"
-                      />
-                      {newTest.questions[currentQuestionIndex].image && (
-                        <div className="relative">
-                          <img
-                            src={newTest.questions[currentQuestionIndex].image}
-                            alt="Uploaded"
-                            className="h-20 w-20 sm:h-32 sm:w-32 object-cover rounded-md shadow-md cursor-pointer"
-                            onClick={() =>
-                              openModal(
-                                newTest.questions[currentQuestionIndex].image
-                              )
-                            }
-                          />
-                          <button
-                            onClick={() => {
-                              removeImage(currentQuestionIndex);
-                              setFileInputValue("");
-                              if (fileInputRef.current) {
-                                fileInputRef.current.value = null;
-                              }
-                            }}
-                            className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full focus:outline-none text-xs sm:text-sm"
-                          >
-                            <FaTrashAlt />
-                          </button>
-                        </div>
-                      )}
-                    </div>
                   </div>
                 </div>
               )}
