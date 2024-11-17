@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
-import { RiInformation2Line } from "react-icons/ri"; // Importing the new icon
+import React, { useState, useEffect, useRef } from 'react';
+import { RiInformation2Line } from 'react-icons/ri'; // Importing the new icon
 
 const QuestionNavigation = ({
   questions,
@@ -41,14 +41,14 @@ const QuestionNavigation = ({
           <RiInformation2Line className="w-6 h-6" /> {/* Using the new icon */}
           <span>Instructions</span>
         </button>
+       
       </div>
 
       {/* Conditional rendering of instructions */}
       {showInstructions && (
         <div className="mb-4 p-4 bg-blue-50 rounded-md">
           <p className="text-sm text-gray-600">
-            Here are the instructions for taking the test. Please read them
-            carefully before proceeding.
+            Here are the instructions for taking the test. Please read them carefully before proceeding.
             {/* You can customize the instructions here */}
           </p>
         </div>
@@ -59,9 +59,7 @@ const QuestionNavigation = ({
         {/* Current Question */}
         <div className="flex items-center space-x-2 p-2 bg-blue-50 rounded-lg shadow-sm">
           <span className="w-6 h-6 bg-blue-500 rounded-md"></span>
-          <span className="text-md font-medium text-gray-700">
-            Current Question
-          </span>
+          <span className="text-md font-medium text-gray-700">Current Question</span>
         </div>
 
         {/* Answered */}
@@ -73,17 +71,13 @@ const QuestionNavigation = ({
         {/* Marked for Review */}
         <div className="flex items-center space-x-2 p-2 bg-red-50 rounded-lg shadow-sm">
           <span className="w-6 h-6 bg-red-500 rounded-md"></span>
-          <span className="text-md font-medium text-gray-700">
-            Marked for Review
-          </span>
+          <span className="text-md font-medium text-gray-700">Marked for Review</span>
         </div>
 
         {/* Not Answered */}
         <div className="flex items-center space-x-2 p-2 bg-gray-50 rounded-lg shadow-sm">
           <span className="w-6 h-6 bg-gray-400 rounded-md"></span>
-          <span className="text-md font-medium text-gray-700">
-            Not Answered
-          </span>
+          <span className="text-md font-medium text-gray-700">Not Answered</span>
         </div>
       </div>
 
@@ -107,42 +101,44 @@ const QuestionNavigation = ({
           </span>
         </label>
       </div>
+      
+      <div className="grid grid-cols-5 gap-x-6 gap-y-4 justify-center my-10 sm:mx-10 lg:mx-0" >
+  {filteredQuestions.map((_, i) => (
+    <button
+      key={i}
+      onClick={() => onSelectQuestion(i)}
+      title={
+        markedForReview.includes(i)
+          ? "Marked for Review"
+          : answeredQuestions[i] !== undefined
+          ? "Answered"
+          : "Not Answered"
+      }
+      aria-label={`Question ${i + 1}, ${
+        markedForReview.includes(i)
+          ? "Marked for Review"
+          : answeredQuestions[i] !== undefined
+          ? "Answered"
+          : "Not Answered"
+      }`}
+      className={`w-10 h-10 sm:mx-10 lg:mx-0 flex items-center justify-center rounded-md font-bold transition duration-200 focus:outline-none focus:ring ${
+        selectedQuestionIndex === i
+          ? "bg-blue-200 text-blue-700 ring-2 ring-blue-300" // Current selected question
+          : markedForReview.includes(i)
+          ? "bg-red-500 text-white" // Marked for review
+          : answeredQuestions[i] !== undefined
+          ? "bg-green-500 text-white" // Answered
+          : "bg-gray-200 text-gray-700" // Not answered
+      }`}
+    >
+      {i + 1}
+    </button>
+  ))}
+</div>
 
-      {/* Question Navigation Grid */}
-      <div className="grid grid-cols-4 md:grid-cols-5 gap-4 my-10">
-        {filteredQuestions.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => onSelectQuestion(i)}
-            title={
-              markedForReview.includes(i)
-                ? "Marked for Review"
-                : answeredQuestions[i] !== undefined
-                ? "Answered"
-                : "Not Answered"
-            }
-            aria-label={`Question ${i + 1}, ${
-              markedForReview.includes(i)
-                ? "Marked for Review"
-                : answeredQuestions[i] !== undefined
-                ? "Answered"
-                : "Not Answered"
-            }`}
-            className={`w-10 h-10 rounded-md font-bold transition duration-200 focus:outline-none focus:ring ${
-              selectedQuestionIndex === i
-                ? "bg-blue-200 text-blue-700 ring-2 ring-blue-300" // Current selected question
-                : markedForReview.includes(i)
-                ? "bg-red-500 text-white" // Marked for review
-                : answeredQuestions[i] !== undefined
-                ? "bg-green-500 text-white" // Answered
-                : "bg-gray-200 text-gray-700" // Not answered
-            }`}
-          >
-            {i + 1}
-          </button>
-        ))}
-      </div>
+
       {/* Submit Button with Confirmation */}
+
       <button
         onClick={() => {
           if (window.confirm("Are you sure you want to submit the test?")) {
