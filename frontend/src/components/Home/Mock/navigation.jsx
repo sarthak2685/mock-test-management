@@ -135,8 +135,6 @@ const QuestionNavigation = ({
     </button>
   ))}
 </div>
-
-
       {/* Submit Button with Confirmation */}
 
       <button

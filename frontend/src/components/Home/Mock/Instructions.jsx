@@ -46,6 +46,7 @@ const Instructions = () => {
   const handlePreviousStep = () => {
     if (step > 1) setStep(step - 1);
   };
+
   // User data
   const user = {
     name: "John Doe",
@@ -64,6 +65,7 @@ const Instructions = () => {
     },
     { subject: "GENERAL AWARENESS", questions: 25, marks: 50, time: 15 },
     { subject: "QUANTITATIVE APTITUDE", questions: 25, marks: 50, time: 15 },
+
   ];
   useEffect(() => {
     // Retrieve selections from local storage on component mount
@@ -294,6 +296,11 @@ const Instructions = () => {
           <button
             onClick={handleNextStep}
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+
+
+
+
+
           >
             {step === 2 ? "Proceed to Test" : "Next"}
           </button>

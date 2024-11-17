@@ -186,8 +186,6 @@ const MobileQuizLayout = ({
     </div>
   )}
 </div>
-
-
               <div className="flex-grow mt-4 overflow-y-auto max-h-96">
                 {currentSection && (
                   <QuestionNavigation
@@ -215,6 +213,7 @@ const MobileQuizLayout = ({
     <Timer />
   </div>
   <div className="flex items-center space-x-4">
+
     <button
       onClick={() => setShowNavigation(!showNavigation)}
       className="text-blue-500"

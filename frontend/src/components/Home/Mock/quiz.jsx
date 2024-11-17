@@ -1,4 +1,3 @@
-
 export const quizData = [
   {
     section: "General Intelligence and Reasoning",

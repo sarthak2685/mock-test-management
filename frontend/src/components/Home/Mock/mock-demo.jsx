@@ -16,6 +16,7 @@ const MockDemo = () => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [submitted, setSubmitted] = useState(false);
+
   const [answeredQuestions, setAnsweredQuestions] = useState(
     quizData.map(() => [])
   );
@@ -98,8 +99,7 @@ const MockDemo = () => {
   const isFirstQuestion = currentQuestionIndex === 0;
   const isLastQuestion =
     currentQuestionIndex === currentSection.questions.length - 1;
-  const isLastSection =
-    currentSectionIndex === filteredQuizData.length - 1;
+  const isLastSection = currentSectionIndex === filteredQuizData.length - 1;
 
   const handleSectionChange = (index) => {
     setCurrentSectionIndex(index);
@@ -126,7 +126,6 @@ const MockDemo = () => {
     <FaLanguage />,
     <FaLanguage />,
   ];
-
   const UserProfile = ({ user }) => {
     const getInitials = (name) => {
       if (!name) return "";
@@ -152,6 +151,7 @@ const MockDemo = () => {
             </span>
           </div>
         )}
+
         <div>
           <h2 className="text-lg font-semibold text-gray-700">{user.name}</h2>
           <p className="text-sm text-gray-500">{user.role}</p>
@@ -159,7 +159,6 @@ const MockDemo = () => {
       </div>
     );
   };
-
   const Timer = () => {
     const totalTime = 10 * 60;
     const [timeLeft, setTimeLeft] = useState(totalTime);
@@ -220,152 +219,154 @@ const MockDemo = () => {
     />
   ) : (
     <div className="flex flex-col items-center bg-gray-100 min-h-full">
-    <div className="grid lg:grid-cols-12 gap-4 w-full max-w-full">
-      <div className="lg:col-span-9 col-span-full bg-white rounded-lg shadow-lg">
-        {!submitted ? (
-          <>
-            {/* Section Navigation */}
-            <div className="col-span-full grid grid-cols-4 space-x-4 py-4 px-8 bg-gray-100 rounded-lg shadow-md">
-              {filteredQuizData.map((section, index) => (
-                <button
-                  key={index}
-                  className={`flex items-center col-span-1 py-3 px-4 rounded-lg transition duration-300 ${
-                    currentSectionIndex === index
-                      ? "bg-blue-700 text-white font-semibold shadow-lg"
-                      : "bg-white text-blue-700 hover:bg-blue-100 hover:shadow-sm"
-                  }`}
-                  onClick={() => handleSectionChange(index)}
-                >
-                  <div className="mr-2">{sectionIcons[index]}</div>
-                  <span>{section.section}</span>
-                </button>
-              ))}
-            </div>
-            {/* Header with Profile, Marks, Language, and Timer */}
-            <div className="border items-center grid grid-cols-12 space-x-1 py-4 px-8 bg-white rounded-lg shadow-md">
-              <div className="col-span-3">
-                <UserProfile user={user} />
-              </div>
-              <div className="col-span-1" />
-
-              <div className="col-span-6 flex items-center space-x-4">
-                <div className="flex items-center justify-center p-3 bg-green-200 text-green-700 rounded-xl">
-                  <h2 className="font-semibold">+4 marks</h2>
-                </div>
-                <div className="flex items-center justify-center p-3 bg-red-200 text-red-700 rounded-xl">
-                  <h2 className="font-semibold">-1 marks</h2>
-                </div>
-              </div>
-
-              <div className="col-span-2 flex items-center justify-end">
-                <Timer />
-              </div>
-            </div>
-
-            {/* Question Section */}
-            <div className="p-8">
-              <h2 className="text-3xl font-bold text-blue-600 mb-6">
-                Question {currentQuestionIndex + 1}
-              </h2>
-              <p className="text-lg font-medium mb-8">
-                {currentQuestion ? currentQuestion.question : "Loading..."}
-              </p>
-              <div className="grid grid-cols-2 gap-6 mb-10">
-                {currentQuestion?.options.map((option, index) => (
-                  <label
+      <div className="grid lg:grid-cols-12 gap-4 w-full max-w-full">
+        <div className="lg:col-span-9 col-span-full bg-white rounded-lg shadow-lg">
+          {!submitted ? (
+            <>
+              {/* Section Navigation */}
+              <div className="col-span-full grid grid-cols-4 space-x-4 py-4 px-8 bg-gray-100 rounded-lg shadow-md">
+                {filteredQuizData.map((section, index) => (
+                  <button
                     key={index}
-                    className={`border border-gray-300 rounded-lg p-4 flex items-center justify-center text-center cursor-pointer transition duration-200 transform ${
-                      selectedOption === option
-                        ? "bg-blue-50 border-blue-500 shadow-md"
-                        : "hover:bg-gray-50 hover:shadow-sm"
+                    className={`flex items-center col-span-1 py-3 px-4 rounded-lg transition duration-300 ${
+                      currentSectionIndex === index
+                        ? "bg-blue-700 text-white font-semibold shadow-lg"
+                        : "bg-white text-blue-700 hover:bg-blue-100 hover:shadow-sm"
                     }`}
+                    onClick={() => handleSectionChange(index)}
                   >
-                    <input
-                      type="radio"
-                      name="option"
-                      value={option}
-                      checked={selectedOption === option}
-                      onChange={() => handleOptionChange(option)}
-                      className="hidden"
-                    />
-                    <span className="text-gray-800 font-medium">{option}</span>
-                  </label>
+                    <div className="mr-2">{sectionIcons[index]}</div>
+                    <span>{section.section}</span>
+                  </button>
                 ))}
               </div>
-
-              {/* Question Navigation and Actions */}
-              <div className="grid grid-cols-12 items-center lg:mt-[25%] xl:mt-[20%] 2xl:mt-[17%]">
-                <button
-                  onClick={handleMarkForReview}
-                  className="bg-red-500 text-white px-5 py-3 col-span-3 rounded-lg shadow-md hover:bg-red-600"
-                >
-                  Mark for Review
-                </button>
-                <div className="col-span-1" />
-                <div className="grid grid-cols-2 col-span-4 items-center space-x-4 gap-10">
-                  <button
-                    onClick={handlePrevious}
-                    disabled={isFirstQuestion}
-                    className={`px-5 py-3 col-span-1 rounded-lg shadow-md ${
-                      isFirstQuestion ? "bg-gray-200 text-gray-500 cursor-not-allowed" : "bg-gray-300 text-gray-700 hover:bg-gray-400"
-                    }`}
-                  >
-                    Previous
-                  </button>
-
-                  <button
-                    onClick={handleNext}
-                    disabled={isLastQuestion && isLastSection}
-                    className={`px-5 py-3 rounded-lg col-span-1 shadow-md ${
-                      isLastQuestion && isLastSection
-                        ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                        : "bg-gray-300 text-gray-700 hover:bg-gray-400"
-                    }`}
-                  >
-                    Next
-                  </button>
+              {/* Header with Profile, Marks, Language, and Timer */}
+              <div className="border items-center grid grid-cols-12 space-x-1 py-4 px-8 bg-white rounded-lg shadow-md">
+                <div className="col-span-3">
+                  <UserProfile user={user} />
                 </div>
                 <div className="col-span-1" />
 
-                <button
-                  onClick={handleSubmitNext}
-                  disabled={isLastQuestion && isLastSection}
-                  className={`px-5 py-3 col-span-3 rounded-lg shadow-md ${
-                    isLastQuestion && isLastSection
-                      ? "bg-green-200 text-green-700 cursor-not-allowed"
-                      : "bg-green-500 text-white hover:bg-green-600"
-                  }`}
-                >
-                  Save & Next
-                </button>
-              </div>
-            </div>
-          </>
-        ) : (
-          <div className="text-center py-8">
-            <h2 className="text-2xl font-bold">Test Submitted</h2>
-            <p>Your responses have been submitted successfully.</p>
-          </div>
-        )}
-      </div>
+                <div className="col-span-6 flex items-center space-x-4">
+                  <div className="flex items-center justify-center p-3 bg-green-200 text-green-700 rounded-xl">
+                    <h2 className="font-semibold">+4 marks</h2>
+                  </div>
+                  <div className="flex items-center justify-center p-3 bg-red-200 text-red-700 rounded-xl">
+                    <h2 className="font-semibold">-1 marks</h2>
+                  </div>
+                </div>
 
-      {/* Question Navigation Component */}
-      <div className="lg:col-span-3 col-span-full space-y-3">
-        <QuestionNavigation
-          questions={currentSection.questions}
-          selectedQuestionIndex={currentQuestionIndex}
-          onSelectQuestion={(index) => setCurrentQuestionIndex(index)}
-          onSubmit={() => {
-            setSubmitted(true);
-          }}
-          sectionName={currentSection.section}
-          answeredQuestions={answeredQuestions[currentSectionIndex] || []}
-          markedForReview={markedForReview[currentSectionIndex] || []}
-        />
+                <div className="col-span-2 flex items-center justify-end">
+                  <Timer />
+                </div>
+              </div>
+              {/* Question Section */}
+              <div className="p-8">
+                <h2 className="text-3xl font-bold text-blue-600 mb-6">
+                  Question {currentQuestionIndex + 1}
+                </h2>
+                <p className="text-lg font-medium mb-8">
+                  {currentQuestion ? currentQuestion.question : "Loading..."}
+                </p>
+                <div className="grid grid-cols-2 gap-6 mb-10">
+                  {currentQuestion?.options.map((option, index) => (
+                    <label
+                      key={index}
+                      className={`border border-gray-300 rounded-lg p-4 flex items-center justify-center text-center cursor-pointer transition duration-200 transform ${
+                        selectedOption === option
+                          ? "bg-blue-50 border-blue-500 shadow-md"
+                          : "hover:bg-gray-50 hover:shadow-sm"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="option"
+                        value={option}
+                        checked={selectedOption === option}
+                        onChange={() => handleOptionChange(option)}
+                        className="hidden"
+                      />
+                      <span className="text-gray-800 font-medium">
+                        {option}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+
+                {/* Question Navigation and Actions */}
+                <div className="grid grid-cols-12 items-center lg:mt-[25%] xl:mt-[20%] 2xl:mt-[17%]">
+                  <button
+                    onClick={handleMarkForReview}
+                    className="bg-red-500 text-white px-5 py-3 col-span-3 rounded-lg shadow-md hover:bg-red-600"
+                  >
+                    Mark for Review
+                  </button>
+                  <div className="col-span-1" />
+                  <div className="grid grid-cols-2 col-span-4 items-center space-x-4 gap-10">
+                    <button
+                      onClick={handlePrevious}
+                      disabled={isFirstQuestion}
+                      className={`px-5 py-3 col-span-1 rounded-lg shadow-md ${
+                        isFirstQuestion
+                          ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                          : "bg-gray-300 text-gray-700 hover:bg-gray-400"
+                      }`}
+                    >
+                      Previous
+                    </button>
+                    <button
+                      onClick={handleNext}
+                      disabled={isLastQuestion && isLastSection}
+                      className={`px-5 py-3 rounded-lg col-span-1 shadow-md ${
+                        isLastQuestion && isLastSection
+                          ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                          : "bg-gray-300 text-gray-700 hover:bg-gray-400"
+                      }`}
+                    >
+                      Next
+                    </button>
+                  </div>
+                  <div className="col-span-1" />
+
+                  <button
+                    onClick={handleSubmitNext}
+                    disabled={isLastQuestion && isLastSection}
+                    className={`px-5 py-3 col-span-3 rounded-lg shadow-md ${
+                      isLastQuestion && isLastSection
+                        ? "bg-green-200 text-green-700 cursor-not-allowed"
+                        : "bg-green-500 text-white hover:bg-green-600"
+                    }`}
+                  >
+                    Save & Next
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="text-center py-8">
+              <h2 className="text-2xl font-bold">Test Submitted</h2>
+              <p>Your responses have been submitted successfully.</p>
+            </div>
+          )}
+        </div>
+
+        {/* Question Navigation Component */}
+        <div className="lg:col-span-3 col-span-full space-y-3">
+          <QuestionNavigation
+            questions={currentSection.questions}
+            selectedQuestionIndex={currentQuestionIndex}
+            onSelectQuestion={(index) => setCurrentQuestionIndex(index)}
+            onSubmit={() => {
+              setSubmitted(true);
+            }}
+            sectionName={currentSection.section}
+            answeredQuestions={answeredQuestions[currentSectionIndex] || []}
+            markedForReview={markedForReview[currentSectionIndex] || []}
+          />
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
 };
 
 export default MockDemo;
