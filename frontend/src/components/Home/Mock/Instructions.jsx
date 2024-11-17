@@ -1,18 +1,46 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Instructions = () => {
   const [isChecked, setIsChecked] = useState(false);
-  const [step, setStep] = useState(1); // Track current instruction step
+  const [step, setStep] = useState(1);
+  const [language, setLanguage] = useState(localStorage.getItem("selectedLanguage") || "");
+  const [optionalSubject, setOptionalSubject] = useState(localStorage.getItem("selectedOptionalSubject") || "");
+  const [error1, setError1] = useState("");
+  const [error2, setError2] = useState("");
   const navigate = useNavigate();
 
   const handleCheckboxChange = () => {
     setIsChecked(!isChecked);
   };
 
+  const handleLanguageChange = (e) => {
+    const selectedLanguage = e.target.value;
+    setLanguage(selectedLanguage);
+    setError1(""); // Clear error when a language is selected
+    localStorage.setItem("selectedLanguage", selectedLanguage);
+  };
+
+  const handleOptionalSubjectChange = (e) => {
+    const selectedSubject = e.target.value;
+    setOptionalSubject(selectedSubject);
+    setError2(""); // Clear error when a subject is selected
+    localStorage.setItem("selectedOptionalSubject", selectedSubject);
+  };
+
   const handleNextStep = () => {
-    if (step === 1) setStep(2);
-    else if (step === 2 && isChecked) navigate("/mock-demo");
+    if (step === 1) {
+      if (!language) {
+        setError1("Please select a language before proceeding.");
+        return;
+      } else if (!optionalSubject) {
+        setError2("Please select an optional subject before proceeding.");
+        return;
+      }
+      setStep(2);
+    } else if (step === 2 && isChecked) {
+      navigate("/mock-demo");
+    }
   };
 
   const handlePreviousStep = () => {
@@ -37,8 +65,19 @@ const Instructions = () => {
     },
     { subject: "GENERAL AWARENESS", questions: 25, marks: 50, time: 15 },
     { subject: "QUANTITATIVE APTITUDE", questions: 25, marks: 50, time: 15 },
-    { subject: "ENGLISH COMPREHENSION", questions: 25, marks: 50, time: 15 },
+
   ];
+  useEffect(() => {
+    // Retrieve selections from local storage on component mount
+    const storedLanguage = localStorage.getItem("selectedLanguage");
+    const storedOptionalSubject = localStorage.getItem("selectedOptionalSubject");
+    if (storedLanguage) {
+      setLanguage(storedLanguage);
+    }
+    if (storedOptionalSubject) {
+      setOptionalSubject(storedOptionalSubject);
+    }
+  }, []);
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-screen-3xl mx-auto bg-white shadow-md rounded-lg flex flex-col lg:flex-row">
@@ -50,6 +89,31 @@ const Instructions = () => {
             <h2 className="text-xl sm:text-2xl font-semibold text-blue-600 mb-4">
               General Instructions:
             </h2>
+            {/* Language Dropdown */}
+            <div className="flex items-center justify-between mb-6">
+              <div className="space-x-2 flex flex-row items-center">
+                <span className="text-[#007bff]">View in: </span>
+                <select
+                  style={{
+                    cursor: "pointer",
+                    width: "150px",
+                    border: "1px solid #ccc",
+                    borderRadius: "5px",
+                    padding: "4px",
+                  }}
+                  value={language}
+                  onChange={handleLanguageChange}
+                >
+                  <option value="">Select Language</option>
+                  <option value="en">English</option>
+                  <option value="hi">Hindi</option>
+                  {/* Add more languages as needed */}
+                </select>
+              </div>
+            </div>
+            {error1 && <p className="text-red-500 text-sm mb-4">{error1}</p>}
+
+            {/* General Instructions */}
             <ul className="list-disc list-inside space-y-2 text-gray-700">
               <li>The total duration of the examination is 60 minutes.</li>
               <li>
@@ -103,6 +167,7 @@ const Instructions = () => {
               </li>
             </ul>
 
+            {/* Subjects Table */}
             <div className="overflow-x-auto mt-6">
               <table className="min-w-full border border-gray-300 text-xs sm:text-sm md:text-base">
                 <thead>
@@ -138,9 +203,43 @@ const Instructions = () => {
                       </td>
                     </tr>
                   ))}
+                  <tr>
+                    <td className="px-2 sm:px-4 py-2 border border-gray-300">
+                      <select
+                        style={{
+                          cursor: "pointer",
+                          width: "200px",
+                          border: "1px solid #ccc",
+                          borderRadius: "5px",
+                          padding: "4px",
+                        }}
+                        value={optionalSubject}
+                        onChange={handleOptionalSubjectChange}
+                      >
+                        <option value="">Select Optional Subject</option>
+                        <option value="English Comprehension">
+                          English Comprehension
+                        </option>
+                        <option value="Hindi Comprehension">
+                          Hindi Comprehension
+                        </option>
+                      </select>
+                    </td>
+                    <td className="px-2 sm:px-4 py-2 border border-gray-300">
+                      25
+                    </td>
+                    <td className="px-2 sm:px-4 py-2 border border-gray-300">
+                      50
+                    </td>
+                    <td className="px-2 sm:px-4 py-2 border border-gray-300">
+                      15 min
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </div>
+            {error2 && <p className="text-red-500 text-sm mb-4">{error2}</p>}
+
           </>
         )}
 
@@ -189,26 +288,26 @@ const Instructions = () => {
           {step > 1 && (
             <button
               onClick={handlePreviousStep}
-              className="px-2 sm:px-4 py-2 bg-gray-300 text-gray-600 font-semibold rounded-md hover:bg-gray-400 transition text-xs sm:text-sm"
+              className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
             >
-              PREVIOUS ←
+              Back
             </button>
           )}
           <button
             onClick={handleNextStep}
-            disabled={step === 2 && !isChecked}
-            className={`px-2 sm:px-4 py-2 font-semibold rounded-md transition text-xs sm:text-sm ${
-              (step === 2 && isChecked) || step === 1
-                ? "bg-blue-500 text-white hover:bg-blue-600"
-                : "bg-gray-300 text-gray-500 cursor-not-allowed"
-            }`}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+
+
+
+
+
           >
-            {step === 1 ? "NEXT →" : "I AM READY TO BEGIN →"}
+            {step === 2 ? "Proceed to Test" : "Next"}
           </button>
         </div>
       </div>
 
-      {/* User Profile Section */}
+      {/* Profile Sidebar */}
       <div className="w-full lg:w-1/4 mt-8 lg:mt-0 flex flex-col items-center bg-gray-100 p-4 rounded-lg shadow-md">
         <img
           className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-blue-500 mb-4"
