@@ -5,18 +5,17 @@ import QuestionNavigation from "../Mock/navigation";
 import MobileQuizLayout from "./MobileQuizLayout";
 import { FaBrain, FaBook, FaCalculator, FaLanguage } from "react-icons/fa"; // Icons for sections
 
-
 const MockDemo = () => {
   const user = {
     name: "John Doe",
     role: "Student",
     profileImage: "", // Empty string or null means it will show initials
   };
+
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [submitted, setSubmitted] = useState(false);
-  const [score, setScore] = useState(0);
   const [answeredQuestions, setAnsweredQuestions] = useState(
     quizData.map(() => [])
   );
@@ -24,8 +23,32 @@ const MockDemo = () => {
     quizData.map(() => [])
   );
 
-  const currentSection = quizData[currentSectionIndex];
-  const currentQuestion = currentSection.questions[currentQuestionIndex];
+  const [selectedSubject, setSelectedSubject] = useState(
+    localStorage.getItem("selectedOptionalSubject") || ""
+  );
+
+  // Function to handle filtered data (to display only relevant sections)
+  const filteredQuizData = quizData.filter((section) => {
+    if (selectedSubject) {
+      return (
+        section.section === "General Intelligence and Reasoning" ||
+        section.section === "General Awareness" ||
+        section.section === "Quantitative Aptitude" ||
+        section.section === selectedSubject
+      );
+    }
+    return true;
+  });
+
+  // Ensure that the current section is correctly assigned based on index
+  const currentSection = filteredQuizData[currentSectionIndex] || {};
+  const currentQuestion = currentSection.questions
+    ? currentSection.questions[currentQuestionIndex]
+    : null;
+
+  console.log("Filtered Data:", filteredQuizData);
+  console.log("Current Section:", filteredQuizData[currentSectionIndex]);
+
   const isMobile = useMediaQuery({ query: "(max-width: 768px)" });
 
   useEffect(() => {
@@ -49,7 +72,7 @@ const MockDemo = () => {
     } else if (currentSectionIndex > 0) {
       setCurrentSectionIndex(currentSectionIndex - 1);
       setCurrentQuestionIndex(
-        quizData[currentSectionIndex - 1].questions.length - 1
+        filteredQuizData[currentSectionIndex - 1].questions.length - 1
       );
     }
   };
@@ -57,7 +80,7 @@ const MockDemo = () => {
   const handleNext = () => {
     if (currentQuestionIndex < currentSection.questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
-    } else if (currentSectionIndex < quizData.length - 1) {
+    } else if (currentSectionIndex < filteredQuizData.length - 1) {
       setCurrentSectionIndex(currentSectionIndex + 1);
       setCurrentQuestionIndex(0);
     }
@@ -66,11 +89,17 @@ const MockDemo = () => {
   const handleSubmitNext = () => {
     if (currentQuestionIndex < currentSection.questions.length - 1) {
       setCurrentQuestionIndex(currentQuestionIndex + 1);
-    } else if (currentSectionIndex < quizData.length - 1) {
+    } else if (currentSectionIndex < filteredQuizData.length - 1) {
       setCurrentSectionIndex(currentSectionIndex + 1);
       setCurrentQuestionIndex(0);
     }
   };
+
+  const isFirstQuestion = currentQuestionIndex === 0;
+  const isLastQuestion =
+    currentQuestionIndex === currentSection.questions.length - 1;
+  const isLastSection =
+    currentSectionIndex === filteredQuizData.length - 1;
 
   const handleSectionChange = (index) => {
     setCurrentSectionIndex(index);
@@ -95,15 +124,12 @@ const MockDemo = () => {
     <FaBook />,
     <FaCalculator />,
     <FaLanguage />,
+    <FaLanguage />,
   ];
-  const UserProfile = ({ user }) => {
-    // Ensure the user object is defined before accessing its properties
-    if (!user) {
-      return null; // Return nothing or a fallback UI if user is undefined or null
-    }
 
+  const UserProfile = ({ user }) => {
     const getInitials = (name) => {
-      if (!name) return ""; // In case name is undefined or empty
+      if (!name) return "";
       const nameParts = name.split(" ");
       const initials = nameParts
         .map((part) => part.charAt(0).toUpperCase())
@@ -113,7 +139,6 @@ const MockDemo = () => {
 
     return (
       <div className="flex items-center space-x-3 px-2 bg-gray-50 rounded-lg shadow-sm">
-        {/* User Profile Image or Initials */}
         {user.profileImage ? (
           <img
             src={user.profileImage}
@@ -127,85 +152,43 @@ const MockDemo = () => {
             </span>
           </div>
         )}
-
-        {/* User Information */}
         <div>
           <h2 className="text-lg font-semibold text-gray-700">{user.name}</h2>
-          <p className="text-sm text-gray-500">{user.role}</p>{" "}
-          {/* e.g., Student */}
+          <p className="text-sm text-gray-500">{user.role}</p>
         </div>
       </div>
     );
   };
 
-  const LanguageDropdown = () => {
-    const [language, setLanguage] = useState("en"); // Default language
-
-    const handleLanguageChange = (e) => {
-      const selectedLanguage = e.target.value;
-      setLanguage(selectedLanguage);
-      // Call a function or API to change the app language based on selectedLanguage
-    };
-
-    return (
-      <div
-        style={{
-          backgroundColor: "white",
-          borderRadius:"5px",
-          border: "1px solid #ccc",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          gap: "1px",
-        }}
-      >
-        <select
-          style={{
-            cursor: "pointer",
-            width: "100%",
-            border: "none",
-            backgroundColor: "transparent",
-          }}
-          id="language-select"
-          value={language}
-          onChange={handleLanguageChange}
-        >
-          <option value="en">English</option>
-          <option value="hi">Hindi</option>
-          {/* Add more languages as needed */}
-        </select>
-      </div>
-    );
-  };
   const Timer = () => {
-    const totalTime = 10 * 60; // 10 minutes in seconds
+    const totalTime = 10 * 60;
     const [timeLeft, setTimeLeft] = useState(totalTime);
-    const warningTime = 1 * 60; // Time remaining when warning starts (1 minute)
-  
+    const warningTime = 1 * 60;
+
     useEffect(() => {
       if (timeLeft > 0) {
         const timerId = setInterval(() => {
           setTimeLeft((prevTime) => prevTime - 1);
         }, 1000);
-  
+
         return () => clearInterval(timerId);
       }
     }, [timeLeft]);
-  
+
     const formatTime = (totalSeconds) => {
       const minutes = Math.floor(totalSeconds / 60);
       const seconds = totalSeconds % 60;
       return `${minutes}:${seconds < 10 ? `0${seconds}` : seconds}`;
     };
-  
+
     const percentage = (timeLeft / totalTime) * 100;
-    const progressColor = timeLeft > warningTime ? "#007bff" : "#ef4444"; // Blue for normal, red for warning
-  
+    const progressColor = timeLeft > warningTime ? "#007bff" : "#ef4444";
+
     return (
       <div
         className="relative w-16 h-16 flex items-center justify-center"
         style={{
-          background: `conic-gradient(${progressColor} ${percentage}%, #e6e6e6 ${percentage}%)`, // Start from 100% and decrease to 0%
+          background: `conic-gradient(${progressColor} ${percentage}%, #e6e6e6 ${percentage}%)`,
           borderRadius: "50%",
         }}
       >
@@ -215,7 +198,7 @@ const MockDemo = () => {
       </div>
     );
   };
-  
+
   return isMobile ? (
     <MobileQuizLayout
       currentSectionIndex={currentSectionIndex}
@@ -226,7 +209,6 @@ const MockDemo = () => {
       handleSubmitNext={handleSubmitNext}
       handleMarkForReview={handleMarkForReview}
       setSubmitted={setSubmitted}
-      score={score}
       submitted={submitted}
       quizData={quizData}
       currentSection={currentSection}
@@ -235,197 +217,155 @@ const MockDemo = () => {
       setCurrentQuestionIndex={setCurrentQuestionIndex}
       answeredQuestions={answeredQuestions}
       markedForReview={markedForReview}
-      selectedOption={selectedOption}
     />
   ) : (
-    <div className="flex flex-col items-center bg-gray-100  min-h-full">
-      <div className="grid  lg:grid-cols-12 gap-4 w-full max-w-full">
-        <div className="lg:col-span-9 col-span-full bg-white rounded-lg shadow-lg">
-          {!submitted ? (
-            <>
-              {/* Section Navigation */}
-              <div className="col-span-full grid grid-cols-4 space-x-4 py-4 px-8 bg-gray-100 rounded-lg shadow-md">
-                {quizData.map((section, index) => (
-                  <button
+    <div className="flex flex-col items-center bg-gray-100 min-h-full">
+    <div className="grid lg:grid-cols-12 gap-4 w-full max-w-full">
+      <div className="lg:col-span-9 col-span-full bg-white rounded-lg shadow-lg">
+        {!submitted ? (
+          <>
+            {/* Section Navigation */}
+            <div className="col-span-full grid grid-cols-4 space-x-4 py-4 px-8 bg-gray-100 rounded-lg shadow-md">
+              {filteredQuizData.map((section, index) => (
+                <button
+                  key={index}
+                  className={`flex items-center col-span-1 py-3 px-4 rounded-lg transition duration-300 ${
+                    currentSectionIndex === index
+                      ? "bg-blue-700 text-white font-semibold shadow-lg"
+                      : "bg-white text-blue-700 hover:bg-blue-100 hover:shadow-sm"
+                  }`}
+                  onClick={() => handleSectionChange(index)}
+                >
+                  <div className="mr-2">{sectionIcons[index]}</div>
+                  <span>{section.section}</span>
+                </button>
+              ))}
+            </div>
+            {/* Header with Profile, Marks, Language, and Timer */}
+            <div className="border items-center grid grid-cols-12 space-x-1 py-4 px-8 bg-white rounded-lg shadow-md">
+              <div className="col-span-3">
+                <UserProfile user={user} />
+              </div>
+              <div className="col-span-1" />
+
+              <div className="col-span-6 flex items-center space-x-4">
+                <div className="flex items-center justify-center p-3 bg-green-200 text-green-700 rounded-xl">
+                  <h2 className="font-semibold">+4 marks</h2>
+                </div>
+                <div className="flex items-center justify-center p-3 bg-red-200 text-red-700 rounded-xl">
+                  <h2 className="font-semibold">-1 marks</h2>
+                </div>
+              </div>
+
+              <div className="col-span-2 flex items-center justify-end">
+                <Timer />
+              </div>
+            </div>
+
+            {/* Question Section */}
+            <div className="p-8">
+              <h2 className="text-3xl font-bold text-blue-600 mb-6">
+                Question {currentQuestionIndex + 1}
+              </h2>
+              <p className="text-lg font-medium mb-8">
+                {currentQuestion ? currentQuestion.question : "Loading..."}
+              </p>
+              <div className="grid grid-cols-2 gap-6 mb-10">
+                {currentQuestion?.options.map((option, index) => (
+                  <label
                     key={index}
-                    className={`flex items-center col-span-1  py-3 px-4 rounded-lg transition duration-300 ${
-                      currentSectionIndex === index
-                        ? "bg-blue-700 text-white font-semibold shadow-lg"
-                        : "bg-white text-blue-700 hover:bg-blue-100 hover:shadow-sm"
+                    className={`border border-gray-300 rounded-lg p-4 flex items-center justify-center text-center cursor-pointer transition duration-200 transform ${
+                      selectedOption === option
+                        ? "bg-blue-50 border-blue-500 shadow-md"
+                        : "hover:bg-gray-50 hover:shadow-sm"
                     }`}
-                    onClick={() => handleSectionChange(index)}
                   >
-                    <span className="mr-3 md:text-xs xl:text-lg ">
-                      {sectionIcons[index]}
-                    </span>
-                    <span>{section.section}</span>
-                  </button>
+                    <input
+                      type="radio"
+                      name="option"
+                      value={option}
+                      checked={selectedOption === option}
+                      onChange={() => handleOptionChange(option)}
+                      className="hidden"
+                    />
+                    <span className="text-gray-800 font-medium">{option}</span>
+                  </label>
                 ))}
               </div>
 
-              {/* Header with Profile, Marks, Language, and Timer */}
-              <div className="border items-center grid grid-cols-12 space-x-1 py-4 px-8 bg-white rounded-lg shadow-md">
-                <div className="col-span-3">
-                  <UserProfile user={user} />
-                </div>
-                <div className="col-span-1"/>
-                
-                <div className="col-span-4  flex items-center space-x-4">
-                  <div className="flex items-center justify-center p-3 bg-green-200 text-green-700 rounded-xl">
-                    <h2 className="font-semibold">+4 marks</h2>
-                  </div>
-                  <div className="flex items-center justify-center p-3 bg-red-200 text-red-700 rounded-xl">
-                    <h2 className="font-semibold">-1 marks</h2>
-                  </div>
-                </div>
-                <div className="col-span-2 space-x-2 flex flex-row items-center justify-center ">
-                  <span className="text-[#007bff]">View in: </span>
-                  <LanguageDropdown/>
-                </div>
-                <div className="col-span-2 flex items-center justify-end">
-                  <Timer />
-                </div>
-              </div>
-
-              <div className="p-8">
-                <h2 className="text-3xl font-bold text-blue-600 mb-6">
-                  Question {currentQuestionIndex + 1}
-                </h2>
-                <p className="text-lg font-medium mb-8">
-                  {currentQuestion.question}
-                </p>
-                <div className="grid grid-cols-2 gap-6 mb-10">
-                  {currentQuestion.options.map((option, index) => (
-                    <label
-                      key={index}
-                      className={`border border-gray-300 rounded-lg p-4 flex items-center justify-center text-center cursor-pointer transition duration-200 transform ${
-                        selectedOption === option
-                          ? "bg-blue-50 border-blue-500 shadow-md"
-                          : "hover:bg-gray-50 hover:shadow-sm"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="option"
-                        value={option}
-                        checked={selectedOption === option}
-                        onChange={() => handleOptionChange(option)}
-                        className="hidden"
-                      />
-                      <span className="text-gray-800 font-medium">
-                        {option}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-
-                <div className="grid grid-cols-12 items-center  lg:mt-[25%] xl:mt-[20%] 2xl:mt-[17%]">
+              {/* Question Navigation and Actions */}
+              <div className="grid grid-cols-12 items-center lg:mt-[25%] xl:mt-[20%] 2xl:mt-[17%]">
+                <button
+                  onClick={handleMarkForReview}
+                  className="bg-red-500 text-white px-5 py-3 col-span-3 rounded-lg shadow-md hover:bg-red-600"
+                >
+                  Mark for Review
+                </button>
+                <div className="col-span-1" />
+                <div className="grid grid-cols-2 col-span-4 items-center space-x-4 gap-10">
                   <button
-                    onClick={handleMarkForReview}
-                    className="bg-red-500 text-white px-5 py-3 col-span-3 rounded-lg shadow-md hover:bg-red-600"
-                  >
-                    Mark for Review
-                  </button>
-                  <div className="col-span-1" />
-                  <div className="grid grid-cols-2 col-span-4 items-center space-x-4  gap-10">
-                    <button
-                      onClick={handlePrevious}
-                      disabled={
-                        currentQuestionIndex === 0 && currentSectionIndex === 0
-                      }
-                      className={`px-5 py-3 col-span-1 rounded-lg shadow-md ${
-                        currentQuestionIndex === 0 && currentSectionIndex === 0
-                          ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                          : "bg-gray-300 text-gray-700 hover:bg-gray-400"
-                      }`}
-                    >
-                      Previous
-                    </button>
-
-                    <button
-                      onClick={handleNext}
-                      disabled={
-                        currentQuestionIndex ===
-                          currentSection.questions.length - 1 &&
-                        currentSectionIndex === quizData.length - 1
-                      }
-                      className={`px-5 py-3 rounded-lg col-span-1 shadow-md ${
-                        currentQuestionIndex ===
-                          currentSection.questions.length - 1 &&
-                        currentSectionIndex === quizData.length - 1
-                          ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                          : "bg-gray-300 text-gray-700 hover:bg-gray-400"
-                      }`}
-                    >
-                      Next
-                    </button>
-                  </div>
-                  <div className="col-span-1" />
-
-                  <button
-                    onClick={handleSubmitNext}
-                    disabled={
-                      currentQuestionIndex ===
-                        currentSection.questions.length - 1 &&
-                      currentSectionIndex === quizData.length - 1
-                    }
-                    className={`px-5 py-3 col-span-3 rounded-lg shadow-md ${
-                      currentQuestionIndex ===
-                        currentSection.questions.length - 1 &&
-                      currentSectionIndex === quizData.length - 1
-                        ? "bg-green-200 text-green-700 cursor-not-allowed"
-                        : "bg-green-500 text-white hover:bg-green-600"
+                    onClick={handlePrevious}
+                    disabled={isFirstQuestion}
+                    className={`px-5 py-3 col-span-1 rounded-lg shadow-md ${
+                      isFirstQuestion ? "bg-gray-200 text-gray-500 cursor-not-allowed" : "bg-gray-300 text-gray-700 hover:bg-gray-400"
                     }`}
                   >
-                    Save & Next
+                    Previous
+                  </button>
+
+                  <button
+                    onClick={handleNext}
+                    disabled={isLastQuestion && isLastSection}
+                    className={`px-5 py-3 rounded-lg col-span-1 shadow-md ${
+                      isLastQuestion && isLastSection
+                        ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                        : "bg-gray-300 text-gray-700 hover:bg-gray-400"
+                    }`}
+                  >
+                    Next
                   </button>
                 </div>
-              </div>
-            </>
-          ) : (
-            <div className="text-center">
-              <h2 className="text-2xl font-bold text-blue-600">
-                Quiz Submitted!
-              </h2>
-              <p className="mt-4 text-lg">
-                Your Score: {score} out of{" "}
-                {quizData.reduce(
-                  (total, section) => total + section.questions.length,
-                  0
-                )}
-              </p>
-            </div>
-          )}
-        </div>
+                <div className="col-span-1" />
 
-        <div className="lg:col-span-3 col-span-full space-y-3">
-          <QuestionNavigation
-            questions={currentSection.questions}
-            selectedQuestionIndex={currentQuestionIndex}
-            onSelectQuestion={(index) => setCurrentQuestionIndex(index)}
-            onSubmit={() => {
-              let calculatedScore = 0;
-              quizData.forEach((section, sectionIndex) => {
-                section.questions.forEach((question, questionIndex) => {
-                  if (
-                    answeredQuestions[sectionIndex]?.[questionIndex] ===
-                    question.correctAnswer
-                  ) {
-                    calculatedScore++;
-                  }
-                });
-              });
-              setScore(calculatedScore);
-              setSubmitted(true);
-            }}
-            sectionName={currentSection.section}
-            answeredQuestions={answeredQuestions[currentSectionIndex] || []}
-            markedForReview={markedForReview[currentSectionIndex] || []}
-          />
-        </div>
+                <button
+                  onClick={handleSubmitNext}
+                  disabled={isLastQuestion && isLastSection}
+                  className={`px-5 py-3 col-span-3 rounded-lg shadow-md ${
+                    isLastQuestion && isLastSection
+                      ? "bg-green-200 text-green-700 cursor-not-allowed"
+                      : "bg-green-500 text-white hover:bg-green-600"
+                  }`}
+                >
+                  Save & Next
+                </button>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="text-center py-8">
+            <h2 className="text-2xl font-bold">Test Submitted</h2>
+            <p>Your responses have been submitted successfully.</p>
+          </div>
+        )}
+      </div>
+
+      {/* Question Navigation Component */}
+      <div className="lg:col-span-3 col-span-full space-y-3">
+        <QuestionNavigation
+          questions={currentSection.questions}
+          selectedQuestionIndex={currentQuestionIndex}
+          onSelectQuestion={(index) => setCurrentQuestionIndex(index)}
+          onSubmit={() => {
+            setSubmitted(true);
+          }}
+          sectionName={currentSection.section}
+          answeredQuestions={answeredQuestions[currentSectionIndex] || []}
+          markedForReview={markedForReview[currentSectionIndex] || []}
+        />
       </div>
     </div>
-  );
+  </div>
+);
 };
 
 export default MockDemo;

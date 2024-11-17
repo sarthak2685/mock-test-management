@@ -101,41 +101,42 @@ const QuestionNavigation = ({
           </span>
         </label>
       </div>
+      
+      <div className="grid grid-cols-5 gap-x-6 gap-y-4 justify-center my-10 sm:mx-10 lg:mx-0" >
+  {filteredQuestions.map((_, i) => (
+    <button
+      key={i}
+      onClick={() => onSelectQuestion(i)}
+      title={
+        markedForReview.includes(i)
+          ? "Marked for Review"
+          : answeredQuestions[i] !== undefined
+          ? "Answered"
+          : "Not Answered"
+      }
+      aria-label={`Question ${i + 1}, ${
+        markedForReview.includes(i)
+          ? "Marked for Review"
+          : answeredQuestions[i] !== undefined
+          ? "Answered"
+          : "Not Answered"
+      }`}
+      className={`w-10 h-10 sm:mx-10 lg:mx-0 flex items-center justify-center rounded-md font-bold transition duration-200 focus:outline-none focus:ring ${
+        selectedQuestionIndex === i
+          ? "bg-blue-200 text-blue-700 ring-2 ring-blue-300" // Current selected question
+          : markedForReview.includes(i)
+          ? "bg-red-500 text-white" // Marked for review
+          : answeredQuestions[i] !== undefined
+          ? "bg-green-500 text-white" // Answered
+          : "bg-gray-200 text-gray-700" // Not answered
+      }`}
+    >
+      {i + 1}
+    </button>
+  ))}
+</div>
 
-      {/* Question Navigation Grid */}
-      <div className="grid grid-cols-4 md:grid-cols-5 gap-4 my-10">
-        {filteredQuestions.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => onSelectQuestion(i)}
-            title={
-              markedForReview.includes(i)
-                ? "Marked for Review"
-                : answeredQuestions[i] !== undefined
-                ? "Answered"
-                : "Not Answered"
-            }
-            aria-label={`Question ${i + 1}, ${
-              markedForReview.includes(i)
-                ? "Marked for Review"
-                : answeredQuestions[i] !== undefined
-                ? "Answered"
-                : "Not Answered"
-            }`}
-            className={`w-10 h-10 rounded-md font-bold transition duration-200 focus:outline-none focus:ring ${
-              selectedQuestionIndex === i
-                ? "bg-blue-200 text-blue-700 ring-2 ring-blue-300" // Current selected question
-                : markedForReview.includes(i)
-                ? "bg-red-500 text-white" // Marked for review
-                : answeredQuestions[i] !== undefined
-                ? "bg-green-500 text-white" // Answered
-                : "bg-gray-200 text-gray-700" // Not answered
-            }`}
-          >
-            {i + 1}
-          </button>
-        ))}
-      </div>
+
       {/* Submit Button with Confirmation */}
 
       <button

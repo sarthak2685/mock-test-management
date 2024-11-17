@@ -88,34 +88,6 @@ const MobileQuizLayout = ({
     );
   };
 
-  // LanguageDropdown Component
-  const LanguageDropdown = () => {
-    const [language, setLanguage] = useState("en");
-
-    const handleLanguageChange = (e) => {
-      const selectedLanguage = e.target.value;
-      setLanguage(selectedLanguage);
-    };
-
-    return (
-      <div
-        className="bg-white border border-gray-300 flex items-center justify-center rounded-lg overflow-hidden px-2 py-1"
-        style={{
-          minWidth: "50px",
-        }}
-      >
-        <select
-          className="w-full bg-transparent text-xs  cursor-pointer outline-none"
-          value={language}
-          onChange={handleLanguageChange}
-        >
-          <option value="en">English</option>
-          <option value="hi">Hindi</option>
-        </select>
-      </div>
-    );
-  };
-
   // Timer Component
   const Timer = () => {
     const totalTime = 10 * 60;
@@ -175,38 +147,46 @@ const MobileQuizLayout = ({
               </h3>
 
               {/* Custom Dropdown for Section Selection */}
-              <div className="relative w-full max-w-xs mx-auto mb-4 dropdown">
-                <button
-                  onClick={() => setDropdownOpen(!dropdownOpen)}
-                  className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2 flex justify-between items-center text-gray-700"
-                >
-                  {quizData[currentSectionIndex]?.section || "Select Section"}
-                  <FaChevronDown
-                    className={`transition-transform ${
-                      dropdownOpen ? "rotate-180" : ""
-                    }`}
-                  />
-                </button>
+<div className="relative w-full max-w-xs mx-auto mb-4 dropdown">
+  <button
+    onClick={() => setDropdownOpen(!dropdownOpen)}
+    className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2 flex justify-between items-center text-gray-700"
+  >
+    {quizData[currentSectionIndex]?.section || "Select Section"}
+    <FaChevronDown
+      className={`transition-transform ${
+        dropdownOpen ? "rotate-180" : ""
+      }`}
+    />
+  </button>
 
-                {dropdownOpen && (
-                  <div className="absolute z-40 w-full bg-white border border-gray-300 rounded-lg mt-1 shadow-lg max-h-60 overflow-y-auto">
-                    {quizData.map((section, index) => (
-                      <div
-                        key={index}
-                        onClick={() => {
-                          setCurrentSectionIndex(index);
-                          setDropdownOpen(false);
-                        }}
-                        className={`px-4 py-2 cursor-pointer hover:bg-blue-500 hover:text-white ${
-                          index === currentSectionIndex ? "bg-blue-100" : ""
-                        }`}
-                      >
-                        {section.section}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+  {dropdownOpen && (
+    <div className="absolute z-40 w-full bg-white border border-gray-300 rounded-lg mt-1 shadow-lg max-h-60 overflow-y-auto">
+      {/* Filtered Sections */}
+      {quizData
+        .filter(
+          (section) =>
+            section.section === "English Comprehension" ||
+            section.section === "Hindi Comprehension"
+        )
+        .map((section, index) => (
+          <div
+            key={index}
+            onClick={() => {
+              setCurrentSectionIndex(index);
+              setDropdownOpen(false);
+            }}
+            className={`px-4 py-2 cursor-pointer hover:bg-blue-500 hover:text-white ${
+              index === currentSectionIndex ? "bg-blue-100" : ""
+            }`}
+          >
+            {section.section}
+          </div>
+        ))}
+    </div>
+  )}
+</div>
+
 
               <div className="flex-grow mt-4 overflow-y-auto max-h-96">
                 {currentSection && (
@@ -235,7 +215,6 @@ const MobileQuizLayout = ({
     <Timer />
   </div>
   <div className="flex items-center space-x-4">
-    <LanguageDropdown />
     <button
       onClick={() => setShowNavigation(!showNavigation)}
       className="text-blue-500"
