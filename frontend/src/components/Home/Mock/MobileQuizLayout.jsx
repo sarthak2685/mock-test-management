@@ -12,11 +12,8 @@ const MobileQuizLayout = ({
   handleSaveNext,
   handleMarkForReview,
   handleSubmit,
-  score,
   submitted,
   quizData,
-  currentSection,
-  currentQuestion,
   setCurrentSectionIndex,
   setCurrentQuestionIndex,
   answeredQuestions,
@@ -30,6 +27,27 @@ const MobileQuizLayout = ({
     role: "Student",
     profileImage: "", // Empty string or null means it will show initials
   };
+  const [selectedSubject, setSelectedSubject] = useState(
+    localStorage.getItem("selectedOptionalSubject") || ""
+  );
+
+  // Function to handle filtered data (to display only relevant sections)
+  const filteredQuizData = quizData.filter((section) => {
+    if (selectedSubject) {
+      return (
+        section.section === "General Intelligence and Reasoning" ||
+        section.section === "General Awareness" ||
+        section.section === "Quantitative Aptitude" ||
+        section.section === selectedSubject
+      );
+    }
+    return true;
+  });
+
+  const currentSection = filteredQuizData[currentSectionIndex] || {};
+  const currentQuestion = currentSection.questions
+    ? currentSection.questions[currentQuestionIndex]
+    : null;
 
   // Function to close dropdown on outside click
   useEffect(() => {
@@ -147,46 +165,39 @@ const MobileQuizLayout = ({
               </h3>
 
               {/* Custom Dropdown for Section Selection */}
-<div className="relative w-full max-w-xs mx-auto mb-4 dropdown">
-  <button
-    onClick={() => setDropdownOpen(!dropdownOpen)}
-    className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2 flex justify-between items-center text-gray-700"
-  >
-    {quizData[currentSectionIndex]?.section || "Select Section"}
-    <FaChevronDown
-      className={`transition-transform ${
-        dropdownOpen ? "rotate-180" : ""
-      }`}
-    />
-  </button>
+              <div className="relative w-full max-w-xs mx-auto mb-4 dropdown">
+                <button
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2 flex justify-between items-center text-gray-700"
+                >
+                  {currentSection.section || "Select Section"}
+                  <FaChevronDown
+                    className={`transition-transform ${
+                      dropdownOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
 
-  {dropdownOpen && (
-    <div className="absolute z-40 w-full bg-white border border-gray-300 rounded-lg mt-1 shadow-lg max-h-60 overflow-y-auto">
-      {/* Filtered Sections */}
-      {quizData
-        .filter(
-          (section) =>
-            section.section === "English Comprehension" ||
-            section.section === "Hindi Comprehension"
-        )
-        .map((section, index) => (
-          <div
-            key={index}
-            onClick={() => {
-              setCurrentSectionIndex(index);
-              setDropdownOpen(false);
-            }}
-            className={`px-4 py-2 cursor-pointer hover:bg-blue-500 hover:text-white ${
-              index === currentSectionIndex ? "bg-blue-100" : ""
-            }`}
-          >
-            {section.section}
-          </div>
-        ))}
-    </div>
-  )}
-</div>
-
+                {dropdownOpen && (
+                  <div className="absolute z-40 w-full bg-white border border-gray-300 rounded-lg mt-1 shadow-lg max-h-60 overflow-y-auto">
+                    {/* Filtered Sections */}
+                    {filteredQuizData.map((section, index) => (
+                      <div
+                        key={index}
+                        onClick={() => {
+                          setCurrentSectionIndex(index);
+                          setDropdownOpen(false);
+                        }}
+                        className={`px-4 py-2 cursor-pointer hover:bg-blue-500 hover:text-white ${
+                          index === currentSectionIndex ? "bg-blue-100" : ""
+                        }`}
+                      >
+                        {section.section}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
 
               <div className="flex-grow mt-4 overflow-y-auto max-h-96">
                 {currentSection && (
@@ -210,34 +221,34 @@ const MobileQuizLayout = ({
           </div>
         )}
         <div className="sticky top-0 bg-white shadow-md p-4 flex items-center justify-between">
-  <div className="flex items-center space-x-4">
-    <UserProfile user={user} />
-    <Timer />
-  </div>
-  <div className="flex items-center space-x-4">
-
-    <button
-      onClick={() => setShowNavigation(!showNavigation)}
-      className="text-blue-500"
-      aria-label="Toggle Navigation"
-    >
-      {showNavigation ? (
-        <FaTimes className="w-6 h-6" />
-      ) : (
-        <FaBars className="w-6 h-6" />
-      )}
-    </button>
-  </div>
-</div>
+          <div className="flex items-center space-x-4">
+            <UserProfile user={user} />
+            <Timer />
+          </div>
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={() => setShowNavigation(!showNavigation)}
+              className="text-blue-500"
+              aria-label="Toggle Navigation"
+            >
+              {showNavigation ? (
+                <FaTimes className="w-6 h-6" />
+              ) : (
+                <FaBars className="w-6 h-6" />
+              )}
+            </button>
+          </div>
+        </div>
 
         {/* Main Question Content */}
         <div className="p-4 flex-1">
           <>
-          
             <div className="bg-white rounded-lg shadow p-6">
-                  <h2 className="flex justify-between">
-                    <span className=" text-xl justify-start font-semibold text-blue-600 mb-2">Question {currentQuestionIndex + 1}</span>
-                    <div className=" flex items-center justify-end space-x-1 ">
+              <h2 className="flex justify-between">
+                <span className=" text-xl justify-start font-semibold text-blue-600 mb-2">
+                  Question {currentQuestionIndex + 1}
+                </span>
+                <div className=" flex items-center justify-end space-x-1 ">
                   <div className="flex items-center justify-center p-2 bg-green-200 text-green-700 rounded-lg">
                     <h2 className="text-xs sm:font-semibold">+4 marks</h2>
                   </div>
@@ -245,11 +256,10 @@ const MobileQuizLayout = ({
                     <h2 className="text-xs sm:font-semibold">-1 marks</h2>
                   </div>
                 </div>
-                  </h2>
-                  <p className="mb-4 text-gray-700 leading-relaxed">
-                    {currentQuestion?.question}
-                  </p>
-                
+              </h2>
+              <p className="my-4 text-gray-700 leading-relaxed">
+                {currentQuestion?.question}
+              </p>
 
               <div className="space-y-3 grid grid-cols-1 my-10">
                 {currentQuestion?.options.map((option, index) => (
@@ -274,41 +284,40 @@ const MobileQuizLayout = ({
                 ))}
               </div>
             </div>
-            </>
-         
+          </>
         </div>
 
         {/* Bottom Navigation */}
         {!submitted && (
-         <div className="bg-white shadow-md p-4 flex flex-col justify-center items-center gap-2 border-t border-gray-200">
-           <div className="flex flex-row justify-between gap-2 w-full">
-           <button
-             onClick={handlePrevious}
-             className="bg-gray-300 hover:bg-gray-400 text-gray-700 font-medium rounded-md px-4 py-2 w-full md:w-auto"
-           >
-             Previous
-           </button>
-           <button
-             onClick={handleNext}
-             className="bg-gray-300 hover:bg-gray-400 text-gray-700 font-medium rounded-md px-4 py-2 w-full md:w-auto"
-           >
-             Next
-           </button>
-         </div>
-         <button
-           onClick={handleMarkForReview}
-           className="bg-red-500 hover:bg-red-600 text-white font-medium rounded-md px-4 py-2 w-full md:w-auto"
-         >
-           Mark for Review
-         </button>
-        
-         <button
-           onClick={handleSaveNext}
-           className="bg-green-500 hover:bg-green-600 text-white font-medium rounded-md px-4 py-2 w-full md:w-auto"
-         >
-           Save & Next
-         </button>
-       </div>
+          <div className="bg-white shadow-md p-4 flex flex-col justify-center items-center gap-2 border-t border-gray-200">
+            <div className="flex flex-row justify-between gap-2 w-full">
+              <button
+                onClick={handlePrevious}
+                className="bg-gray-300 hover:bg-gray-400 text-gray-700 font-medium rounded-md px-4 py-2 w-full md:w-auto"
+              >
+                Previous
+              </button>
+              <button
+                onClick={handleNext}
+                className="bg-gray-300 hover:bg-gray-400 text-gray-700 font-medium rounded-md px-4 py-2 w-full md:w-auto"
+              >
+                Next
+              </button>
+            </div>
+            <button
+              onClick={handleMarkForReview}
+              className="bg-red-500 hover:bg-red-600 text-white font-medium rounded-md px-4 py-2 w-full md:w-auto"
+            >
+              Mark for Review
+            </button>
+
+            <button
+              onClick={handleSaveNext}
+              className="bg-green-500 hover:bg-green-600 text-white font-medium rounded-md px-4 py-2 w-full md:w-auto"
+            >
+              Save & Next
+            </button>
+          </div>
         )}
       </div>
     </div>
