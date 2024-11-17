@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Instructions = () => {
   const [isChecked, setIsChecked] = useState(false);
-  const [step, setStep] = useState(1);
   const [language, setLanguage] = useState(localStorage.getItem("selectedLanguage") || "");
   const [optionalSubject, setOptionalSubject] = useState(localStorage.getItem("selectedOptionalSubject") || "");
   const [error1, setError1] = useState("");
   const [error2, setError2] = useState("");
+  const [step, setStep] = useState(1); // Track current instruction step
   const navigate = useNavigate();
 
   const handleCheckboxChange = () => {
@@ -41,11 +41,12 @@ const Instructions = () => {
     } else if (step === 2 && isChecked) {
       navigate("/mock-demo");
     }
-  };
+
 
   const handlePreviousStep = () => {
     if (step > 1) setStep(step - 1);
   };
+
   // User data
   const user = {
     name: "John Doe",
@@ -76,6 +77,8 @@ const Instructions = () => {
       setOptionalSubject(storedOptionalSubject);
     }
   }, []);
+    { subject: "ENGLISH COMPREHENSION", questions: 25, marks: 50, time: 15 },
+  ];
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-screen-3xl mx-auto bg-white shadow-md rounded-lg flex flex-col lg:flex-row">
@@ -112,6 +115,7 @@ const Instructions = () => {
             {error1 && <p className="text-red-500 text-sm mb-4">{error1}</p>}
 
             {/* General Instructions */}
+
             <ul className="list-disc list-inside space-y-2 text-gray-700">
               <li>The total duration of the examination is 60 minutes.</li>
               <li>
@@ -165,7 +169,6 @@ const Instructions = () => {
               </li>
             </ul>
 
-            {/* Subjects Table */}
             <div className="overflow-x-auto mt-6">
               <table className="min-w-full border border-gray-300 text-xs sm:text-sm md:text-base">
                 <thead>
@@ -238,6 +241,9 @@ const Instructions = () => {
             </div>
             {error2 && <p className="text-red-500 text-sm mb-4">{error2}</p>}
 
+                </tbody>
+              </table>
+            </div>
           </>
         )}
 
@@ -289,6 +295,10 @@ const Instructions = () => {
               className="px-4 py-2 bg-gray-300 text-gray-700 rounded hover:bg-gray-400"
             >
               Back
+
+              className="px-2 sm:px-4 py-2 bg-gray-300 text-gray-600 font-semibold rounded-md hover:bg-gray-400 transition text-xs sm:text-sm"
+            >
+              PREVIOUS ←
             </button>
           )}
           <button
@@ -296,11 +306,20 @@ const Instructions = () => {
             className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
           >
             {step === 2 ? "Proceed to Test" : "Next"}
+
+            disabled={step === 2 && !isChecked}
+            className={`px-2 sm:px-4 py-2 font-semibold rounded-md transition text-xs sm:text-sm ${
+              (step === 2 && isChecked) || step === 1
+                ? "bg-blue-500 text-white hover:bg-blue-600"
+                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+            }`}
+          >
+            {step === 1 ? "NEXT →" : "I AM READY TO BEGIN →"}
           </button>
         </div>
       </div>
 
-      {/* Profile Sidebar */}
+
       <div className="w-full lg:w-1/4 mt-8 lg:mt-0 flex flex-col items-center bg-gray-100 p-4 rounded-lg shadow-md">
         <img
           className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-blue-500 mb-4"
@@ -316,5 +335,6 @@ const Instructions = () => {
     </div>
   );
 };
+
 
 export default Instructions;

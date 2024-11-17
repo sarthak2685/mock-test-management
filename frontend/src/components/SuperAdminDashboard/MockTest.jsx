@@ -94,29 +94,6 @@ const MockTestManagement = ({ user }) => {
 
   const [selectedOptions, setSelectedOptions] = useState([]); // track selected options
 
-  const handleInstituteChange = (options) => {
-    // Check if "Select All" or "Deselect All" was clicked
-    if (options.some((option) => option.value === "selectAll")) {
-      // Select all options (excluding "Select All" and "Deselect All")
-      setSelectedOptions(instituteOptions);
-      setNewTest({
-        ...newTest,
-        instituteNames: instituteOptions.map((option) => option.value),
-      });
-    } else if (options.some((option) => option.value === "deselectAll")) {
-      // Deselect all options
-      setSelectedOptions([]);
-      setNewTest({ ...newTest, instituteNames: [] });
-    } else {
-      // Otherwise, handle normally
-      setSelectedOptions(options);
-      const selectedInstitutes = options
-        ? options.map((option) => option.value)
-        : [];
-      setNewTest({ ...newTest, instituteNames: selectedInstitutes });
-    }
-  };
-
   const handleQuestionChange = (index, field, value, optionIndex) => {
     const updatedQuestions = [...newTest.questions];
 
@@ -229,9 +206,9 @@ const MockTestManagement = ({ user }) => {
     // Copy questions array to modify
     const savedQuestions = [...newTest.questions];
 
-    // Update the current question data and add the index field
+    // Save the current question data
     savedQuestions[currentQuestionIndex] = {
-      ...savedQuestions[currentQuestionIndex],
+      ...currentQuestion,
       index: currentQuestionIndex, // Add index here
       questionText: currentQuestion.questionText,
       options: currentQuestion.options,
@@ -240,7 +217,7 @@ const MockTestManagement = ({ user }) => {
       image: currentQuestion.image,
     };
 
-    // Log the saved question data, now including the index field
+    // Log the saved question data
     console.log(
       `Saved Question Data for Question ${currentQuestionIndex + 1}:`,
       savedQuestions[currentQuestionIndex]
@@ -248,6 +225,7 @@ const MockTestManagement = ({ user }) => {
 
     // Prepare for the next question
     const nextQuestionIndex = currentQuestionIndex + 1;
+
     if (savedQuestions.length <= nextQuestionIndex) {
       savedQuestions.push({
         index: nextQuestionIndex, // Add index for the new question
@@ -264,13 +242,22 @@ const MockTestManagement = ({ user }) => {
       questions: savedQuestions,
     });
 
+    // Update the state with the data of the next question
+    const nextQuestion = savedQuestions[nextQuestionIndex] || {
+      questionText: "",
+      options: ["", "", "", ""],
+      correctAnswer: "",
+      subtopic: "",
+      image: null,
+    };
+
     setCurrentQuestionIndex(nextQuestionIndex);
-    setCorrectAnswer("");
+    setCorrectAnswer(nextQuestion.correctAnswer || "");
     setDropdownOpen(false);
-    setQuestionText("");
-    setOptions(["", "", "", ""]);
-    setSubtopic("");
-    setImage(null);
+    setQuestionText(nextQuestion.questionText || "");
+    setOptions(nextQuestion.options || ["", "", "", ""]);
+    setSubtopic(nextQuestion.subtopic || "");
+    setImage(nextQuestion.image || null);
   };
 
   const handleDeleteQuestion = (index) => {
@@ -365,14 +352,29 @@ const MockTestManagement = ({ user }) => {
   };
 
   const handleImageUploadOption = (e, questionIndex, optionIndex) => {
-    const file = e.target.files[0];
-    const imageUrl = URL.createObjectURL(file); // Get the image URL
+    const file = e.target.files[0]; // Get the first selected file
 
-    // Update the image for the option
-    const updatedQuestions = [...newTest.questions];
-    updatedQuestions[questionIndex].options[optionIndex].image = imageUrl;
+    if (file && file.type === "image/png") {
+      // Only process if the file is a PNG image
+      const reader = new FileReader();
 
-    setNewTest({ ...newTest, questions: updatedQuestions });
+      reader.onloadend = () => {
+        // Get the base64 representation of the image
+        const imageBase64 = reader.result;
+
+        // Update the question's option with the base64 image
+        const updatedQuestions = [...newTest.questions];
+        updatedQuestions[questionIndex].options[optionIndex].image =
+          imageBase64;
+
+        // Update state with the new image data
+        setNewTest({ ...newTest, questions: updatedQuestions });
+      };
+
+      reader.readAsDataURL(file); // Read the file as a base64 string (image/png)
+    } else {
+      alert("Please select a valid PNG image.");
+    }
   };
 
   const [domains, setDomains] = useState([]);
@@ -523,6 +525,148 @@ const MockTestManagement = ({ user }) => {
     fetchChapters();
   }, []); // Run once when the component mounts
 
+  const [institutes, setInstitutes] = useState([]); // State to hold institutes
+
+  const fetchInstitutes = async () => {
+    try {
+      const response = await fetch(`${config.apiUrl}/vendor-admin-crud/`, {
+        method: "GET",
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      console.log("Fetched Data:", result);
+
+      // Assuming result.data contains the list of institutes with institute_name and id
+      if (Array.isArray(result.data)) {
+        const formattedInstitutes = result.data.map((institute) => ({
+          value: institute.id, // Use id as value
+          label: institute.institute_name, // Use institute_name as label
+        }));
+
+        setInstitutes(formattedInstitutes); // Set the institutes state in the correct format
+      } else {
+        console.error("Expected an array but received:", result.data);
+      }
+    } catch (error) {
+      console.error("Error fetching institutes:", error);
+    }
+  };
+
+  // Handle changes in the select component
+  const handleInstituteChange = (selectedOptions) => {
+    if (selectedOptions.some((option) => option.value === "selectAll")) {
+      // Select all logic
+      const allInstituteValues = institutes.map((institute) => institute.value);
+      setSelectedOptions(
+        institutes.map((institute) => ({
+          value: institute.value,
+          label: institute.label,
+        }))
+      );
+    } else if (
+      selectedOptions.some((option) => option.value === "deselectAll")
+    ) {
+      // Deselect all logic
+      setSelectedOptions([]);
+    } else {
+      // Regular selection
+      setSelectedOptions(selectedOptions);
+    }
+  };
+
+  useEffect(() => {
+    fetchInstitutes(); // Fetch institutes when component mounts
+  }, []); // Run once when the component mounts
+
+  const handleTest = async () => {
+    try {
+      // Log the state before sending the payload to check the values
+      console.log("Preparing to send payload:", newTest);
+
+      const currentQuestion = newTest.questions[currentQuestionIndex]; // Use currentQuestionIndex dynamically
+      if (!currentQuestion) {
+        console.error("No questions found at index:", currentQuestionIndex);
+        return;
+      }
+
+      // Extract options as strings
+      const options = currentQuestion.options.map((option) =>
+        typeof option === "string" ? option : option?.text || ""
+      );
+
+      const payload = {
+        test_name: newTest.testName,
+        exam_duration: newTest.duration,
+        name: newTest.domain,
+        institutes: selectedOptions.map((option) => option.value),
+        for_exam_subject_chapter: newTest.chapter
+          ? [newTest.chapter.id]
+          : ["ALL"],
+        marks: newTest.correctMark,
+        negative_marks: newTest.negativeMark,
+
+        // Question details
+        question: currentQuestion.questionText || null,
+        image: currentQuestion.image || null,
+        subtopic: newTest.subject === "ALL" ? currentQuestion.subtopic : null,
+
+        // Options for the current question
+        option_1: options[0] || null,
+        option_2: options[1] || null,
+        option_3: options[2] || null,
+        option_4: options[3] || null,
+
+        // Files for the current question (Handle images if present)
+        file_1: currentQuestion.options[0]?.image || null,
+        file_2: currentQuestion.options[1]?.image || null,
+        file_3: currentQuestion.options[2]?.image || null,
+        file_4: currentQuestion.options[3]?.image || null,
+
+        // Correct Answer for the current question
+        correct_answer:
+          typeof currentQuestion.correctAnswer === "string"
+            ? currentQuestion.correctAnswer
+            : currentQuestion.correctAnswer?.text || null,
+      };
+
+      console.log("Final payload:", payload);
+
+      const response = await fetch(
+        "https://mockexam.pythonanywhere.com/exam-subject-chapter-questions/",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Token ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Test submitted successfully:", data);
+
+        // Automatically save the question and navigate to the next one
+        handleSaveAndNext();
+
+        // Log the saved question data for user visibility
+      } else {
+        console.error("Failed to submit test:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error while submitting test:", error);
+    }
+  };
+
   const instituteOptions = institutes.map((institute) => ({
     value: institute,
     label: institute,
@@ -595,13 +739,13 @@ const MockTestManagement = ({ user }) => {
               <div className="mb-4">
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4">
                   {/* Institute Name Multi-Select */}
-                  <div className="flex-grow">
+                  <div className="flex-grow" onClick={fetchInstitutes}>
                     <Select
                       isMulti
                       options={[
                         { value: "selectAll", label: "Select All" },
                         { value: "deselectAll", label: "Deselect All" },
-                        ...instituteOptions,
+                        ...institutes, // Institutes are now in the correct format for the Select component
                       ]}
                       onChange={handleInstituteChange}
                       className="basic-multi-select"
@@ -749,23 +893,28 @@ const MockTestManagement = ({ user }) => {
                   <div onClick={fetchChapters}>
                     <select
                       name="chapter"
-                      value={newTest.chapter || "ALL"} // Default to "ALL" if newTest.chapter is empty
+                      value={newTest.chapter?.id || "ALL"} // Use "ALL" as a fallback
                       onChange={(e) => {
-                        const selectedChapter = e.target.value;
+                        const selectedChapterId = e.target.value;
+                        const selectedChapter = chapters.find(
+                          (chapter) => chapter.id === selectedChapterId
+                        );
+
                         setNewTest((prevTest) => ({
                           ...prevTest,
-                          chapter: selectedChapter,
+                          chapter: selectedChapter || {
+                            id: "ALL",
+                            name: "ALL",
+                          }, // Default to "ALL"
                         }));
                       }}
                       className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
                     >
-                      {/* "All" option */}
                       <option value="" disabled>
                         Select Chapter
                       </option>
-                      {/* Other chapter options */}
                       {chapters.map((chapter) => (
-                        <option key={chapter.id} value={chapter.name}>
+                        <option key={chapter.id} value={chapter.id}>
                           {chapter.name}
                         </option>
                       ))}
@@ -962,6 +1111,7 @@ const MockTestManagement = ({ user }) => {
                             <div className="mt-2">
                               <input
                                 type="file"
+                                accept="image/png" // Restrict input to only PNG images
                                 onChange={(e) =>
                                   handleImageUploadOption(
                                     e,
@@ -971,6 +1121,7 @@ const MockTestManagement = ({ user }) => {
                                 }
                                 className="border p-1 sm:p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 text-xs sm:text-base"
                               />
+
                               {option.image && (
                                 <div className="relative mt-2">
                                   <img
@@ -1138,7 +1289,7 @@ const MockTestManagement = ({ user }) => {
                     Add Question
                   </button>*/}
                   <button
-                    onClick={handleSaveAndNext}
+                    onClick={handleTest}
                     className="bg-teal-500 text-white p-2 rounded-md w-full sm:w-auto h-8 sm:h-auto text-xs sm:text-base"
                   >
                     Save and Next

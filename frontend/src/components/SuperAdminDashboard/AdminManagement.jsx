@@ -233,7 +233,14 @@ const AdminManagement = ({ user }) => {
        return;
     }
     try {
-       await axios.delete(`${config.apiUrl}/vendor-admin-crud/${id}`);
+       await axios.delete(`${config.apiUrl}/vendor-admin-crud/?id=${id}`,
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+       );
        setAdmins(admins.filter((admin) => admin.id !== id));
     } catch (error) {
        console.error("Error deleting admin:", error);
