@@ -5,7 +5,6 @@ import QuestionNavigation from "../Mock/navigation";
 import MobileQuizLayout from "./MobileQuizLayout";
 import { FaBrain, FaBook, FaCalculator, FaLanguage } from "react-icons/fa"; // Icons for sections
 
-
 const MockDemo = () => {
   const user = {
     name: "John Doe",
@@ -151,7 +150,7 @@ const MockDemo = () => {
       <div
         style={{
           backgroundColor: "white",
-          borderRadius:"5px",
+          borderRadius: "5px",
           border: "1px solid #ccc",
           display: "flex",
           alignItems: "center",
@@ -181,26 +180,26 @@ const MockDemo = () => {
     const totalTime = 10 * 60; // 10 minutes in seconds
     const [timeLeft, setTimeLeft] = useState(totalTime);
     const warningTime = 1 * 60; // Time remaining when warning starts (1 minute)
-  
+
     useEffect(() => {
       if (timeLeft > 0) {
         const timerId = setInterval(() => {
           setTimeLeft((prevTime) => prevTime - 1);
         }, 1000);
-  
+
         return () => clearInterval(timerId);
       }
     }, [timeLeft]);
-  
+
     const formatTime = (totalSeconds) => {
       const minutes = Math.floor(totalSeconds / 60);
       const seconds = totalSeconds % 60;
       return `${minutes}:${seconds < 10 ? `0${seconds}` : seconds}`;
     };
-  
+
     const percentage = (timeLeft / totalTime) * 100;
     const progressColor = timeLeft > warningTime ? "#007bff" : "#ef4444"; // Blue for normal, red for warning
-  
+
     return (
       <div
         className="relative w-16 h-16 flex items-center justify-center"
@@ -215,7 +214,7 @@ const MockDemo = () => {
       </div>
     );
   };
-  
+
   return isMobile ? (
     <MobileQuizLayout
       currentSectionIndex={currentSectionIndex}
@@ -268,8 +267,8 @@ const MockDemo = () => {
                 <div className="col-span-3">
                   <UserProfile user={user} />
                 </div>
-                <div className="col-span-1"/>
-                
+                <div className="col-span-1" />
+
                 <div className="col-span-4  flex items-center space-x-4">
                   <div className="flex items-center justify-center p-3 bg-green-200 text-green-700 rounded-xl">
                     <h2 className="font-semibold">+4 marks</h2>
@@ -280,7 +279,7 @@ const MockDemo = () => {
                 </div>
                 <div className="col-span-2 space-x-2 flex flex-row items-center justify-center ">
                   <span className="text-[#007bff]">View in: </span>
-                  <LanguageDropdown/>
+                  <LanguageDropdown />
                 </div>
                 <div className="col-span-2 flex items-center justify-end">
                   <Timer />

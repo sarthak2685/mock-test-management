@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { RiInformation2Line } from 'react-icons/ri'; // Importing the new icon
+import React, { useState, useEffect, useRef } from "react";
+import { RiInformation2Line } from "react-icons/ri"; // Importing the new icon
 
 const QuestionNavigation = ({
   questions,
@@ -41,14 +41,14 @@ const QuestionNavigation = ({
           <RiInformation2Line className="w-6 h-6" /> {/* Using the new icon */}
           <span>Instructions</span>
         </button>
-       
       </div>
 
       {/* Conditional rendering of instructions */}
       {showInstructions && (
         <div className="mb-4 p-4 bg-blue-50 rounded-md">
           <p className="text-sm text-gray-600">
-            Here are the instructions for taking the test. Please read them carefully before proceeding.
+            Here are the instructions for taking the test. Please read them
+            carefully before proceeding.
             {/* You can customize the instructions here */}
           </p>
         </div>
@@ -59,7 +59,9 @@ const QuestionNavigation = ({
         {/* Current Question */}
         <div className="flex items-center space-x-2 p-2 bg-blue-50 rounded-lg shadow-sm">
           <span className="w-6 h-6 bg-blue-500 rounded-md"></span>
-          <span className="text-md font-medium text-gray-700">Current Question</span>
+          <span className="text-md font-medium text-gray-700">
+            Current Question
+          </span>
         </div>
 
         {/* Answered */}
@@ -71,13 +73,17 @@ const QuestionNavigation = ({
         {/* Marked for Review */}
         <div className="flex items-center space-x-2 p-2 bg-red-50 rounded-lg shadow-sm">
           <span className="w-6 h-6 bg-red-500 rounded-md"></span>
-          <span className="text-md font-medium text-gray-700">Marked for Review</span>
+          <span className="text-md font-medium text-gray-700">
+            Marked for Review
+          </span>
         </div>
 
         {/* Not Answered */}
         <div className="flex items-center space-x-2 p-2 bg-gray-50 rounded-lg shadow-sm">
           <span className="w-6 h-6 bg-gray-400 rounded-md"></span>
-          <span className="text-md font-medium text-gray-700">Not Answered</span>
+          <span className="text-md font-medium text-gray-700">
+            Not Answered
+          </span>
         </div>
       </div>
 
@@ -137,7 +143,6 @@ const QuestionNavigation = ({
         ))}
       </div>
       {/* Submit Button with Confirmation */}
-
       <button
         onClick={() => {
           if (window.confirm("Are you sure you want to submit the test?")) {
