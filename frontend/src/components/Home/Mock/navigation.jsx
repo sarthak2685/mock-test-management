@@ -376,6 +376,7 @@ const QuestionNavigation = ({
         onClick={() => {
           if (window.confirm("Are you sure you want to submit the test?")) {
             onSubmit();
+            window.location.href= "/score";
           }
         }}
         className="w-full bg-green-500 text-white py-3 rounded-md font-semibold hover:bg-green-600 transition duration-300 shadow-sm mt-4"

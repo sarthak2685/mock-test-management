@@ -220,12 +220,12 @@ const MobileQuizLayout = ({
             </div>
           </div>
         )}
-        <div className="sticky top-0 bg-white shadow-md p-4 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <UserProfile user={user} />
-            <Timer />
+        <div className="sticky top-0 bg-white shadow-md p-4 grid grid-cols-3 items-center ">
+          <div className="grid grid-cols-2 col-span-2 items-center space-x-4 justify-between ">
+            <UserProfile className="col-span-1" user={user} />
+            <Timer className="col-span-1 items-center" />
           </div>
-          <div className="flex items-center space-x-4">
+          <div className="flex col-span-1 items-center justify-end space-x-4">
             <button
               onClick={() => setShowNavigation(!showNavigation)}
               className="text-blue-500"
@@ -304,6 +304,8 @@ const MobileQuizLayout = ({
                 Next
               </button>
             </div>
+            <div className="flex flex-row justify-between gap-2 w-full">
+
             <button
               onClick={handleMarkForReview}
               className="bg-red-500 hover:bg-red-600 text-white font-medium rounded-md px-4 py-2 w-full md:w-auto"
@@ -317,6 +319,8 @@ const MobileQuizLayout = ({
             >
               Save & Next
             </button>
+            </div>
+
           </div>
         )}
       </div>
