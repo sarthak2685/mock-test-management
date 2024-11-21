@@ -172,6 +172,9 @@ const MockTestManagement = ({ user }) => {
   const [image, setImage] = useState(null);
 
   // Function to handle the "Save and Next" button
+  // Array ref for tracking option file inputs
+  const optionFileInputRefs = useRef([]);
+
   const handleSaveAndNext = () => {
     if (!newTest || !newTest.subject || !Array.isArray(newTest.questions)) {
       console.error("Subject or questions are missing in newTest.");
@@ -203,13 +206,11 @@ const MockTestManagement = ({ user }) => {
       return;
     }
 
-    // Copy questions array to modify
-    const savedQuestions = [...newTest.questions];
-
     // Save the current question data
+    const savedQuestions = [...newTest.questions];
     savedQuestions[currentQuestionIndex] = {
       ...currentQuestion,
-      index: currentQuestionIndex, // Add index here
+      index: currentQuestionIndex,
       questionText: currentQuestion.questionText,
       options: currentQuestion.options,
       correctAnswer: currentQuestion.correctAnswer,
@@ -217,18 +218,22 @@ const MockTestManagement = ({ user }) => {
       image: currentQuestion.image,
     };
 
-    // Log the saved question data
     console.log(
       `Saved Question Data for Question ${currentQuestionIndex + 1}:`,
       savedQuestions[currentQuestionIndex]
     );
+
+    // Reset the file inputs for the current question's options
+    optionFileInputRefs.current.forEach((input) => {
+      if (input) input.value = null;
+    });
 
     // Prepare for the next question
     const nextQuestionIndex = currentQuestionIndex + 1;
 
     if (savedQuestions.length <= nextQuestionIndex) {
       savedQuestions.push({
-        index: nextQuestionIndex, // Add index for the new question
+        index: nextQuestionIndex,
         questionText: "",
         options: ["", "", "", ""],
         correctAnswer: "",
@@ -242,7 +247,7 @@ const MockTestManagement = ({ user }) => {
       questions: savedQuestions,
     });
 
-    // Update the state with the data of the next question
+    // Update state for the next question
     const nextQuestion = savedQuestions[nextQuestionIndex] || {
       questionText: "",
       options: ["", "", "", ""],
@@ -320,15 +325,20 @@ const MockTestManagement = ({ user }) => {
 
   // Handle selection of an answer from dropdown
   const handleSelectChange = (option) => {
-    const updatedQuestions = [...newTest.questions];
+    const updatedQuestions = [...newTest.questions]; // Copy the questions array
     updatedQuestions[currentQuestionIndex] = {
-      ...updatedQuestions[currentQuestionIndex],
-      correctAnswer: option, // Set the selected option as the correct answer
+      ...updatedQuestions[currentQuestionIndex], // Preserve other properties of the current question
+      correctAnswer: {
+        text: option?.text || null, // Store the text of the correct answer
+        image: option?.image || null, // Store the image if it exists
+      },
     };
+
     setNewTest({
       ...newTest,
-      questions: updatedQuestions,
+      questions: updatedQuestions, // Update the questions with the modified correctAnswer
     });
+
     setDropdownOpen(false); // Close dropdown after selection
   };
 
@@ -364,8 +374,21 @@ const MockTestManagement = ({ user }) => {
 
         // Update the question's option with the base64 image
         const updatedQuestions = [...newTest.questions];
-        updatedQuestions[questionIndex].options[optionIndex].image =
-          imageBase64;
+
+        // Ensure that the option is an object before assigning the image
+        const option = updatedQuestions[questionIndex].options[optionIndex];
+
+        if (typeof option === "string") {
+          // If it's a string (i.e., text), convert it to an object with 'text' and 'image' properties
+          updatedQuestions[questionIndex].options[optionIndex] = {
+            text: option, // Store the existing text as 'text'
+            image: imageBase64, // Add the image as 'image'
+          };
+        } else {
+          // If it's already an object, just update the image property
+          updatedQuestions[questionIndex].options[optionIndex].image =
+            imageBase64;
+        }
 
         // Update state with the new image data
         setNewTest({ ...newTest, questions: updatedQuestions });
@@ -421,23 +444,40 @@ const MockTestManagement = ({ user }) => {
     }
 
     try {
-      const response = await fetch(`${config.apiUrl}/exam-subjects/`, {
+      // Construct the API URL with or without the domain ID based on the availability of newTest.domain
+      const apiUrl = newTest.domain
+        ? `${config.apiUrl}/get-subject/?id=${newTest.domain}`
+        : `${config.apiUrl}/get-subject/`;
+
+      const response = await fetch(apiUrl, {
         method: "GET",
         headers: {
           Authorization: `Token ${token}`,
           "Content-Type": "application/json",
         },
       });
+
       const result = await response.json();
 
-      if (Array.isArray(result)) {
-        const allOption = { name: "ALL Subjects", id: "ALL" };
-        setSubjects([allOption, ...result]);
+      if (result.data && Array.isArray(result.data)) {
+        const RES = result.data;
+        console.log("Subjects fetched:", RES);
+
+        // Conditionally add 'ALL Subjects' only if newTest.domain is available
+        if (newTest.domain) {
+          const allOption = { name: "ALL Subjects", id: "ALL" };
+          setSubjects([allOption, ...RES]);
+        } else {
+          setSubjects(RES);
+        }
       } else {
-        console.error("No Subject Available", result);
+        console.error(
+          "No Subjects Available or Invalid Response Format",
+          result
+        );
       }
     } catch (error) {
-      console.log("Error fetching Subject:", error);
+      console.log("Error fetching Subjects:", error);
     }
   };
 
@@ -445,36 +485,54 @@ const MockTestManagement = ({ user }) => {
     fetchSubjects();
   }, []);
 
+  console.log("Subjects", subjects);
+
   const [subTopic, setSubTopic] = useState([]);
 
   const fetchSubtopic = async () => {
     if (!token) {
-      console.log("No token found, unable to fetch Domain.");
+      console.log("No token found, unable to fetch Subtopics.");
+      return;
+    }
+
+    if (!newTest.domain) {
+      console.log("No domain ID selected, unable to fetch Subtopics.");
+      setSubTopic([]); // Clear subtopics if no domain ID is selected
       return;
     }
 
     try {
-      const response = await fetch(`${config.apiUrl}/exam-subjects/`, {
+      // Construct the API URL with the domain ID
+      const apiUrl = `${config.apiUrl}/exam-subjects/?domainId=${newTest.domain}`;
+
+      const response = await fetch(apiUrl, {
         method: "GET",
         headers: {
           Authorization: `Token ${token}`,
           "Content-Type": "application/json",
         },
       });
+
       const result = await response.json();
 
-      console.log("Request Subtopic", result);
+      console.log("Subtopics fetched:", result);
 
       if (Array.isArray(result)) {
-        setSubTopic(result);
+        // Filter subtopics where for_exam matches newTest.domain
+        const filteredSubTopics = result.filter(
+          (subTopic) => subTopic.for_exam === newTest.domain
+        );
+        setSubTopic(filteredSubTopics); // Set the fetched subtopics directly
       } else {
-        console.error("no subject available", result);
+        console.error(
+          "No Subtopics Available or Invalid Response Format",
+          result
+        );
+        setSubTopic([]); // Clear subtopics in case of an invalid response
       }
     } catch (error) {
-      console.log("Error fetching Subject:", error);
-      if (error.response) {
-        console.log("Error Response:", error.response); // Check the response error
-      }
+      console.log("Error fetching Subtopics:", error);
+      setSubTopic([]); // Clear subtopics in case of an error
     }
   };
 
@@ -486,30 +544,41 @@ const MockTestManagement = ({ user }) => {
 
   const fetchChapters = async () => {
     if (!token) {
-      console.log("No token found, unable to fetch Domain.");
+      console.log("No token found, unable to fetch chapters.");
+      return;
+    }
+
+    if (!newTest.subject) {
+      console.log("No subject selected.");
       return;
     }
 
     try {
-      const response = await fetch(`${config.apiUrl}/exam-subject-chapters/`, {
+      const response = await fetch(`${config.apiUrl}/exam-subject-chapters`, {
         method: "GET",
         headers: {
           Authorization: `Token ${token}`,
           "Content-Type": "application/json",
         },
       });
-      const result = await response.json();
 
+      const result = await response.json();
       console.log("Request Chapter", result);
 
       if (Array.isArray(result)) {
+        // Filter chapters where for_exam_subject matches newTest.subject
+        const filteredChapters = result.filter(
+          (chapter) => chapter.for_exam_subject === newTest.subject
+        );
+
+        // Add the "ALL Chapter" option at the beginning
         const allOption = { name: "ALL Chapter", id: "all" };
-        setChapters([allOption, ...result]);
+        setChapters([allOption, ...filteredChapters]);
       } else {
-        console.error("No Chapter available", result);
+        console.error("Unexpected response format:", result);
       }
     } catch (error) {
-      console.log("Error fetching Chapter:", error);
+      console.log("Error fetching chapters:", error);
       if (error.response) {
         console.log("Error Response:", error.response); // Check the response error
       }
@@ -583,10 +652,7 @@ const MockTestManagement = ({ user }) => {
 
   const handleTest = async () => {
     try {
-      // Log the state before sending the payload to check the values
-      console.log("Preparing to send payload:", newTest);
-
-      const currentQuestion = newTest.questions[currentQuestionIndex]; // Use currentQuestionIndex dynamically
+      const currentQuestion = newTest.questions[currentQuestionIndex];
       if (!currentQuestion) {
         console.error("No questions found at index:", currentQuestionIndex);
         return;
@@ -597,15 +663,29 @@ const MockTestManagement = ({ user }) => {
         typeof option === "string" ? option : option?.text || ""
       );
 
+      // Determine the correct answer: If it's an image, use the image URL, otherwise use the text
+      let correctAnswer = null;
+
+      if (currentQuestion.correctAnswer?.text) {
+        correctAnswer = currentQuestion.correctAnswer.text;
+      } else if (currentQuestion.correctAnswer?.image) {
+        // If an image is selected as the correct answer, use the file URL instead of the base64 string
+        correctAnswer = currentQuestion.correctAnswer.image;
+      }
+
+      // If `correctAnswer` is too long (more than 100 characters), truncate it
+      if (correctAnswer && correctAnswer.length > 100) {
+        correctAnswer = correctAnswer.slice(0, 100); // Truncate to 100 characters
+      }
+
+      // Construct the payload with the question data
       const payload = {
         test_name: newTest.testName,
         exam_duration: newTest.duration,
         for_exam: newTest.domain,
         institutes: selectedOptions.map((option) => option.value),
-        for_exam_subject: newTest.selectedSubjects || [],
-        for_exam_subject_chapter: newTest.chapter
-          ? [newTest.chapter.id]
-          : ["ALL"],
+        for_exam_subjects_o: newTest.selectedSubjects || [],
+        for_exam_chapter_o: newTest.chapter?.id ? [newTest.chapter.id] : [],
         marks: newTest.correctMark,
         negative_marks: newTest.negativeMark,
 
@@ -626,15 +706,13 @@ const MockTestManagement = ({ user }) => {
         file_3: currentQuestion.options[2]?.image || null,
         file_4: currentQuestion.options[3]?.image || null,
 
-        // Correct Answer for the current question
-        correct_answer:
-          typeof currentQuestion.correctAnswer === "string"
-            ? currentQuestion.correctAnswer
-            : currentQuestion.correctAnswer?.text || null,
+        // Correct Answer for the current question (send text or image URL, not both)
+        correct_answer: correctAnswer,
       };
 
       console.log("Final payload:", payload);
 
+      // Send the request to the server
       const response = await fetch(
         "https://mockexam.pythonanywhere.com/exam-subject-chapter-questions/",
         {
@@ -653,8 +731,6 @@ const MockTestManagement = ({ user }) => {
 
         // Automatically save the question and navigate to the next one
         handleSaveAndNext();
-
-        // Log the saved question data for user visibility
       } else {
         console.error("Failed to submit test:", response.statusText);
       }
@@ -996,12 +1072,14 @@ const MockTestManagement = ({ user }) => {
                           mainSubtopic: e.target.value,
                         })
                       }
-                      value={newTest.mainSubtopic}
+                      value={newTest.mainSubtopic || ""} // Ensure the placeholder option is selected when value is empty
                       disabled={newTest.subject !== "ALL"}
                     >
+                      {/* Placeholder option */}
                       <option value="" disabled>
-                        Select Subtopic
+                        Select Sub-Subject
                       </option>
+                      {/* Dynamically generated options */}
                       {subTopic.map((subtopic) => (
                         <option key={subtopic.id} value={subtopic.name}>
                           {subtopic.name}
@@ -1053,7 +1131,7 @@ const MockTestManagement = ({ user }) => {
                           }));
                         }}
                         className="border p-1 sm:p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 text-xs sm:text-base"
-                        rows="3"
+                        rows="4"
                       />
                     </div>
 
@@ -1163,13 +1241,12 @@ const MockTestManagement = ({ user }) => {
                     {newTest.questions[currentQuestionIndex].options.map(
                       (option, optionIndex) => (
                         <div key={optionIndex} className="flex-grow">
-                          {/* Card for Each Option */}
                           <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 ease-in-out">
                             {/* Option Input Field (Text) */}
                             <input
                               type="text"
                               placeholder={`Option ${optionIndex + 1}`}
-                              value={option.text || ""} // Use option.text or "" if it's undefined
+                              value={option.text || ""}
                               onChange={(e) =>
                                 handleOptionTextChange(
                                   currentQuestionIndex,
@@ -1184,7 +1261,11 @@ const MockTestManagement = ({ user }) => {
                             <div className="mt-2">
                               <input
                                 type="file"
-                                accept="image/png" // Restrict input to only PNG images
+                                ref={(el) =>
+                                  (optionFileInputRefs.current[optionIndex] =
+                                    el)
+                                } // Attach dynamic ref
+                                accept="image/png"
                                 onChange={(e) =>
                                   handleImageUploadOption(
                                     e,
@@ -1201,16 +1282,22 @@ const MockTestManagement = ({ user }) => {
                                     src={option.image}
                                     alt={`Option ${optionIndex + 1}`}
                                     className="w-16 h-16 object-cover rounded-lg cursor-pointer"
-                                    onClick={() => openModal(option.image)} // Open modal on image click
+                                    onClick={() => openModal(option.image)}
                                   />
-                                  {/* Trash Icon to Delete Image */}
                                   <button
-                                    onClick={() =>
+                                    onClick={() => {
                                       deleteOptionImage(
                                         currentQuestionIndex,
                                         optionIndex
-                                      )
-                                    }
+                                      );
+                                      if (
+                                        optionFileInputRefs.current[optionIndex]
+                                      ) {
+                                        optionFileInputRefs.current[
+                                          optionIndex
+                                        ].value = null; // Reset file input
+                                      }
+                                    }}
                                     className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full focus:outline-none text-xs sm:text-sm"
                                   >
                                     <FaTrashAlt />
@@ -1221,25 +1308,6 @@ const MockTestManagement = ({ user }) => {
                           </div>
                         </div>
                       )
-                    )}
-
-                    {/* Modal for Enlarged Image */}
-                    {isModalOpen && (
-                      <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-                        <div className="bg-white p-4 rounded-lg relative max-w-full max-h-[90vh] overflow-auto w-full sm:max-w-3xl sm:max-h-[90vh] mx-4">
-                          <button
-                            onClick={closeModal}
-                            className="absolute top-2 right-2 text-red-500 text-xl sm:text-2xl"
-                          >
-                            &times;
-                          </button>
-                          <img
-                            src={selectedImage}
-                            alt="Selected"
-                            className="w-full h-auto object-contain"
-                          />
-                        </div>
-                      </div>
                     )}
                   </div>
 

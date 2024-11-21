@@ -7,92 +7,84 @@ import sscLogo from "../../assets/ssc-logo.png";
 import sbiLogo from "../../assets/sbi-logo.png";
 import railwayLogo from "../../assets/railway-logo.png";
 import ibpsLogo from "../../assets/ibps-logo.png";
-import defenceLogo from "../../assets/Defence.jpg"
-import rbiLogo from "../../assets/RBI.jpg"
-
-
-const examData = [
-  { name: "SSC CGL", exam: "SSC Exam" },
-  { name: "SSC GD", exam: "SSC Exam" },
-  { name: "SSC CHSL", exam: "SSC Exam" },
-  { name: "SSC MTS", exam: "SSC Exam" },
-  { name: "SSC STENO", exam: "SSC Exam" },
-  { name: "SSC CPO", exam: "SSC Exam" },
-  { name: "Agniveer Army", exam: "Defence Exam" },
-  { name: "Agniveer AirForce", exam: "Defence Exam" },
-  { name: "Assam Rifles", exam: "Defence Exam" },
-  { name: "CRPF", exam: "Defence Exam" },
-  { name: "BSF", exam: "Defence Exam" },
-  { name: "RRB NTPC", exam: "Railway Exam" },
-  { name: "RRB SI", exam: "Railway Exam" },
-  { name: "RRB ALP", exam: "Railway Exam" },
-  { name: "RRB Group D", exam: "Railway Exam" },
-  { name: "IBPS Clerk", exam: "IBPS Exam" },
-  { name: "IBPS PO", exam: "IBPS Exam" },
-  { name: "SBI Clerk", exam: "SBI Exam" },
-  { name: "SBI PO", exam: "SBI Exam" },
-  { name: "RBI PO", exam: "RBI Exam" },
-  { name: "RBI Clerk", exam: "RBI Exam" },
-];
+import defenceLogo from "../../assets/Defence.jpg";
+import rbiLogo from "../../assets/RBI.jpg";
+import config from "../../config";
 
 // Map exam categories to logo variables
+// const logoMap = {
+//   "SSC Exam": sscLogo,
+//   "SBI Exam": sbiLogo,
+//   "IBPS Exam": ibpsLogo,
+//   "Railway Exam": railwayLogo,
+//   "Defence Exam": defenceLogo,
+//   "RBI Exam": rbiLogo,
+// };
 const logoMap = {
-  "SSC Exam": sscLogo,
-  "SBI Exam": sbiLogo,
-  "IBPS Exam": ibpsLogo,
-  "Railway Exam": railwayLogo,
-  "Defence Exam": defenceLogo,
-  "RBI Exam": rbiLogo,
+  SSC: sscLogo,
+  SBI: sbiLogo,
+  IBPS: ibpsLogo,
+  Railway: railwayLogo,
+  Defence: defenceLogo,
+  RBI: rbiLogo,
+};
+const categoryMap = {
+  SSC: "SSC Exam",
+  DEFENCE: "Defence Exam",
+  RAILWAY: "Railway Exam",
+  BANK: "Bank Exam",
+};
+
+const getCategory = (examSlno) => {
+  const prefix = examSlno.split("_")[0]; // Extract prefix from the serial number
+  return categoryMap[prefix] || "General Exam"; // Default fallback
 };
 
 const Exams = () => {
+  const [examData, setExamData] = useState([]);
   const [count, setCount] = useState(1);
-  const [currentIndex, setCurrentIndex] = useState(0); // Track visible cards
+  const [currentIndex, setCurrentIndex] = useState(0);
   const ref = useRef(null);
-  const { user } = useUser(); // Get user from context
+  const { user } = useUser();
   const navigate = useNavigate();
-  const itemsPerPage = 8; // Define how many cards to show per page
+  const itemsPerPage = 8;
 
   useEffect(() => {
-    const handleScroll = (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          setCount(1);
-          const interval = setInterval(() => {
-            setCount((prevCount) => {
-              if (prevCount < 20) {
-                return prevCount + 1;
-              } else {
-                clearInterval(interval);
-                return prevCount;
-              }
-            });
-          }, 200);
-          return () => clearInterval(interval);
-        }
-      });
-    };
-
-    const observer = new IntersectionObserver(handleScroll);
-    const currentRef = ref.current;
-    if (currentRef) {
-      observer.observe(currentRef);
-    }
-
-    return () => {
-      if (currentRef) {
-        observer.unobserve(currentRef);
+    const fetchExamData = async () => {
+      try {
+        const response = await fetch(`${config.apiUrl}/exams/`);
+        const data = await response.json();
+        setExamData(data);
+        setCount(data.length-1);
+      } catch (error) {
+        console.error("Error fetching exam data:", error);
       }
     };
-  }, [ref]);
+
+    fetchExamData();
+  }, []);
+  
+
+  const getLogo = (name) => {
+    // Find a logo based on keywords in the name
+    for (const key in logoMap) {
+      if (name.includes(key)) {
+        return logoMap[key];
+      }
+    }
+    return null; // Fallback if no keyword matches
+  };
 
   const handleCardClick = (exam) => {
-    if (user && user.type === "student") {
+    localStorage.setItem("selectedSubjectId", exam.id);
+
+    if (user?.type === "student") {
       navigate("/mock-test", { state: { exam } });
     } else {
       navigate("/login");
     }
   };
+  
 
   const handleNext = () => {
     if (currentIndex + itemsPerPage < examData.length) {
@@ -105,6 +97,7 @@ const Exams = () => {
       setCurrentIndex(currentIndex - itemsPerPage);
     }
   };
+  
 
   return (
     <div ref={ref} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -141,13 +134,13 @@ const Exams = () => {
 
                 <div className="w-24 h-24 rounded-full mb-4 flex items-center justify-center">
                   <img
-                    src={logoMap[exam.exam]}
-                    alt={`${exam.exam} logo`}
+                    src={getLogo(exam.name)} // Dynamically determine logo
+                    alt={`${exam.name} logo`}
                     className="w-full h-full object-cover rounded-full"
                   />
                 </div>
                 <h3 className="text-xl font-bold text-gray-800">{exam.name}</h3>
-                <p className="text-gray-600">{exam.exam}</p>
+                <p className="text-gray-600">{getCategory(exam.exam_slno)}</p> {/* Show user-friendly label */}
               </div>
             ))}
         </div>
