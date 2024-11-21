@@ -3,18 +3,27 @@ import DashboardHeader from "../SuperAdminDashboard/Header";
 import Sidebar from "../SuperAdminDashboard/Sidebar";
 import axios from "axios";
 import config from "../../config";
+import { FaTimes, FaRegSave } from "react-icons/fa";
+import {
+  MdSubscriptions,
+  MdCreditCard,
+  MdError,
+  MdCheckCircle,
+  MdInfo,
+} from "react-icons/md";
 
 const AdminList = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [user, setUser] = useState(null);
-  const [subscriptionPlans, setSubscriptionPlans] = useState([]);
   const [admins, setAdmins] = useState([]);
+  const [selectedAdmin, setSelectedAdmin] = useState(null); // For modal data
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedSubscriptionPlan, setSelectedSubscriptionPlan] = useState("");
+  const [subscriptionPlans, setSubscriptionPlans] = useState([]);
   const S = JSON.parse(localStorage.getItem("user"));
   const token = S.token;
 
-
   useEffect(() => {
-    // Retrieve user data from localStorage
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
@@ -38,9 +47,6 @@ const AdminList = () => {
         }
 
         const result = await response.json();
-        console.log("Fetched Data:", result);
-
-        // Assuming result.data contains the list of admins with subscription info
         if (Array.isArray(result.data)) {
           setAdmins(result.data);
         } else {
@@ -73,29 +79,121 @@ const AdminList = () => {
     };
   }, []);
 
-  // Function to check if subscription is expiring in the next week
+  const openModal = (admin) => {
+    setSelectedAdmin(admin);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setSelectedAdmin(null);
+    setIsModalOpen(false);
+  };
+
   const isSubscriptionExpiring = (expiryDate) => {
     const currentDate = new Date();
     const expiry = new Date(expiryDate);
-    const oneWeekLater = new Date(currentDate.setDate(currentDate.getDate() + 7));
+    const oneWeekLater = new Date(
+      currentDate.setDate(currentDate.getDate() + 7)
+    );
     return expiry <= oneWeekLater;
   };
+
+  // Save Changes Function
+  const saveChanges = async (fetchAdmins) => {
+    if (!selectedAdmin || !selectedSubscriptionPlan) {
+      alert("Please select both admin and subscription plan");
+      return;
+    }
+
+    try {
+      // Example API call to update subscription plan for the selected admin
+      const response = await axios.put(
+        `${config.apiUrl}/vendor-admin-crud/${selectedAdmin.id}/`,
+        {
+          subscription_plan: selectedSubscriptionPlan, // Sending the updated plan ID
+        },
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (response.status === 200) {
+        alert("Subscription plan updated successfully!");
+        // Optionally, close the modal or reset the form here
+        closeModal();
+        // You can also refetch the admin list if necessary:
+        fetchAdmins();
+      } else {
+        console.error("Failed to update subscription plan:", response.data);
+      }
+    } catch (error) {
+      console.error("Error saving changes:", error);
+      alert("There was an error saving the changes. Please try again later.");
+    }
+  };
+
+  // const API_BASE_URL = "https://mockexam.pythonanywhere.com/licences";
+
+  const fetchPlans = async () => {
+    if (!token) {
+      console.log("No token found, unable to fetch subscription plans.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${config.apiUrl}/licences`, {
+        method: "GET",
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      const result = await response.json();
+
+      // console.log("Request",result)
+
+      if (Array.isArray(result)) {
+        setSubscriptionPlans(result);
+      } else {
+        console.error("no plan available", result);
+      }
+    } catch (error) {
+      console.log("Error fetching subscription plans:", error);
+      if (error.response) {
+        console.log("Error Response:", error.response); // Check the response error
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchPlans();
+  }, []); // Run once when the component mounts
 
   return (
     <div className="flex flex-col min-h-screen">
       <div className="flex flex-row flex-grow">
-        <Sidebar isCollapsed={isCollapsed} toggleSidebar={toggleSidebar} className="hidden md:block" />
+        <Sidebar
+          isCollapsed={isCollapsed}
+          toggleSidebar={toggleSidebar}
+          className="hidden md:block"
+        />
 
-        <div className={`flex-grow transition-all duration-300 ease-in-out ${isCollapsed ? "ml-0" : "ml-64"}`}>
+        <div
+          className={`flex-grow transition-all duration-300 ease-in-out ${
+            isCollapsed ? "ml-0" : "ml-64"
+          }`}
+        >
           <DashboardHeader user={user} toggleSidebar={toggleSidebar} />
 
           <div className="p-2 md:p-6">
-            <h1 className="text-2xl md:text-3xl font-bold mb-4 text-left">Admin List</h1>
+            <h1 className="text-2xl md:text-3xl font-bold mb-4 text-left">
+              Admin List
+            </h1>
 
-            {/* Institutes List */}
             <div className="bg-white shadow-lg rounded-lg p-3">
-
-              {/* Table */}
               <div className="overflow-x-auto rounded-lg">
                 <table className="min-w-full leading-normal border border-gray-300 rounded-lg overflow-hidden">
                   <thead className="bg-gradient-to-r from-[#007bff] to-[#0056b3] text-white">
@@ -116,60 +214,39 @@ const AdminList = () => {
                   </thead>
                   <tbody>
                     {admins.map((admin) => {
-
                       return (
-                        <tr key={admin.id} className="hover:bg-gray-100 transition-colors bg-white">
+                        <tr
+                          key={admin.id}
+                          className="hover:bg-gray-100 transition-colors bg-white"
+                        >
                           <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
-                            <p className="text-gray-900 font-medium whitespace-no-wrap">{admin.name}</p>
+                            <p className="text-gray-900 font-medium whitespace-no-wrap">
+                              {admin.name}
+                            </p>
                           </td>
                           <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
                             <p className="text-gray-900 font-bold whitespace-no-wrap">
-                              {admin.licence && admin.licence.licence_expiry ? admin.licence.licence_expiry : ""} Month
-
+                              {admin.licence && admin.licence.licence_expiry
+                                ? admin.licence.licence_expiry
+                                : ""}{" "}
+                              Month
                             </p>
                           </td>
                           <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
                             <p className="text-gray-700 whitespace-no-wrap">
-                              {admin.licence && admin.licence.name ? admin.licence.name : "No Plan"}
+                              {admin.licence && admin.licence.name
+                                ? admin.licence.name
+                                : "No Plan"}
                             </p>
                           </td>
                           <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
-  {(() => {
-    const expiryDate = admin.date_expiry; // Fetch expiry date from the API
-    const today = new Date();
-    const expiry = new Date(expiryDate);
-    const formattedExpiryDate = expiry.toISOString().split('T')[0];
-
-    if (expiry < today) {
-      // Expired
-      return (
-        <div className="flex items-center space-x-2">
-          <button className="bg-red-500 text-white py-2 px-4 rounded-md">Renew</button>
-          <p className="text-red-500 text-xs mb-0">
-            Expired on {formattedExpiryDate}.
-          </p>
-        </div>
-      );
-    } else if (isSubscriptionExpiring(expiryDate)) {
-      // About to expire
-      return (
-        <div className="flex items-center space-x-2">
-          <button className="bg-red-500 text-white py-2 px-4 rounded-md">Renew</button>
-          <p className="text-red-500 text-xs mb-0">
-            Subscription is expiring on {formattedExpiryDate}.
-          </p>
-        </div>
-      );
-    } else {
-      // Active
-      return (
-        <button className="bg-blue-500 text-white py-2 px-4 rounded-md">Update</button>
-      );
-    }
-  })()}
-</td>
-
-
+                            <button
+                              className="bg-blue-500 text-white py-2 px-4 rounded-md"
+                              onClick={() => openModal(admin)}
+                            >
+                              Update
+                            </button>
+                          </td>
                         </tr>
                       );
                     })}
@@ -180,6 +257,169 @@ const AdminList = () => {
           </div>
         </div>
       </div>
+      {isModalOpen && selectedAdmin && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-md px-2 sm:px-4">
+          <div className="bg-white rounded-lg shadow-xl p-4 sm:p-6 w-full max-w-sm sm:max-w-2xl relative overflow-hidden transform transition-all duration-300 sm:rounded-2xl">
+            {/* Close Button */}
+            <button
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-900 w-8 h-8 rounded-full flex items-center justify-center focus:outline-none bg-gray-100 hover:bg-gray-200 shadow-md"
+              onClick={closeModal}
+              title="Close Modal"
+            >
+              <FaTimes className="text-lg" />
+            </button>
+
+            {/* Modal Title */}
+            <h2 className="text-xl sm:text-2xl font-bold mb-4 text-center text-blue-700 tracking-tight sm:text-3xl">
+              <MdSubscriptions className="inline-block mr-2 text-lg sm:text-2xl" />
+              Update Subscription
+            </h2>
+
+            {/* Grid for Institute and Expiry Sections */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 mb-6">
+              {/* Institute Name Card */}
+              <div className="p-3 sm:p-4 border rounded-md shadow bg-gradient-to-r from-blue-50 to-blue-100">
+                <h3 className="text-sm sm:text-base font-medium text-gray-600 mb-1">
+                  Institute Name
+                </h3>
+                <p className="text-base sm:text-lg font-semibold text-gray-900">
+                  {selectedAdmin.name}
+                </p>
+              </div>
+
+              {/* Subscription Expiry Card */}
+              <div className="p-3 sm:p-4 border rounded-md shadow bg-gradient-to-r from-blue-50 to-blue-100">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="text-sm sm:text-base font-medium text-gray-600">
+                    Subscription Expiry
+                  </h3>
+                  <div
+                    className={`flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                      new Date(selectedAdmin.date_expiry) < new Date()
+                        ? "bg-red-400 text-white"
+                        : "bg-green-400 text-white"
+                    }`}
+                  >
+                    {new Date(selectedAdmin.date_expiry) < new Date() ? (
+                      <MdError className="mr-1 text-sm" />
+                    ) : (
+                      <MdCheckCircle className="mr-1 text-sm" />
+                    )}
+                    {new Date(selectedAdmin.date_expiry) < new Date()
+                      ? "Expired"
+                      : "Active"}
+                  </div>
+                </div>
+                <p className="text-base sm:text-lg font-semibold text-gray-900">
+                  {new Date(selectedAdmin.date_expiry).toLocaleDateString()}
+                </p>
+
+                {/* Days Remaining with Progress Bar */}
+                <div className="mt-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <p className="text-sm sm:text-base font-medium text-gray-700">
+                      Days Remaining:
+                    </p>
+                    <p className="text-base sm:text-lg font-semibold text-gray-900">
+                      {Math.max(
+                        0,
+                        Math.floor(
+                          (new Date(selectedAdmin.date_expiry) - new Date()) /
+                            (1000 * 3600 * 24)
+                        )
+                      )}
+                    </p>
+                    <span className="text-xs sm:text-sm text-gray-600">
+                      days
+                    </span>
+                  </div>
+                  <div className="relative w-full h-2 bg-gray-200 rounded-full">
+                    <div
+                      className={`h-full rounded-full ${
+                        new Date(selectedAdmin.date_expiry) < new Date()
+                          ? "bg-red-400"
+                          : "bg-green-500"
+                      }`}
+                      style={{
+                        width: `${
+                          Math.max(
+                            0,
+                            (new Date(selectedAdmin.date_expiry) - new Date()) /
+                              (1000 * 3600 * 24)
+                          ) / 3.65
+                        }%`,
+                      }}
+                    ></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Additional Info Section */}
+            <div className="mb-4 px-3 sm:px-4 py-3 border rounded-md bg-gray-50 shadow-sm">
+              {new Date(selectedAdmin.date_expiry) < new Date() ? (
+                <p className="text-xs sm:text-sm text-gray-600 flex items-center">
+                  <MdError className="text-red-500 mr-2" />
+                  Your subscription expired on{" "}
+                  <span className="font-medium text-gray-800 ml-1">
+                    {new Date(selectedAdmin.date_expiry).toLocaleDateString()}
+                  </span>
+                  . Renew now to avoid interruptions.
+                </p>
+              ) : (
+                <p className="text-xs sm:text-sm text-gray-600 flex items-center">
+                  <MdInfo className="text-blue-500 mr-2" />
+                  Your subscription is active. Ensure to renew before{" "}
+                  <span className="font-medium text-gray-800 ml-1">
+                    {new Date(selectedAdmin.date_expiry).toLocaleDateString()}
+                  </span>
+                  .
+                </p>
+              )}
+            </div>
+
+            {/* Subscription Plan Section */}
+            <div className="mb-4 p-3 sm:p-4 border rounded-md shadow bg-gradient-to-r from-blue-50 to-blue-100">
+              <h3 className="text-sm sm:text-base font-medium text-gray-600 mb-2">
+                Subscription Plan
+              </h3>
+              <div className="relative">
+                <select
+                  value={selectedSubscriptionPlan || ""}
+                  onChange={(e) => setSelectedSubscriptionPlan(e.target.value)}
+                  className="border border-gray-300 py-2 px-3 pl-10 w-full rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700"
+                >
+                  <option value="" disabled>
+                    Select Subscription Plan
+                  </option>
+                  {Array.isArray(subscriptionPlans) &&
+                  subscriptionPlans.length > 0 ? (
+                    subscriptionPlans.map((plan) => (
+                      <option key={plan.id} value={plan.id}>
+                        {plan.name || "Unnamed Subscription"}
+                      </option>
+                    ))
+                  ) : (
+                    <option disabled>No plans available</option>
+                  )}
+                </select>
+                <MdCreditCard className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              </div>
+            </div>
+
+            {/* Save Changes Button */}
+            <div className="flex justify-center">
+              <button
+                className="bg-blue-600 text-white py-2 px-4 sm:px-6 rounded-md shadow-md hover:bg-blue-700 transition duration-300 transform hover:scale-105 font-medium flex items-center"
+                onClick={saveChanges}
+              >
+                <FaRegSave className="mr-2" />
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
