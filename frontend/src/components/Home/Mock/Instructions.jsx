@@ -52,14 +52,15 @@ const Instructions = () => {
   };
 
   // User data
-  const user = {
-    name: "John Doe",
-    studentId: "12345",
-    examId: "67890",
-    profileImage: "", // Add image URL or leave as empty
+   const user = JSON.parse(localStorage.getItem("user")) || {
+    type: "guest",
+    user: "Guest",
+    name: "Guest",
+    studentId: "1",
+    examId: "1",
   };
 
-  // Data for subjects and marks
+  // Data for subjects and mark
   const subjectData = [
     {
       subject: "GENERAL INTELLIGENCE & REASONING",
