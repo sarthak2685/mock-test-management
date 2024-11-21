@@ -112,36 +112,53 @@ const FreeMock = () => {
       <Slider {...settings}>
         {examData.map((exam, index) => (
           <div key={index} className="p-4">
-            <div
-              className="bg-white border rounded-md shadow-lg p-4 flex flex-col items-center transition-transform transform hover:scale-105 hover:shadow-2xl duration-300 ease-in-out"
-            >
-              <div className="w-24 h-24 rounded-full mb-4 flex text-center items-center justify-center">
-                <img
-                  src={logoMap[exam.exam]}
-                  alt={`${exam.exam} logo`}
-                  className="w-full h-full object-cover rounded-full"
-                />
-              </div>
-              <h3 className="text-xl font-bold">{exam.name}</h3>
-              <p className="font-semibold">{exam.exam}</p>
-              <div className="flex items-start flex-col">
-                <div className="flex items-start mt-2">
-                  <FaQuestionCircle className="text-blue-500 text-2xl mr-2 w-8" />
-                  <p className="font-bold">Questions: <span className="font-semibold">{exam.questions}</span></p>
-                </div>
+            <div className="bg-white border border-gray-200 rounded-lg shadow-md p-4 hover:shadow-lg transition-all duration-300 flex flex-col justify-between h-full relative">
+  {/* Ribbon */}
+  <div className="absolute top-0 right-0 bg-blue-500 text-white text-xs font-bold px-3 py-1 rounded-bl-lg">
+    Free
+  </div>
 
-                <div className="flex items-start mt-2">
-                  <AiOutlineClockCircle className="text-blue-500 text-2xl mr-2 w-8" />
-                  <p className="font-bold">Test Duration: <span className="font-semibold">{exam.timing}</span></p>
-                </div>
-              </div>
+  {/* Logo and Title */}
+  <div className="flex items-center space-x-3">
+    <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
+      <img
+        src={logoMap[exam.exam]}
+        alt={`${exam.exam} logo`}
+        className="w-10 h-10 object-contain"
+      />
+    </div>
+    <div>
+      <h3 className="text-base font-semibold text-gray-800">{exam.name}</h3>
+      <p className="text-sm text-gray-500">{exam.exam}</p>
+    </div>
+  </div>
 
-              <Link to="/instruction">
-                <button className="mt-4 px-4 py-2 items-center bg-[#007bff] text-white rounded-md hover:bg-blue-600 transition-colors">
-                  Start Test
-                </button>
-              </Link>
-            </div>
+  {/* Info Section */}
+  <div className="mt-4 space-y-2 text-sm text-gray-700">
+    <div className="flex items-center justify-between">
+      <span className="flex items-center">
+        <FaQuestionCircle className="text-blue-500 text-lg mr-2" />
+        Questions
+      </span>
+      <span className="font-medium">{exam.questions}</span>
+    </div>
+    <div className="flex items-center justify-between">
+      <span className="flex items-center">
+        <AiOutlineClockCircle className="text-blue-500 text-lg mr-2" />
+        Duration
+      </span>
+      <span className="font-medium">{exam.timing}</span>
+    </div>
+  </div>
+
+  {/* Action Button */}
+  <Link to="/instruction">
+    <button className="mt-6 w-full py-2 bg-blue-500 text-white text-sm font-semibold rounded-lg hover:bg-blue-600 transition-all">
+      Start Test
+    </button>
+  </Link>
+</div>
+
           </div>
         ))}
       </Slider>

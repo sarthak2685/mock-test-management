@@ -1,30 +1,81 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
+import config from "../../config";
 
-const subjectChapters = {
-  Maths: [
-    { id: 1, name: "Algebra" },
-    { id: 2, name: "Geometry" },
-    { id: 3, name: "Trigonometry" },
-    { id: 4, name: "Calculus" },
-  ],
-  Science: [
-    { id: 1, name: "Physics" },
-    { id: 2, name: "Chemistry" },
-    { id: 3, name: "Biology" },
-  ],
-  English: [
-    { id: 1, name: "Grammar" },
-    { id: 2, name: "Literature" },
-    { id: 3, name: "Comprehension" },
-  ],
-  // Add more subjects and chapters as needed
-};
+// const subjectChapters = {
+//   Maths: [
+//     { id: 1, name: "Algebra" },
+//     { id: 2, name: "Geometry" },
+//     { id: 3, name: "Trigonometry" },
+//     { id: 4, name: "Calculus" },
+//   ],
+//   Science: [
+//     { id: 1, name: "Physics" },
+//     { id: 2, name: "Chemistry" },
+//     { id: 3, name: "Biology" },
+//   ],
+//   English: [
+//     { id: 1, name: "Grammar" },
+//     { id: 2, name: "Literature" },
+//     { id: 3, name: "Comprehension" },
+//   ],
+//   // Add more subjects and chapters as needed
+// };
 
 const Chapters = () => {
   const { subjectName } = useParams();
-  const chapters = subjectChapters[subjectName] || [];
+  const SubjectId = localStorage.getItem("selectedSubjectId");
+  const [chapters, setChapters] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const S = JSON.parse(localStorage.getItem("user"));
+  const token = S.token;
 
+  useEffect(() => {
+    const fetchChapters = async () => {
+      try {
+        const response = await fetch(
+          `${config.apiUrl}/get-single-exam-details-based-on-subjects/?id=${SubjectId}`,
+          {
+            headers: {
+              Authorization: `Token ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        const data = await response.json();
+
+        // Extract required data
+        const formattedData = data?.data[0]?.chapters_details.map((chapter) => ({
+          ...chapter,
+          testName: data?.data[0]?.test_name,
+          examDuration: data?.data[0]?.exam_duration,
+          noOfQuestions: data?.no_of_question,
+        }));
+        setChapters(formattedData);
+        setLoading(false);
+      } catch (err) {
+        console.error("Error fetching chapters:", err);
+        setError("Failed to fetch chapters. Please try again later.");
+        setLoading(false);
+      }
+    };
+
+    if (SubjectId) {
+      fetchChapters();
+    } else {
+      setError("No subject selected.");
+      setLoading(false);
+    }
+  }, [SubjectId]);
+
+  if (loading) {
+    return <div className="text-center text-gray-600 py-12">Loading chapters...</div>;
+  }
+
+  if (error) {
+    return <div className="text-center text-red-600 py-12">{error}</div>;
+  }
   return (
     <div className="relative bg-gray-100 min-h-screen overflow-hidden">
       {/* 3D Pattern in the Corners */}
@@ -32,23 +83,46 @@ const Chapters = () => {
       <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-pink-500 to-yellow-500 opacity-30 transform rotate-45 z-0" />
       <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-green-500 to-teal-500 opacity-30 transform rotate-45 z-0" />
       <div className="absolute bottom-0 right-0 w-32 h-32 bg-gradient-to-tl from-purple-500 to-red-500 opacity-30 transform rotate-45 z-0" />
-      
+
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
         <h2 className="text-4xl font-bold text-center text-gray-800 mb-8 capitalize">
           {subjectName} Chapters
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
           {chapters.map((chapter) => (
-            <div
-              key={chapter.id}
-              className="relative bg-white p-8 rounded-2xl shadow-lg transform hover:scale-105 transition duration-300 ease-in-out"
-            >
+         <div
+         key={chapter.id}
+         className="relative bg-white p-8 rounded-2xl shadow-lg transform hover:scale-105 transition duration-300 ease-in-out"
+         style={{
+           backgroundImage:
+             "linear-gradient(135deg, rgba(240, 240, 240, 0.5) 25%, transparent 25%, transparent 50%, rgba(240, 240, 240, 0.5) 50%, rgba(240, 240, 240, 0.5) 75%, transparent 75%, transparent)",
+           backgroundSize: "20px 20px", // Adjust grid size
+         }}
+       >
               <div className="flex flex-col justify-between h-full">
                 <div className="mb-6">
-                  <h3 className="text-xl font-semibold text-blue-600">{chapter.name}</h3>
-                  <p className="text-gray-500 mt-2">
-                    Dive into the concepts and practice questions to enhance your skills.
-                  </p>
+                <h3 className="text-2xl font-bold text-center text-gray-800">
+                  {chapter.testName || "N/A"}
+                  </h3>
+                  <div className="mt-4 text-gray-700">
+                    <div className="flex items-center space-x-3 text-base">
+                      <span className="text-blue-600 text-lg">
+                        <strong>🕒</strong>
+                      </span>
+                      <span className="font-semibold">
+                        {chapter.examDuration || "N/A"} mins
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-3 text-base mt-2">
+                      <span className="text-green-600 text-lg">
+                        <strong>📋</strong>
+                      </span>
+                      <span className="font-semibold">
+                        {chapter.noOfQuestions || "N/A"} Questions
+                      </span>
+                    </div>
+                  </div>
+
                 </div>
                 <Link
                   to={`/instruction`}
@@ -58,7 +132,7 @@ const Chapters = () => {
                 </Link>
               </div>
               <div className="absolute top-0 right-0 -mr-3 -mt-3 bg-yellow-400 text-xs font-bold text-gray-800 py-1 px-3 rounded-full shadow-md">
-                Chapter {chapter.id}
+                {chapter.name}
               </div>
             </div>
           ))}
