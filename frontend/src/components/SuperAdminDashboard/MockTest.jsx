@@ -691,7 +691,7 @@ const MockTestManagement = ({ user }) => {
 
         // Question details
         question: currentQuestion.questionText || null,
-        image: currentQuestion.image || null,
+        question_1: currentQuestion.image || null,
         subtopic: newTest.subject === "ALL" ? currentQuestion.subtopic : null,
 
         // Options for the current question

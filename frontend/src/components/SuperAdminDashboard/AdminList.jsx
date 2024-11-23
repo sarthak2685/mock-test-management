@@ -105,13 +105,35 @@ const AdminList = () => {
       return;
     }
 
+    // Prepare the payload with proper validation
+    const payload = {
+      subscription_plan: selectedSubscriptionPlan,
+      email_id: selectedAdmin?.email_id || "",
+      institute_name: selectedAdmin?.institute_name || "",
+      licence: selectedAdmin?.licence ? { id: selectedAdmin.licence.id } : null, // Pass licence as an object with its ID
+      mobile_no: selectedAdmin?.mobile_no || "",
+      name: selectedAdmin?.name || "",
+      password_encoded: selectedAdmin?.password_encoded || "",
+    };
+
+    // Validate fields
+    const validationErrors = {};
+    Object.keys(payload).forEach((key) => {
+      if (!payload[key]) {
+        validationErrors[key] = ["This field is required."];
+      }
+    });
+
+    // Show validation errors
+    if (Object.keys(validationErrors).length > 0) {
+      alert(`Validation Errors: ${JSON.stringify(validationErrors, null, 2)}`);
+      return;
+    }
+
     try {
-      // Example API call to update subscription plan for the selected admin
       const response = await axios.put(
-        `${config.apiUrl}/vendor-admin-crud/${selectedAdmin.id}/`,
-        {
-          subscription_plan: selectedSubscriptionPlan, // Sending the updated plan ID
-        },
+        `${config.apiUrl}/vendor-admin-crud/?id=${selectedAdmin.id}`,
+        payload,
         {
           headers: {
             Authorization: `Token ${token}`,
@@ -122,9 +144,7 @@ const AdminList = () => {
 
       if (response.status === 200) {
         alert("Subscription plan updated successfully!");
-        // Optionally, close the modal or reset the form here
         closeModal();
-        // You can also refetch the admin list if necessary:
         fetchAdmins();
       } else {
         console.error("Failed to update subscription plan:", response.data);

@@ -23,10 +23,9 @@ const MockTest = () => {
 
         const groupedTests = Object.entries(result.data || {}).map(
           ([testName, testDetails]) => {
-            
             const examDuration =
               testDetails.questions[0]?.exam_duration || "N/A";
-              const subjects = testDetails.subjects
+            const subjects = testDetails.subjects
               .map((subject) => subject.name)
               .join(", ");
 
@@ -35,7 +34,6 @@ const MockTest = () => {
               subjects: subjects || "N/A",
               total_questions: testDetails.total_number_of_questions || 0,
               exam_duration: examDuration,
-
             };
           }
         );
@@ -47,6 +45,7 @@ const MockTest = () => {
 
     fetchMockTests();
   }, [SubjectId]);
+
   return (
     <div className="relative bg-gray-100 min-h-screen overflow-hidden">
       <div className="absolute top-0 left-0 w-32 h-32 bg-gradient-to-br from-blue-500 to-indigo-500 opacity-30 transform rotate-45 z-0" />
@@ -60,24 +59,25 @@ const MockTest = () => {
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-        {mockTestData.map((test,index) => (
+          {mockTestData.map((test, index) => (
             <div
               key={test.id}
               className="relative p-8 rounded-2xl shadow-lg transform transition duration-500 ease-in-out hover:scale-105 hover:rotate-1 hover:-translate-y-1 hover:shadow-2xl card-3d"
             >
               <div className="relative z-20 flex flex-col justify-between h-full p-4">
                 <div className="mb-6">
-                  <h3 className="text-2xl font-bold text-center text-gray-800">{test.test_name}</h3>
+                  <h3 className="text-2xl font-bold text-center text-gray-800">
+                    {test.test_name}
+                  </h3>
                   <p className="text-gray-500 mt-2 font-semibold">
-                    <strong>Subjects:</strong>{" "}
-                    {test.subjects}
+                    <strong>Subjects:</strong> {test.subjects}
                     <br />
                     <span className="text-gray-500 mt-2 flex items-center font-semibold">
-                   🕒 {test.exam_duration} Minutes
-                 </span>
-                 <span className="text-gray-500 mt-2 flex items-center font-semibold">
-                   📋 {test.total_questions} Questions
-                 </span>
+                      🕒 {test.exam_duration} Minutes
+                    </span>
+                    <span className="text-gray-500 mt-2 flex items-center font-semibold">
+                      📋 {test.total_questions} Questions
+                    </span>
                   </p>
                 </div>
                 <Link
@@ -105,7 +105,7 @@ const MockTest = () => {
 
         .card-3d::before,
         .card-3d::after {
-          content: '';
+          content: "";
           position: absolute;
           width: 150%;
           height: 150%;
