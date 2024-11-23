@@ -30,25 +30,31 @@ const Login = () => {
         }
       );
 
+      console.log("Data", response.data.data);
+
       if (response.data.data && response.data.data.type) {
-        const { type, user, mobileNumber, token } = response.data.data;
+        // Extract fields from the response
+        const { type, user, mobileNumber, token, id, name } =
+          response.data.data;
 
-        // Save user data to localStorage
-        localStorage.setItem(
-          "user",
-          JSON.stringify({ type, user, mobileNumber, token })
-        );
+        // Consolidate into a single object
+        const userData = { type, user, mobileNumber, token, id, name };
 
-        // Navigate and refresh based on role
+        console.log("Data being saved to localStorage: ", userData);
+
+        // Save the object in localStorage
+        localStorage.setItem("user", JSON.stringify(userData));
+
+        // Navigation logic
         if (type === "owner") {
           navigate("/super-admin");
-          setTimeout(() => window.location.reload(), 0); // Refresh page
+          setTimeout(() => window.location.reload(), 0);
         } else if (type === "admin") {
           navigate("/admin");
-          setTimeout(() => window.location.reload(), 0); // Refresh page
+          setTimeout(() => window.location.reload(), 0);
         } else if (type === "student") {
           navigate("/");
-          setTimeout(() => window.location.reload(), 0); // Refresh page
+          setTimeout(() => window.location.reload(), 0);
         } else {
           setError("Unknown role. Please contact support.");
         }

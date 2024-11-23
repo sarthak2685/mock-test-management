@@ -264,7 +264,7 @@ const QuestionNavigation = ({
   markedForReview = [],
 }) => {
   const [showMarkedOnly, setShowMarkedOnly] = useState(false);
-  const [showInstructionsModal, setShowInstructionsModal] = useState(false); // Modal visibility state
+  const [showInstructionsModal, setShowInstructionsModal] = useState(false);
   const prevSectionName = useRef(sectionName);
 
   useEffect(() => {
@@ -278,12 +278,77 @@ const QuestionNavigation = ({
     ? questions.filter((_, i) => markedForReview.includes(i))
     : questions;
 
+  const S = JSON.parse(localStorage.getItem("user"));
+  const token = S.token;
+
+  console.log("Fetched Data ", S);
+
+  const handleSubmit = async () => {
+    try {
+      console.log("Questions:", questions);
+      console.log("Answered Questions:", answeredQuestions);
+
+      const user = JSON.parse(localStorage.getItem("user"));
+
+      // Prepare payload
+      const payload = questions.map((question, index) => {
+        const answer = answeredQuestions[index] || {}; // Ensure the answer exists
+        console.log("Answer Object at Index", index, answer);
+
+        // Use the selected text-based answer or image-based answer
+        return {
+          selected_answer: answeredQuestions[index] || null, // Text-based answer
+          selected_answer_2: answer.image || null, // Image-based answer
+          student: user.user, // Extract student user ID
+          question: question.id, // Question ID
+        };
+      });
+
+      console.log("Submitting payload:", payload);
+
+      // Send POST request to the server
+      const response = await fetch(
+        "https://mockexam.pythonanywhere.com/submit-answers/",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Token ${user.token}`, // Use token for authentication
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload), // Convert payload to JSON string
+        }
+      );
+
+      if (response.ok) {
+        console.log("Test submitted successfully!");
+        const result = await response.json(); // Parse response if needed
+        console.log("Server response:", result);
+
+        // Redirect to score page
+        //window.location.href = "/score";
+      } else {
+        const errorDetails = await response.json();
+        console.error(
+          "Failed to submit answers:",
+          response.statusText,
+          errorDetails
+        );
+        alert(
+          `Submission failed: ${response.statusText}. Please try again later.`
+        );
+      }
+    } catch (error) {
+      console.error("Error submitting answers:", error);
+      alert("An unexpected error occurred. Please try again.");
+    }
+  };
+
   return (
     <div className="bg-white p-7 rounded-lg shadow-lg">
       {/* Header Section */}
       <div className="mb-8 flex justify-between items-center">
         <button
-          onClick={() => setShowInstructionsModal(true)} // Open modal on click
+          onClick={() => setShowInstructionsModal(true)}
           className="text-blue-500 hover:text-blue-700 text-xl flex items-center space-x-2"
         >
           <RiInformation2Line className="w-6 h-6" />
@@ -294,7 +359,7 @@ const QuestionNavigation = ({
       {/* Instructions Modal */}
       <InstructionsModal
         isVisible={showInstructionsModal}
-        onClose={() => setShowInstructionsModal(false)} // Close modal on click
+        onClose={() => setShowInstructionsModal(false)}
       />
 
       {/* Question Status Legend */}
@@ -375,8 +440,7 @@ const QuestionNavigation = ({
       <button
         onClick={() => {
           if (window.confirm("Are you sure you want to submit the test?")) {
-            onSubmit();
-            window.location.href = "/score"; // Redirect to /score after submitting
+            handleSubmit(); // Submit the test and navigate
           }
         }}
         className="w-full bg-green-500 text-white py-3 rounded-md font-semibold hover:bg-green-600 transition duration-300 shadow-sm mt-4"
