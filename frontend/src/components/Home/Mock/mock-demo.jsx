@@ -18,11 +18,11 @@ const MockDemo = () => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [submitted, setSubmitted] = useState(false);
-  const [students, setStudents] = useState([]);
-  const [error, setError] = useState("");
+  //const [students, setStudents] = useState([]);
+  //const [error, setError] = useState("");
 
-  const S = JSON.parse(localStorage.getItem("user"));
-  const token = S.token;
+  //const S = JSON.parse(localStorage.getItem("user"));
+  //const token = S.token;
 
   const sectionIcons = [
     <FaBrain />,
@@ -33,69 +33,38 @@ const MockDemo = () => {
   ];
 
   const UserProfile = () => {
-    const [user, setUser] = useState({ id: "Unknown User", role: "Student" }); // Default user state
-
-    /*useEffect(() => {
-      const fetchStudents = async () => {
-        try {
-          const response = await fetch(`${config.apiUrl}/admin-student-crud/`, {
-            method: "GET",
-            headers: {
-              Authorization: `Token ${token}`,
-              "Content-Type": "application/json",
-            },
-          });
-
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-
-          const data = await response.json();
-          console.log("Fetched students data:", data); // Log the fetched data
-
-          // Ensure the data is an array before setting it to state
-          if (Array.isArray(data.data)) {
-            setStudents(data.data);
-          } else {
-            console.warn("Fetched data is not an array:", data);
-            setStudents([]); // Fallback to an empty array
-          }
-        } catch (error) {
-          console.error("Error fetching students:", error);
-          setError("Failed to fetch students.");
-          setStudents([]); // Ensure students is reset to an empty array on error
-        }
-      };
-
-      fetchStudents();
-    }, []);*/
-
+    const [user, setUser] = useState({ name: "Unknown User", role: "Student" }); // Default user state with name and role
     useEffect(() => {
       // Fetch user details from local storage
       const storedData = localStorage.getItem("user"); // Assuming JSON object is stored under this key
       if (storedData) {
         try {
           const parsedData = JSON.parse(storedData); // Parse the JSON string
-          if (parsedData && parsedData.user) {
-            setUser({ id: parsedData.user, role: "Student" }); // Set user ID and fixed role
+          if (parsedData && parsedData.name) {
+            setUser({ name: parsedData.name, role: parsedData.type }); // Set user name and role (assuming type is role)
           }
         } catch (error) {
           console.error("Error parsing stored user data:", error);
-          setUser({ id: "Unknown User", role: "Student" }); // Fallback in case of error
+          setUser({ name: "Unknown User", role: "Student" }); // Fallback in case of error
         }
       }
     }, []); // Runs once when the component mounts
 
     return (
       <div className="flex items-center space-x-3 px-2 bg-gray-50 rounded-lg shadow-sm">
-        {/* Render initials based on user ID */}
+        {/* Render initials based on user name */}
         <div className="w-12 h-12 p-2 rounded-full bg-blue-500 text-white flex items-center justify-center">
-          <span className="text-lg font-semibold">{user.id}</span>
+          <span className="text-lg font-semibold">
+            {user.name ? user.name.charAt(0).toUpperCase() : "U"}
+          </span>{" "}
+          {/* Initial of the name */}
         </div>
 
         <div>
-          <h2 className="text-lg font-semibold text-gray-700">{user.id}</h2>
-          <p className="text-sm text-gray-500">{user.role}</p>
+          <h2 className="text-lg font-semibold text-gray-700">{user.name}</h2>{" "}
+          {/* Display the user's name */}
+          <p className="text-sm text-gray-500">{user.role}</p>{" "}
+          {/* Display the user's role */}
         </div>
       </div>
     );
@@ -281,7 +250,8 @@ const MockDemo = () => {
       handleMarkForReview={handleMarkForReview}
       setSubmitted={setSubmitted}
       submitted={submitted}
-      quizData={mockTestData} // Pass the fetched data here
+      mockTestData={mockTestData}
+      quizData={quizData} // Pass the fetched data here
       currentSection={mockTestData[currentSectionIndex]} // Adjusted to the fetched data
       currentQuestion={
         mockTestData[currentSectionIndex]?.questions[currentQuestionIndex]
