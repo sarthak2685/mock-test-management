@@ -299,7 +299,7 @@ const QuestionNavigation = ({
         return {
           selected_answer: answeredQuestions[index] || null, // Text-based answer
           selected_answer_2: answer.image || null, // Image-based answer
-          student: user.user, // Extract student user ID
+          student: user.id, // Extract student user ID
           question: question.id, // Question ID
         };
       });
@@ -325,7 +325,7 @@ const QuestionNavigation = ({
         console.log("Server response:", result);
 
         // Redirect to score page
-        //window.location.href = "/score";
+        window.location.href = "/score";
       } else {
         const errorDetails = await response.json();
         console.error(
@@ -410,7 +410,7 @@ const QuestionNavigation = ({
 
       {/* Question Navigation Buttons */}
       <div className="grid grid-cols-5 gap-4">
-        {filteredQuestions.map((_, i) => (
+        {(filteredQuestions || []).map((_, i) => (
           <button
             key={i}
             onClick={() => onSelectQuestion(i)}
