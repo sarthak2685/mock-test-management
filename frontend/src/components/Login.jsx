@@ -34,11 +34,11 @@ const Login = () => {
 
       if (response.data.data && response.data.data.type) {
         // Extract fields from the response
-        const { type, user, mobileNumber, token, id, name } =
+        const { type, user, token, id, name } =
           response.data.data;
 
         // Consolidate into a single object
-        const userData = { type, user, mobileNumber, token, id, name };
+        const userData = { type, user, token, id, name };
 
         console.log("Data being saved to localStorage: ", userData);
 
