@@ -107,10 +107,9 @@ const AdminList = () => {
 
     // Prepare the payload with proper validation
     const payload = {
-      subscription_plan: selectedSubscriptionPlan,
       email_id: selectedAdmin?.email_id || "",
       institute_name: selectedAdmin?.institute_name || "",
-      licence: selectedAdmin?.licence ? { id: selectedAdmin.licence.id } : null, // Pass licence as an object with its ID
+      licence: selectedSubscriptionPlan,
       mobile_no: selectedAdmin?.mobile_no || "",
       name: selectedAdmin?.name || "",
       password_encoded: selectedAdmin?.password_encoded || "",
