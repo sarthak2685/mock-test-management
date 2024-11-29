@@ -30,6 +30,7 @@ import Chapters from "./components/Home/Chapeter.jsx";
 import MockTest from "./components/Home/Mock/MockTest.jsx";
 import ScoreCard from "./components/Home/Mock/Score.jsx";
 import Instructions from "./components/Home/Mock/Instructions.jsx";
+import ChapterTestInstructions from "./components/Home/Mock/ChapterTestInstruction.jsx";
 
 function App() {
   const location = useLocation();
@@ -78,6 +79,7 @@ function App() {
           <Route path="/mock-test" element={<MockTest />} />
           <Route path="/score" element={<ScoreCard />} />
           <Route path="/instruction" element={<Instructions />} />
+          <Route path="/chapterinstruction" element={<ChapterTestInstructions />} />
         </Routes>
 
         {isNavbarFooterVisible && <Footer />}

@@ -52,7 +52,7 @@ const Instructions = () => {
   };
 
   // User data
-   const user = JSON.parse(localStorage.getItem("user")) || {
+  const user = JSON.parse(localStorage.getItem("user")) || {
     type: "guest",
     user: "Guest",
     name: "Guest",
@@ -78,8 +78,8 @@ const Instructions = () => {
     marks: 50,
     time: 15,
   };
-    // Calculate totals
-    const totalQuestions =
+  // Calculate totals
+  const totalQuestions =
     subjectData.reduce((acc, subject) => acc + subject.questions, 0) +
     (optionalSubject ? optionalSubjectData.questions : 0);
   const totalMarks =
@@ -88,7 +88,6 @@ const Instructions = () => {
   const totalTime =
     subjectData.reduce((acc, subject) => acc + subject.time, 0) +
     (optionalSubject ? optionalSubjectData.time : 0);
-
 
   useEffect(() => {
     // Retrieve selections from local storage on component mount
@@ -250,28 +249,28 @@ const Instructions = () => {
                         </option>
                       </select>
                     </td>
-                <td className="px-2 sm:px-4 py-2 border border-gray-300">
-                  {optionalSubjectData.questions}
-                </td>
-                <td className="px-2 sm:px-4 py-2 border border-gray-300">
-                  {optionalSubjectData.marks}
-                </td>
-                <td className="px-2 sm:px-4 py-2 border border-gray-300">
-                  {optionalSubjectData.time} min
-                </td>
-              </tr>
-              <tr className="font-semibold">
-                <td className="px-4 py-2 border border-gray-300">Total</td>
-                <td className="px-4 py-2 border border-gray-300">
-                  {totalQuestions}
-                </td>
-                <td className="px-4 py-2 border border-gray-300">
-                  {totalMarks}
-                </td>
-                <td className="px-4 py-2 border border-gray-300">
-                  {totalTime} min
-                </td>
-              </tr>
+                    <td className="px-2 sm:px-4 py-2 border border-gray-300">
+                      {optionalSubjectData.questions}
+                    </td>
+                    <td className="px-2 sm:px-4 py-2 border border-gray-300">
+                      {optionalSubjectData.marks}
+                    </td>
+                    <td className="px-2 sm:px-4 py-2 border border-gray-300">
+                      {optionalSubjectData.time} min
+                    </td>
+                  </tr>
+                  <tr className="font-semibold">
+                    <td className="px-4 py-2 border border-gray-300">Total</td>
+                    <td className="px-4 py-2 border border-gray-300">
+                      {totalQuestions}
+                    </td>
+                    <td className="px-4 py-2 border border-gray-300">
+                      {totalMarks}
+                    </td>
+                    <td className="px-4 py-2 border border-gray-300">
+                      {totalTime} min
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </div>
