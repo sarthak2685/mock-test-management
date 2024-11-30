@@ -97,15 +97,33 @@ const MockTestManagement = ({ user }) => {
   const handleQuestionChange = (index, field, value, optionIndex) => {
     const updatedQuestions = [...newTest.questions];
 
+    if (!updatedQuestions[index]) {
+      console.error(`Question at index ${index} not found`);
+      return;
+    }
+
     if (field === "options") {
-      updatedQuestions[index].options[optionIndex].text = value; // Update the text of the option
+      // Ensure options array exists
+      if (
+        !updatedQuestions[index].options ||
+        !updatedQuestions[index].options[optionIndex]
+      ) {
+        console.error(
+          `Option at index ${optionIndex} not found for question ${index}`
+        );
+        return;
+      }
+
+      // Update the text of the specified option
+      updatedQuestions[index].options[optionIndex].text = value;
     } else {
+      // Update the field value
       updatedQuestions[index][field] = value;
     }
 
-    // Check if any options' text is empty
+    // Check if any options' text is empty or invalid
     const anyOptionEmpty = updatedQuestions[index].options.some(
-      (option) => option.text.trim() === "" // Access 'text' and apply trim() on it
+      (option) => typeof option.text === "string" && option.text.trim() === ""
     );
 
     // Only reset correctAnswer if there's an empty option
@@ -113,6 +131,7 @@ const MockTestManagement = ({ user }) => {
       updatedQuestions[index].correctAnswer = "";
     }
 
+    // Update the state with modified questions
     setNewTest({ ...newTest, questions: updatedQuestions });
   };
 
@@ -658,61 +677,55 @@ const MockTestManagement = ({ user }) => {
         return;
       }
 
-      // Extract options as strings
       const options = currentQuestion.options.map((option) =>
         typeof option === "string" ? option : option?.text || ""
       );
 
-      // Determine the correct answer: If it's an image, use the image URL, otherwise use the text
       let correctAnswer = null;
 
       if (currentQuestion.correctAnswer?.text) {
         correctAnswer = currentQuestion.correctAnswer.text;
       } else if (currentQuestion.correctAnswer?.image) {
-        // If an image is selected as the correct answer, use the file URL instead of the base64 string
         correctAnswer = currentQuestion.correctAnswer.image;
       }
 
-      // If `correctAnswer` is too long (more than 100 characters), truncate it
       if (correctAnswer && correctAnswer.length > 100) {
-        correctAnswer = correctAnswer.slice(0, 100); // Truncate to 100 characters
+        correctAnswer = correctAnswer.slice(0, 100);
       }
 
-      // Construct the payload with the question data
+      // Prepare the list of subject IDs, handling "ALL" and subtopic
+      const forExamSubjects =
+        newTest.subject === "ALL"
+          ? subTopic
+              .filter((sub) => sub.name === currentQuestion.subtopic)
+              .map((sub) => sub.id)
+          : newTest.selectedSubjects?.filter((id) => id !== "ALL") || [];
+
       const payload = {
         test_name: newTest.testName,
         exam_duration: newTest.duration,
         for_exam: newTest.domain,
         institutes: selectedOptions.map((option) => option.value),
-        for_exam_subjects_o: newTest.selectedSubjects || [],
+        for_exam_subjects_o: forExamSubjects, // Include subtopic ID when "ALL" is selected
         for_exam_chapter_o: newTest.chapter?.id ? [newTest.chapter.id] : [],
         marks: newTest.correctMark,
         negative_marks: newTest.negativeMark,
-
-        // Question details
         question: currentQuestion.questionText || null,
         question_1: currentQuestion.image || null,
         subtopic: newTest.subject === "ALL" ? currentQuestion.subtopic : null,
-
-        // Options for the current question
         option_1: options[0] || null,
         option_2: options[1] || null,
         option_3: options[2] || null,
         option_4: options[3] || null,
-
-        // Files for the current question (Handle images if present)
         file_1: currentQuestion.options[0]?.image || null,
         file_2: currentQuestion.options[1]?.image || null,
         file_3: currentQuestion.options[2]?.image || null,
         file_4: currentQuestion.options[3]?.image || null,
-
-        // Correct Answer for the current question (send text or image URL, not both)
         correct_answer: correctAnswer,
       };
 
       console.log("Final payload:", payload);
 
-      // Send the request to the server
       const response = await fetch(
         "https://mockexam.pythonanywhere.com/exam-subject-chapter-questions/",
         {
@@ -728,8 +741,6 @@ const MockTestManagement = ({ user }) => {
       if (response.ok) {
         const data = await response.json();
         console.log("Test submitted successfully:", data);
-
-        // Automatically save the question and navigate to the next one
         handleSaveAndNext();
       } else {
         console.error("Failed to submit test:", response.statusText);
@@ -932,13 +943,27 @@ const MockTestManagement = ({ user }) => {
                       onChange={(e) => {
                         const selectedSubjectId = e.target.value;
 
-                        setNewTest((prevTest) => ({
-                          ...prevTest,
-                          subject: selectedSubjectId,
-                          selectedSubjects: prevTest.selectedSubjects
-                            ? [...prevTest.selectedSubjects, selectedSubjectId]
-                            : [selectedSubjectId],
-                        }));
+                        if (selectedSubjectId === "ALL") {
+                          // Include all subject IDs
+                          setNewTest((prevTest) => ({
+                            ...prevTest,
+                            subject: selectedSubjectId,
+                            selectedSubjects: subjects.map(
+                              (subject) => subject.id
+                            ),
+                          }));
+                        } else {
+                          setNewTest((prevTest) => ({
+                            ...prevTest,
+                            subject: selectedSubjectId,
+                            selectedSubjects: prevTest.selectedSubjects
+                              ? [
+                                  ...prevTest.selectedSubjects,
+                                  selectedSubjectId,
+                                ]
+                              : [selectedSubjectId],
+                          }));
+                        }
 
                         if (selectedSubjectId !== "ALL") {
                           const updatedQuestions = newTest.questions.map(
@@ -1052,42 +1077,6 @@ const MockTestManagement = ({ user }) => {
                     />
                   </div>
                 </div>
-
-                {/* Show main subtopic dropdown when "ALL" is selected */}
-                {newTest.subject === "ALL" && (
-                  <div className="mt-3 sm:mt-4" onClick={fetchSubtopic}>
-                    <h3 className="text-sm sm:text-md font-semibold mb-2">
-                      Select Sub-Subject for Mock Test
-                    </h3>
-                    <select
-                      name="mainSubtopic"
-                      className={`border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200 ${
-                        newTest.subject === "ALL"
-                          ? ""
-                          : "bg-gray-200 cursor-not-allowed"
-                      }`}
-                      onChange={(e) =>
-                        setNewTest({
-                          ...newTest,
-                          mainSubtopic: e.target.value,
-                        })
-                      }
-                      value={newTest.mainSubtopic || ""} // Ensure the placeholder option is selected when value is empty
-                      disabled={newTest.subject !== "ALL"}
-                    >
-                      {/* Placeholder option */}
-                      <option value="" disabled>
-                        Select Sub-Subject
-                      </option>
-                      {/* Dynamically generated options */}
-                      {subTopic.map((subtopic) => (
-                        <option key={subtopic.id} value={subtopic.name}>
-                          {subtopic.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
               </div>
             </div>
 
@@ -1148,13 +1137,14 @@ const MockTestManagement = ({ user }) => {
                             fetchSubtopic();
                           }
                         }}
-                        onChange={(e) =>
+                        onChange={(e) => {
+                          const value = e.target.value?.trim() || ""; // Ensure value is defined and trimmed
                           handleQuestionChange(
                             currentQuestionIndex,
                             "subtopic",
-                            e.target.value
-                          )
-                        }
+                            value
+                          );
+                        }}
                         className={`border p-1 sm:p-2 w-full sm:w-auto rounded-md focus:outline-none focus:ring focus:ring-blue-400 text-xs sm:text-base ${
                           newTest.subject === "ALL"
                             ? ""
