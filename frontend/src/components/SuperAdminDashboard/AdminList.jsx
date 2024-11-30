@@ -144,7 +144,13 @@ const AdminList = () => {
       if (response.status === 200) {
         alert("Subscription plan updated successfully!");
         closeModal();
-        fetchAdmins();
+
+        // Ensure fetchAdmins is passed correctly
+        if (typeof fetchAdmins === "function") {
+          fetchAdmins(); // Call the fetchAdmins function if it exists
+        } else {
+          console.error("fetchAdmins is not a function");
+        }
       } else {
         console.error("Failed to update subscription plan:", response.data);
       }

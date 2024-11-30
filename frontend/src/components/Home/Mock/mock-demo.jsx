@@ -152,9 +152,9 @@ const MockDemo = () => {
     currentQuestionIndex === currentSection.questions.length - 1;
   const isLastSection = currentSectionIndex === filteredQuizData.length - 1;
 
-  const handleSectionChange = (index) => {
-    setCurrentSectionIndex(index);
-    setCurrentQuestionIndex(0);
+  const handleSectionChange = (sectionIndex, subject) => {
+    setCurrentSectionIndex(sectionIndex); // Update the active section index
+    setSelectedSubject(subject); // Update the active subject
   };
 
   const handleMarkForReview = () => {
@@ -218,7 +218,7 @@ const MockDemo = () => {
               };
             }
           );
-
+          console.log("hii", groupedTests);
           setMockTestData(groupedTests);
         } else {
           console.error("Data field is missing from the API response");
@@ -238,6 +238,21 @@ const MockDemo = () => {
     console.log("Updated Timer Duration:", timerDuration);
     console.log("Updated mockTestData:", mockTestData);
   }, [timerDuration, mockTestData]);
+
+  const filteredSections = mockTestData.filter((section) =>
+    section.questions.some((q) => q.subject === selectedSubject)
+  );
+
+  console.log("Filtered Data", filteredSections);
+
+  useEffect(() => {
+    // When the component mounts, set the first section to blue
+    if (currentSectionIndex === 0) {
+      setSelectedSubject(
+        mockTestData[0]?.questions[0]?.subject || "Unknown Subject"
+      );
+    }
+  }, [mockTestData]); // Runs on the initial render
 
   return isMobile ? (
     <MobileQuizLayout
@@ -268,21 +283,28 @@ const MockDemo = () => {
           <>
             {/* Section Navigation */}
             <div className="col-span-full grid grid-cols-4 space-x-4 py-4 px-8 bg-gray-100 rounded-lg shadow-md">
-              {mockTestData.map((section, index) => (
-                <button
-                  key={index}
-                  className={`flex items-center col-span-1 py-3 px-4 rounded-lg transition duration-300 ${
-                    currentSectionIndex === index
-                      ? "bg-blue-700 text-white font-semibold shadow-lg"
-                      : "bg-white text-blue-700 hover:bg-blue-100 hover:shadow-sm"
-                  }`}
-                  onClick={() => handleSectionChange(index)}
-                >
-                  <div className="mr-2">{sectionIcons[index]}</div>
-                  <span>{section.questions[0]?.subject}</span>{" "}
-                  {/* Display subject here */}
-                </button>
-              ))}
+              {mockTestData.map((section, sectionIndex) => {
+                // Get unique subjects from the section's questions
+                const uniqueSubjects = [
+                  ...new Set(section.questions.map((q) => q.subject)),
+                ];
+
+                return uniqueSubjects.map((subject, subjectIndex) => (
+                  <button
+                    key={`${sectionIndex}-${subjectIndex}`}
+                    className={`flex items-center col-span-1 py-3 px-4 rounded-lg transition duration-300 ${
+                      currentSectionIndex === sectionIndex &&
+                      selectedSubject === subject
+                        ? "bg-blue-700 text-white font-semibold shadow-lg" // Highlight active section
+                        : "bg-white text-blue-700 hover:bg-blue-100 hover:shadow-sm" // Inactive sections
+                    }`}
+                    onClick={() => handleSectionChange(sectionIndex, subject)} // Handle section change
+                  >
+                    {/* <div className="mr-2">{sectionIcons[sectionIndex]}</div> */}
+                    <span>{subject || "Unknown Subject"}</span>
+                  </button>
+                ));
+              })}
             </div>
 
             {/* Header with Profile, Marks, Language, and Timer */}
@@ -333,39 +355,41 @@ const MockDemo = () => {
 
               {/* Log current question */}
               <p className="text-lg font-medium mb-8">
-                {mockTestData[currentSectionIndex]?.questions[
-                  currentQuestionIndex
-                ]
-                  ? mockTestData[currentSectionIndex]?.questions[
-                      currentQuestionIndex
-                    ].question
+                {filteredSections[currentSectionIndex]?.questions?.filter(
+                  (question) => question.subject === selectedSubject
+                )[currentQuestionIndex] // Filter questions by subject
+                  ? filteredSections[currentSectionIndex]?.questions?.filter(
+                      (question) => question.subject === selectedSubject
+                    )[currentQuestionIndex].question
                   : "Loading..."}
               </p>
 
               {/* Log options */}
               <div className="grid grid-cols-2 gap-6 mb-10">
-                {mockTestData[currentSectionIndex]?.questions[
-                  currentQuestionIndex
-                ]?.options?.map((option, index) => (
-                  <label
-                    key={index}
-                    className={`border border-gray-300 rounded-lg p-4 flex items-center justify-center text-center cursor-pointer transition duration-200 transform ${
-                      selectedOption === option
-                        ? "bg-blue-50 border-blue-500 shadow-md"
-                        : "hover:bg-gray-50 hover:shadow-sm"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="option"
-                      value={option}
-                      checked={selectedOption === option}
-                      onChange={() => handleOptionChange(option)}
-                      className="hidden"
-                    />
-                    <span className="text-gray-800 font-medium">{option}</span>
-                  </label>
-                ))}
+                {filteredSections[currentSectionIndex]?.questions
+                  ?.filter((question) => question.subject === selectedSubject) // Filter options by subject
+                  [currentQuestionIndex]?.options?.map((option, index) => (
+                    <label
+                      key={index}
+                      className={`border border-gray-300 rounded-lg p-4 flex items-center justify-center text-center cursor-pointer transition duration-200 transform ${
+                        selectedOption === option
+                          ? "bg-blue-50 border-blue-500 shadow-md"
+                          : "hover:bg-gray-50 hover:shadow-sm"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="option"
+                        value={option}
+                        checked={selectedOption === option}
+                        onChange={() => handleOptionChange(option)}
+                        className="hidden"
+                      />
+                      <span className="text-gray-800 font-medium">
+                        {option}
+                      </span>
+                    </label>
+                  ))}
               </div>
 
               {/* Question Navigation and Actions */}
@@ -427,7 +451,9 @@ const MockDemo = () => {
             onSelectQuestion={(index) => setCurrentQuestionIndex(index)}
             onSubmit={() => setSubmitted(true)}
             sectionName={
-              mockTestData[currentSectionIndex]?.questions[0]?.subject || ""
+              mockTestData[currentSectionIndex]?.questions
+                ?.filter((question) => question.subject === selectedSubject)
+                .map((question) => question.subject)[0] || "Unknown Subject"
             }
             answeredQuestions={answeredQuestions[currentSectionIndex] || []}
             markedForReview={markedForReview[currentSectionIndex] || []}

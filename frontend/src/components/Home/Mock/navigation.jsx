@@ -266,7 +266,9 @@ const QuestionNavigation = ({
   const [showMarkedOnly, setShowMarkedOnly] = useState(false);
   const [showInstructionsModal, setShowInstructionsModal] = useState(false);
   const prevSectionName = useRef(sectionName);
-
+  const [selectedSubject, setSelectedSubject] = useState(
+    localStorage.getItem("selectedOptionalSubject") || ""
+  );
   useEffect(() => {
     if (prevSectionName.current !== sectionName) {
       onSelectQuestion(0);
@@ -290,6 +292,15 @@ const QuestionNavigation = ({
 
       const user = JSON.parse(localStorage.getItem("user"));
 
+      // Extract the test_name and exam_id from the payload
+      const test_name = questions[0]?.test_name || "Default Test Name"; // Assuming all questions have the same test_name
+      const exam_id = questions[0]?.id || "default_exam_id"; // Use the first question's ID as exam_id (or adjust as needed)
+
+      // Extract additional parameters
+      const student_id = user.id; // Assuming the student_id is stored in user object
+      const start_time = new Date().toISOString(); // Current time, adjust based on your needs
+      const end_time = new Date().toISOString(); // Set this based on your exam timing logic
+
       // Prepare payload
       const payload = questions.map((question, index) => {
         const answer = answeredQuestions[index] || {}; // Ensure the answer exists
@@ -306,9 +317,18 @@ const QuestionNavigation = ({
 
       console.log("Submitting payload:", payload);
 
-      // Send POST request to the server
+      // Construct query parameters
+      const queryParams = new URLSearchParams({
+        student_id,
+        test_name,
+        start_time,
+        end_time,
+        exam_id,
+      }).toString();
+
+      // Send POST request to the server with query parameters
       const response = await fetch(
-        "https://mockexam.pythonanywhere.com/submit-answers/",
+        `https://mockexam.pythonanywhere.com/submit-answers/?${queryParams}`,
         {
           method: "POST",
           headers: {
@@ -355,13 +375,11 @@ const QuestionNavigation = ({
           <span>Instructions</span>
         </button>
       </div>
-
       {/* Instructions Modal */}
       <InstructionsModal
         isVisible={showInstructionsModal}
         onClose={() => setShowInstructionsModal(false)}
       />
-
       {/* Question Status Legend */}
       <div className="grid grid-cols-2 gap-4">
         <div className="flex items-center space-x-2 p-2 bg-blue-50 rounded-lg shadow-sm">
@@ -387,12 +405,10 @@ const QuestionNavigation = ({
           </span>
         </div>
       </div>
-
       {/* Section Title */}
       <h3 className="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">
         {sectionName}
       </h3>
-
       {/* Show Marked Only Toggle */}
       <div className="flex justify-between items-center mb-4">
         <label className="flex items-center cursor-pointer">
@@ -407,35 +423,39 @@ const QuestionNavigation = ({
           </span>
         </label>
       </div>
-
       {/* Question Navigation Buttons */}
       <div className="grid grid-cols-5 gap-4">
-        {(filteredQuestions || []).map((_, i) => (
-          <button
-            key={i}
-            onClick={() => onSelectQuestion(i)}
-            title={
-              markedForReview.includes(i)
-                ? "Marked for Review"
-                : answeredQuestions[i] !== undefined
-                ? "Answered"
-                : "Not Answered"
-            }
-            className={`w-10 h-10 flex items-center justify-center rounded-md font-bold transition duration-200 focus:outline-none focus:ring ${
-              selectedQuestionIndex === i
-                ? "bg-blue-200 text-blue-700 ring-2 ring-blue-300"
-                : markedForReview.includes(i)
-                ? "bg-red-500 text-white"
-                : answeredQuestions[i] !== undefined
-                ? "bg-green-500 text-white"
-                : "bg-gray-200 text-gray-700"
-            }`}
-          >
-            {i + 1}
-          </button>
-        ))}
+        {filteredQuestions.length > 0 ? (
+          filteredQuestions.map((question, i) => (
+            <button
+              key={i}
+              onClick={() => onSelectQuestion(i)}
+              title={
+                markedForReview.includes(i)
+                  ? "Marked for Review"
+                  : answeredQuestions[i] !== undefined
+                  ? "Answered"
+                  : "Not Answered"
+              }
+              className={`w-10 h-10 flex items-center justify-center rounded-md font-bold transition duration-200 focus:outline-none focus:ring ${
+                selectedQuestionIndex === i
+                  ? "bg-blue-200 text-blue-700 ring-2 ring-blue-300"
+                  : markedForReview.includes(i)
+                  ? "bg-red-500 text-white"
+                  : answeredQuestions[i] !== undefined
+                  ? "bg-green-500 text-white"
+                  : "bg-gray-200 text-gray-700"
+              }`}
+            >
+              {i + 1}
+            </button>
+          ))
+        ) : (
+          <p className="col-span-5 text-center text-gray-500">
+            No questions available for selected subject
+          </p>
+        )}
       </div>
-
       {/* Submit Button */}
       <button
         onClick={() => {
