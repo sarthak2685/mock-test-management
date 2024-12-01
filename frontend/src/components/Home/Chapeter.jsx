@@ -2,26 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import config from "../../config";
 
-// const subjectChapters = {
-//   Maths: [
-//     { id: 1, name: "Algebra" },
-//     { id: 2, name: "Geometry" },
-//     { id: 3, name: "Trigonometry" },
-//     { id: 4, name: "Calculus" },
-//   ],
-//   Science: [
-//     { id: 1, name: "Physics" },
-//     { id: 2, name: "Chemistry" },
-//     { id: 3, name: "Biology" },
-//   ],
-//   English: [
-//     { id: 1, name: "Grammar" },
-//     { id: 2, name: "Literature" },
-//     { id: 3, name: "Comprehension" },
-//   ],
-//   // Add more subjects and chapters as needed
-// };
-
 const Chapters = () => {
   const { subjectName } = useParams();
   const SubjectId = localStorage.getItem("selectedSubjectId");
@@ -43,20 +23,28 @@ const Chapters = () => {
             },
           }
         );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
         const data = await response.json();
 
-        // Extract required data
-        const formattedData = data?.data[0]?.chapters_details.map((chapter) => ({
-          ...chapter,
-          testName: data?.data[0]?.test_name,
-          examDuration: data?.data[0]?.exam_duration,
-          noOfQuestions: data?.no_of_question,
-        }));
+        console.log("API Response:", data); // Debug API response structure
+
+        const formattedData =
+          data?.data?.[0]?.chapters_details?.map((chapter) => ({
+            ...chapter,
+            testName: data?.data?.[0]?.test_name,
+            examDuration: data?.data?.[0]?.exam_duration,
+            noOfQuestions: data?.no_of_question,
+          })) || []; // Fallback to an empty array if chapters_details is undefined
+
         setChapters(formattedData);
-        setLoading(false);
       } catch (err) {
         console.error("Error fetching chapters:", err);
         setError("Failed to fetch chapters. Please try again later.");
+      } finally {
         setLoading(false);
       }
     };
@@ -70,7 +58,9 @@ const Chapters = () => {
   }, [SubjectId]);
 
   if (loading) {
-    return <div className="text-center text-gray-600 py-12">Loading chapters...</div>;
+    return (
+      <div className="text-center text-gray-600 py-12">Loading chapters...</div>
+    );
   }
 
   if (error) {
@@ -90,19 +80,19 @@ const Chapters = () => {
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
           {chapters.map((chapter) => (
-         <div
-         key={chapter.id}
-         className="relative bg-white p-8 rounded-2xl shadow-lg transform hover:scale-105 transition duration-300 ease-in-out"
-         style={{
-           backgroundImage:
-             "linear-gradient(135deg, rgba(240, 240, 240, 0.5) 25%, transparent 25%, transparent 50%, rgba(240, 240, 240, 0.5) 50%, rgba(240, 240, 240, 0.5) 75%, transparent 75%, transparent)",
-           backgroundSize: "20px 20px", // Adjust grid size
-         }}
-       >
+            <div
+              key={chapter.id}
+              className="relative bg-white p-8 rounded-2xl shadow-lg transform hover:scale-105 transition duration-300 ease-in-out"
+              style={{
+                backgroundImage:
+                  "linear-gradient(135deg, rgba(240, 240, 240, 0.5) 25%, transparent 25%, transparent 50%, rgba(240, 240, 240, 0.5) 50%, rgba(240, 240, 240, 0.5) 75%, transparent 75%, transparent)",
+                backgroundSize: "20px 20px", // Adjust grid size
+              }}
+            >
               <div className="flex flex-col justify-between h-full">
                 <div className="mb-6">
-                <h3 className="text-2xl font-bold text-center text-gray-800">
-                  {chapter.testName || "N/A"}
+                  <h3 className="text-2xl font-bold text-center text-gray-800">
+                    {chapter.testName || "N/A"}
                   </h3>
                   <div className="mt-4 text-gray-700">
                     <div className="flex items-center space-x-3 text-base">
@@ -122,10 +112,9 @@ const Chapters = () => {
                       </span>
                     </div>
                   </div>
-
                 </div>
                 <Link
-                  to={`/instruction`}
+                  to={`/chapter-exam`}
                   className="inline-block bg-[#007bff] text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300 text-center"
                 >
                   Take Test
