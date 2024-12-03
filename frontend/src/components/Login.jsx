@@ -34,8 +34,7 @@ const Login = () => {
 
       if (response.data.data && response.data.data.type) {
         // Extract fields from the response
-        const { type, user, token, id, name } =
-          response.data.data;
+        const { type, user, token, id, name } = response.data.data;
 
         // Consolidate into a single object
         const userData = { type, user, token, id, name };
@@ -44,6 +43,9 @@ const Login = () => {
 
         // Save the object in localStorage
         localStorage.setItem("user", JSON.stringify(userData));
+
+        // Clear the submittedData from localStorage
+        localStorage.removeItem("submittedData");
 
         // Navigation logic
         if (type === "owner") {

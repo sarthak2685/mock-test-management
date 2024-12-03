@@ -24,13 +24,8 @@ const MockDemo = () => {
   //const S = JSON.parse(localStorage.getItem("user"));
   //const token = S.token;
 
-  const sectionIcons = [
-    <FaBrain />,
-    <FaBook />,
-    <FaCalculator />,
-    <FaLanguage />,
-    <FaLanguage />,
-  ];
+  const storedTestName = localStorage.getItem("selectedTestName");
+  console.log("hii", storedTestName); // Logs the last stored test name
 
   const UserProfile = () => {
     const [user, setUser] = useState({ name: "Unknown User", role: "Student" }); // Default user state with name and role
@@ -139,18 +134,73 @@ const MockDemo = () => {
   };
 
   const handleSubmitNext = () => {
-    if (currentQuestionIndex < currentSection.questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-    } else if (currentSectionIndex < filteredQuizData.length - 1) {
-      setCurrentSectionIndex(currentSectionIndex + 1);
-      setCurrentQuestionIndex(0);
+    try {
+      // Retrieve existing data from localStorage or initialize an empty object
+      const storedData =
+        JSON.parse(localStorage.getItem("submittedData")) || {};
+
+      // Get the current section and question
+      const currentSection = mockTestData[currentSectionIndex];
+      const currentQuestion =
+        currentSection?.questions[currentQuestionIndex] || {};
+
+      // Fetch the user's answer for the current question
+      const userAnswer =
+        answeredQuestions[currentSectionIndex]?.[currentQuestionIndex] || {}; // Fetch based on both section and question index
+      const user = JSON.parse(localStorage.getItem("user"));
+
+      if (!user) {
+        alert("User data not found. Please log in again.");
+        return;
+      }
+
+      const student_id = user.id;
+      const sectionName = currentSection?.subject || "Default Section";
+      const questionId = currentQuestion.id;
+
+      // Ensure the section exists in stored data
+      if (!storedData[sectionName]) {
+        storedData[sectionName] = {};
+      }
+
+      // Add/update the specific question's selected answer within the section
+      storedData[sectionName][questionId] = {
+        question: currentQuestion.id,
+        selected_answer: userAnswer || "No Answer Provided",
+        selected_answer_2: userAnswer.image || null,
+        student: student_id,
+      };
+
+      // Save the updated structure to localStorage
+      localStorage.setItem("submittedData", JSON.stringify(storedData));
+
+      console.log("Updated LocalStorage Data:", storedData);
+
+      // Move to the next question or section
+      if (currentQuestionIndex < currentSection.questions.length - 1) {
+        // Move to the next question in the current section
+        setCurrentQuestionIndex(currentQuestionIndex + 1);
+      } else if (currentSectionIndex < mockTestData.length - 1) {
+        // Move to the next section and reset question index
+        setCurrentSectionIndex(currentSectionIndex + 1);
+        setCurrentQuestionIndex(0);
+      } else {
+        // End of all sections and questions
+        console.log("All sections and questions completed.");
+      }
+    } catch (error) {
+      console.error("Error in handleSubmitNext:", error);
+      alert("An error occurred while saving your answer. Please try again.");
     }
   };
 
   const isFirstQuestion = currentQuestionIndex === 0;
   const isLastQuestion =
-    currentQuestionIndex === currentSection.questions.length - 1;
-  const isLastSection = currentSectionIndex === filteredQuizData.length - 1;
+    (currentSection?.questions?.length || 0) > 0 &&
+    currentQuestionIndex === (currentSection?.questions?.length || 0) - 1;
+  const isLastSection =
+    (filteredQuizData?.length || 0) > 0 &&
+    currentSectionIndex === (filteredQuizData?.length || 0) - 1;
 
   const handleSectionChange = (sectionIndex, subject) => {
     setCurrentSectionIndex(sectionIndex); // Update the active section index
@@ -178,7 +228,7 @@ const MockDemo = () => {
     const fetchMockTests = async () => {
       try {
         const response = await fetch(
-          `${config.apiUrl}/get-single-exam-details/?id=${SubjectId}`
+          `${config.apiUrl}/get-single-exam-details/?exam_id=${SubjectId}`
         );
 
         if (!response.ok) {
@@ -186,40 +236,66 @@ const MockDemo = () => {
         }
 
         const result = await response.json();
-
         console.log("Raw API Response:", result);
 
         if (result.data) {
-          const groupedTests = Object.entries(result.data).map(
-            ([testName, testDetails]) => {
-              console.log("Test Details for", testName, testDetails);
-
-              // Parse exam_duration as a number and validate it
-              const examDuration = parseInt(testDetails.exam_duration, 10);
-
-              const validExamDuration =
-                !isNaN(examDuration) && examDuration > 0 ? examDuration : 60; // Default to 60 if invalid or not provided
-
-              // Set the timer duration for the test
-              setTimerDuration(validExamDuration);
-
-              return {
-                test_name: testName,
-                exam_duration: validExamDuration, // Use the valid duration here
-                questions: testDetails.questions.map((question) => ({
-                  id: question.id,
-                  question: question.question,
-                  options: Object.values(question.options),
-                  subject: question.subjects[0]?.name,
-                  correctAnswer: question.correct_answer,
-                  marks: question.marks,
-                  negativeMarks: question.negative_marks,
-                })),
-              };
-            }
+          // Check if the stored test name exists in the API response
+          const mockTestKeys = Object.keys(result.data);
+          const mockTestKey = mockTestKeys.find(
+            (key) => key !== "exam_domain" && key === storedTestName // Match stored test name
           );
-          console.log("hii", groupedTests);
-          setMockTestData(groupedTests);
+
+          if (mockTestKey) {
+            const testDetails = result.data[mockTestKey];
+
+            if (testDetails) {
+              setTimerDuration(Number(testDetails.exam_duration) || 0);
+
+              const groupedTests = Object.entries(testDetails)
+                .filter(
+                  ([key, value]) =>
+                    key !== "exam_duration" &&
+                    key !== "total_marks" &&
+                    key !== "total_questions"
+                )
+                .map(([subjectName, subjectDetails]) => ({
+                  subject: subjectName,
+                  no_of_questions: subjectDetails.no_of_questions,
+                  questions: subjectDetails.questions.map(
+                    (question, index) => ({
+                      id: index + 1,
+                      question: question.question,
+                      marks: question.positive_marks,
+                      negativeMarks: question.negative_marks,
+                      subject: question.subject || subjectName,
+                      options: [
+                        question.option_1,
+                        question.option_2,
+                        question.option_3,
+                        question.option_4,
+                      ], // Dynamically map the options
+                      files: [
+                        question.file_1,
+                        question.file_2,
+                        question.file_3,
+                        question.file_4,
+                      ], // Dynamically map the files
+                    })
+                  ),
+                }));
+
+              console.log("Grouped Test Data:", groupedTests);
+              setMockTestData(groupedTests);
+
+              setSelectedSubject(groupedTests[0]?.subject || "");
+            } else {
+              console.error("Mock test data is missing");
+            }
+          } else {
+            console.error(
+              "Stored test name does not match any test in the API response"
+            );
+          }
         } else {
           console.error("Data field is missing from the API response");
         }
@@ -247,12 +323,12 @@ const MockDemo = () => {
 
   useEffect(() => {
     // When the component mounts, set the first section to blue
-    if (currentSectionIndex === 0) {
-      setSelectedSubject(
-        mockTestData[0]?.questions[0]?.subject || "Unknown Subject"
-      );
+    if (mockTestData.length > 0 && mockTestData[0]?.questions.length > 0) {
+      const firstSubject =
+        mockTestData[0].questions[0]?.subject || "Unknown Subject";
+      setSelectedSubject(firstSubject); // Set the selected subject
     }
-  }, [mockTestData]); // Runs on the initial render
+  }, [mockTestData]);
 
   return isMobile ? (
     <MobileQuizLayout
@@ -337,13 +413,8 @@ const MockDemo = () => {
                   </div>
                 )}
               </div>
-
               <div className="col-span-2 flex items-center justify-end">
-                {mockTestData.length > 0 && (
-                  <Timer
-                    totalMinutes={Number(mockTestData[0]?.exam_duration) || 0}
-                  />
-                )}
+                {timerDuration > 0 && <Timer totalMinutes={timerDuration} />}
               </div>
             </div>
 
@@ -355,41 +426,45 @@ const MockDemo = () => {
 
               {/* Log current question */}
               <p className="text-lg font-medium mb-8">
-                {filteredSections[currentSectionIndex]?.questions?.filter(
-                  (question) => question.subject === selectedSubject
-                )[currentQuestionIndex] // Filter questions by subject
-                  ? filteredSections[currentSectionIndex]?.questions?.filter(
-                      (question) => question.subject === selectedSubject
-                    )[currentQuestionIndex].question
-                  : "Loading..."}
+                {
+                  // Find the question for the selected subject and current question index
+                  mockTestData.find(
+                    (section) => section.subject === selectedSubject
+                  )?.questions[currentQuestionIndex]?.question || "Loading..." // Display the question or "Loading..." if not available
+                }
               </p>
 
               {/* Log options */}
               <div className="grid grid-cols-2 gap-6 mb-10">
-                {filteredSections[currentSectionIndex]?.questions
-                  ?.filter((question) => question.subject === selectedSubject) // Filter options by subject
-                  [currentQuestionIndex]?.options?.map((option, index) => (
-                    <label
-                      key={index}
-                      className={`border border-gray-300 rounded-lg p-4 flex items-center justify-center text-center cursor-pointer transition duration-200 transform ${
-                        selectedOption === option
-                          ? "bg-blue-50 border-blue-500 shadow-md"
-                          : "hover:bg-gray-50 hover:shadow-sm"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name="option"
-                        value={option}
-                        checked={selectedOption === option}
-                        onChange={() => handleOptionChange(option)}
-                        className="hidden"
-                      />
-                      <span className="text-gray-800 font-medium">
-                        {option}
-                      </span>
-                    </label>
-                  ))}
+                {
+                  // Get the options for the current question directly from mockTestData
+                  mockTestData
+                    .find((section) => section.subject === selectedSubject)
+                    ?.questions[currentQuestionIndex]?.options?.map(
+                      (option, index) => (
+                        <label
+                          key={index}
+                          className={`border border-gray-300 rounded-lg p-4 flex items-center justify-center text-center cursor-pointer transition duration-200 transform ${
+                            selectedOption === option
+                              ? "bg-blue-50 border-blue-500 shadow-md"
+                              : "hover:bg-gray-50 hover:shadow-sm"
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="option"
+                            value={option}
+                            checked={selectedOption === option}
+                            onChange={() => handleOptionChange(option)}
+                            className="hidden"
+                          />
+                          <span className="text-gray-800 font-medium">
+                            {option}
+                          </span>
+                        </label>
+                      )
+                    )
+                }
               </div>
 
               {/* Question Navigation and Actions */}

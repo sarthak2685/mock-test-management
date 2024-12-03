@@ -178,7 +178,7 @@ const MockChapter = () => {
     const fetchMockTests = async () => {
       try {
         const response = await fetch(
-          `${config.apiUrl}/get-single-exam-details-based-on-subjects/?id=${SubjectId}`,
+          `${config.apiUrl}/get-single-exam-details-based-on-subjects/?subject_id=${SubjectId}`,
           {
             headers: {
               Authorization: `Token ${token}`,
@@ -195,6 +195,10 @@ const MockChapter = () => {
 
         console.log("Raw API Response:", result);
 
+        // Retrieve chapter name from localStorage
+        const selectedChapter = localStorage.getItem("selectedChapter");
+        console.log("Selected Chapter from LocalStorage:", selectedChapter);
+
         // Check if `data` exists and is an array
         if (result && result.data && Array.isArray(result.data)) {
           const groupedTests = result.data.reduce((acc, testDetails) => {
@@ -208,32 +212,38 @@ const MockChapter = () => {
             // Set the timer duration for the test
             setTimerDuration(validExamDuration);
 
-            // Check if the test already exists in the accumulator, if not, initialize it
-            let test = acc.find((t) => t.test_name === testDetails.test_name);
-            if (!test) {
-              test = {
-                test_name: testDetails.test_name,
-                exam_duration: validExamDuration,
-                questions: [],
-              };
-              acc.push(test);
-            }
+            // Check if the chapter name matches the selected chapter
+            if (
+              selectedChapter &&
+              testDetails.chapter_name === selectedChapter
+            ) {
+              // Check if the test already exists in the accumulator, if not, initialize it
+              let test = acc.find((t) => t.test_name === testDetails.test_name);
+              if (!test) {
+                test = {
+                  test_name: testDetails.test_name,
+                  exam_duration: validExamDuration,
+                  questions: [],
+                };
+                acc.push(test);
+              }
 
-            // Add the question to the respective test
-            test.questions.push({
-              id: testDetails.id,
-              question: testDetails.question,
-              options: [
-                testDetails.option_1,
-                testDetails.option_2,
-                testDetails.option_3,
-                testDetails.option_4,
-              ],
-              correctAnswer: testDetails.correct_answer,
-              marks: testDetails.marks,
-              negativeMarks: testDetails.negative_marks,
-              subjects_details: testDetails.subjects_details, // Include subjects_details
-            });
+              // Add the question to the respective test
+              test.questions.push({
+                id: testDetails.id,
+                question: testDetails.question,
+                options: [
+                  testDetails.option_1,
+                  testDetails.option_2,
+                  testDetails.option_3,
+                  testDetails.option_4,
+                ],
+                correctAnswer: testDetails.correct_answer,
+                marks: testDetails.marks,
+                negativeMarks: testDetails.negative_marks,
+                subjects_details: testDetails.subjects_details, // Include subjects_details
+              });
+            }
 
             return acc;
           }, []);

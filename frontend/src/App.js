@@ -81,7 +81,10 @@ function App() {
           <Route path="/score" element={<ScoreCard />} />
           <Route path="/instruction" element={<Instructions />} />
           <Route path="/chapter-exam" element={<MockChapter />} />
-          <Route path="/chapterinstruction" element={<ChapterTestInstructions />} />
+          <Route
+            path="/chapterinstruction"
+            element={<ChapterTestInstructions />}
+          />
         </Routes>
 
         {isNavbarFooterVisible && <Footer />}
