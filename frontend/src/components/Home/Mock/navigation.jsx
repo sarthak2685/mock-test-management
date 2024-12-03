@@ -285,67 +285,87 @@ const QuestionNavigation = ({
 
   console.log("Fetched Data ", S);
 
+  const SubjectId = localStorage.getItem("selectedSubjectId");
+  const Test = localStorage.getItem("selectedTestName");
+
   const handleSubmit = async () => {
     try {
-      console.log("Questions:", questions);
-      console.log("Answered Questions:", answeredQuestions);
-
       const user = JSON.parse(localStorage.getItem("user"));
+      if (!user) {
+        alert("User data not found. Please log in again.");
+        return;
+      }
 
-      // Extract the test_name and exam_id from the payload
-      const test_name = questions[0]?.test_name || "Default Test Name"; // Assuming all questions have the same test_name
-      const exam_id = questions[0]?.id || "default_exam_id"; // Use the first question's ID as exam_id (or adjust as needed)
+      const test_name = (Test || "Default Test Name").replace(/ /g, "_");
+      const exam_id = (SubjectId || "default_exam_id").replace(/ /g, "_");
+      const student_id = user.id;
 
-      // Extract additional parameters
-      const student_id = user.id; // Assuming the student_id is stored in user object
-      const start_time = new Date().toISOString(); // Current time, adjust based on your needs
-      const end_time = new Date().toISOString(); // Set this based on your exam timing logic
+      const formatDateTime = (date) => {
+        return new Intl.DateTimeFormat("en-GB", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false,
+        })
+          .format(date)
+          .replace(", ", "_")
+          .replace(/\//g, "-");
+      };
 
-      // Prepare payload
-      const payload = questions.map((question, index) => {
-        const answer = answeredQuestions[index] || {}; // Ensure the answer exists
-        console.log("Answer Object at Index", index, answer);
+      const start_time = formatDateTime(new Date());
 
-        // Use the selected text-based answer or image-based answer
-        return {
-          selected_answer: answeredQuestions[index] || null, // Text-based answer
-          selected_answer_2: answer.image || null, // Image-based answer
-          student: user.id, // Extract student user ID
-          question: question.id, // Question ID
-        };
-      });
+      // Retrieve submitted data from localStorage
+      const storedData =
+        JSON.parse(localStorage.getItem("submittedData")) || {};
+      console.log("Retrieved LocalStorage Data:", storedData);
 
-      console.log("Submitting payload:", payload);
+      // Format the data for submission
+      const payload = Object.entries(storedData).map(
+        ([section, questions]) => ({
+          section_name: section,
+          questions: Object.values(questions), // Convert question objects to an array
+        })
+      );
 
-      // Construct query parameters
-      const queryParams = new URLSearchParams({
-        student_id,
-        test_name,
-        start_time,
-        end_time,
-        exam_id,
-      }).toString();
+      console.log("Final Payload:", payload);
 
-      // Send POST request to the server with query parameters
+      const queryParams = `student_id=${student_id}&test_name=${test_name}&start_time=${start_time}&exam_id=${exam_id}`;
+
       const response = await fetch(
         `https://mockexam.pythonanywhere.com/submit-answers/?${queryParams}`,
         {
           method: "POST",
           headers: {
-            Authorization: `Token ${user.token}`, // Use token for authentication
+            Authorization: `Token ${user.token}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(payload), // Convert payload to JSON string
+          body: JSON.stringify(payload),
         }
       );
 
+      const end_time = formatDateTime(new Date());
+
       if (response.ok) {
         console.log("Test submitted successfully!");
-        const result = await response.json(); // Parse response if needed
+        const result = await response.json();
         console.log("Server response:", result);
 
-        // Redirect to score page
-        window.location.href = "/score";
+        const updatedQueryParams = `${queryParams}&end_time=${end_time}`;
+
+        await fetch(
+          `https://mockexam.pythonanywhere.com/submit-answers/?${updatedQueryParams}`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Token ${user.token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(payload),
+          }
+        );
       } else {
         const errorDetails = await response.json();
         console.error(
@@ -460,7 +480,10 @@ const QuestionNavigation = ({
       <button
         onClick={() => {
           if (window.confirm("Are you sure you want to submit the test?")) {
-            handleSubmit(); // Submit the test and navigate
+            handleSubmit();
+            if (onSubmit) {
+              onSubmit(); // Trigger onSubmit prop if provided
+            }
           }
         }}
         className="w-full bg-green-500 text-white py-3 rounded-md font-semibold hover:bg-green-600 transition duration-300 shadow-sm mt-4"

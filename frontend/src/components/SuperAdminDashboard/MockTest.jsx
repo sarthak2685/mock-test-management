@@ -693,7 +693,7 @@ const MockTestManagement = ({ user }) => {
         correctAnswer = correctAnswer.slice(0, 100);
       }
 
-      // Prepare the list of subject IDs, handling "ALL" and subtopic
+      // Prepare the list of subject IDs correctly
       const forExamSubjects =
         newTest.subject === "ALL"
           ? subTopic
@@ -701,40 +701,65 @@ const MockTestManagement = ({ user }) => {
               .map((sub) => sub.id)
           : newTest.selectedSubjects?.filter((id) => id !== "ALL") || [];
 
-      const payload = {
-        test_name: newTest.testName,
-        exam_duration: newTest.duration,
-        for_exam: newTest.domain,
-        institutes: selectedOptions.map((option) => option.value),
-        for_exam_subjects_o: forExamSubjects, // Include subtopic ID when "ALL" is selected
-        for_exam_chapter_o: newTest.chapter?.id ? [newTest.chapter.id] : [],
-        marks: newTest.correctMark,
-        negative_marks: newTest.negativeMark,
-        question: currentQuestion.questionText || null,
-        question_1: currentQuestion.image || null,
-        subtopic: newTest.subject === "ALL" ? currentQuestion.subtopic : null,
-        option_1: options[0] || null,
-        option_2: options[1] || null,
-        option_3: options[2] || null,
-        option_4: options[3] || null,
-        file_1: currentQuestion.options[0]?.image || null,
-        file_2: currentQuestion.options[1]?.image || null,
-        file_3: currentQuestion.options[2]?.image || null,
-        file_4: currentQuestion.options[3]?.image || null,
-        correct_answer: correctAnswer,
-      };
+      // Create a FormData object
+      const formData = new FormData();
+      formData.append("test_name", newTest.testName);
+      formData.append("exam_duration", newTest.duration);
+      formData.append("for_exam", newTest.domain);
 
-      console.log("Final payload:", payload);
+      // Append institutes as array of UUIDs (not stringified)
+      selectedOptions.forEach((option) =>
+        formData.append("institutes", option.value)
+      );
 
+      // Append for_exam_subjects_o as array of UUIDs
+      forExamSubjects.forEach((id) =>
+        formData.append("for_exam_subjects_o", id)
+      );
+
+      // Append for_exam_chapter_o as array of UUIDs if present
+      if (newTest.chapter?.id) {
+        formData.append("for_exam_chapter_o", newTest.chapter.id);
+      }
+
+      formData.append("marks", newTest.correctMark);
+      formData.append("negative_marks", newTest.negativeMark);
+      formData.append("question", currentQuestion.questionText || null);
+
+      // Append question image file if available
+      if (currentQuestion.image instanceof File) {
+        formData.append("question_1", currentQuestion.image);
+      }
+
+      // Append subtopic if subject is ALL
+      if (newTest.subject === "ALL") {
+        formData.append("subtopic", currentQuestion.subtopic);
+      }
+
+      formData.append("option_1", options[0] || null);
+      formData.append("option_2", options[1] || null);
+      formData.append("option_3", options[2] || null);
+      formData.append("option_4", options[3] || null);
+
+      // Append option image files if available
+      for (let i = 0; i < 4; i++) {
+        if (currentQuestion.options[i]?.image instanceof File) {
+          formData.append(`file_${i + 1}`, currentQuestion.options[i].image);
+        }
+      }
+
+      formData.append("correct_answer", correctAnswer);
+
+      // Send the request using fetch
       const response = await fetch(
         "https://mockexam.pythonanywhere.com/exam-subject-chapter-questions/",
         {
           method: "POST",
           headers: {
             Authorization: `Token ${token}`,
-            "Content-Type": "application/json",
+            // Do not set 'Content-Type': FormData automatically handles it.
           },
-          body: JSON.stringify(payload),
+          body: formData,
         }
       );
 
@@ -743,7 +768,8 @@ const MockTestManagement = ({ user }) => {
         console.log("Test submitted successfully:", data);
         handleSaveAndNext();
       } else {
-        console.error("Failed to submit test:", response.statusText);
+        const errorData = await response.json();
+        console.error("Failed to submit test:", errorData);
       }
     } catch (error) {
       console.error("Error while submitting test:", error);

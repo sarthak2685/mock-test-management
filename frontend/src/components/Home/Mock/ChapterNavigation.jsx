@@ -345,7 +345,7 @@ const ChapterNavigation = ({
         console.log("Server response:", result);
 
         // Redirect to score page
-        window.location.href = "/score";
+        // window.location.href = "/score";
       } else {
         const errorDetails = await response.json();
         console.error(
