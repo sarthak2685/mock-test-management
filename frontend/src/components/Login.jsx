@@ -46,6 +46,9 @@ const Login = () => {
 
         // Clear the submittedData from localStorage
         localStorage.removeItem("submittedData");
+        localStorage.removeItem("totalMinutes");
+        localStorage.removeItem("start_time");
+        localStorage.removeItem("submissionResult");
 
         // Navigation logic
         if (type === "owner") {
