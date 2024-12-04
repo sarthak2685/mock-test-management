@@ -178,7 +178,7 @@ const MockChapter = () => {
     const fetchMockTests = async () => {
       try {
         const response = await fetch(
-          `${config.apiUrl}/get-single-exam-details-based-on-subjects/?id=${SubjectId}`,
+          `${config.apiUrl}/get-single-exam-details-based-on-subjects/?subject_id=${SubjectId}`,
           {
             headers: {
               Authorization: `Token ${token}`,
@@ -192,57 +192,82 @@ const MockChapter = () => {
         }
 
         const result = await response.json();
-
         console.log("Raw API Response:", result);
 
-        // Check if `data` exists and is an array
-        if (result && result.data && Array.isArray(result.data)) {
-          const groupedTests = result.data.reduce((acc, testDetails) => {
-            console.log("Test Details", testDetails);
+        // Retrieve selected chapter from localStorage
+        const selectedChapter = localStorage.getItem("selectedChapter");
+        console.log("Selected Chapter from LocalStorage:", selectedChapter);
 
-            // Parse exam_duration as a number and validate it
-            const examDuration = parseInt(testDetails.exam_duration, 10);
-            const validExamDuration =
-              !isNaN(examDuration) && examDuration > 0 ? examDuration : 60; // Default to 60 if invalid or not provided
+        if (result && result.data && result.data.chapters) {
+          const groupedTests = [];
 
-            // Set the timer duration for the test
-            setTimerDuration(validExamDuration);
+          // Iterate through each chapter
+          Object.keys(result.data.chapters).forEach((chapterName) => {
+            const chapter = result.data.chapters[chapterName];
 
-            // Check if the test already exists in the accumulator, if not, initialize it
-            let test = acc.find((t) => t.test_name === testDetails.test_name);
-            if (!test) {
-              test = {
-                test_name: testDetails.test_name,
-                exam_duration: validExamDuration,
-                questions: [],
-              };
-              acc.push(test);
+            // Only process the selected chapter
+            if (selectedChapter && chapterName === selectedChapter) {
+              let currentTestName = "";
+              let currentTestDuration = 60; // Default duration if not provided
+
+              // Iterate through each test or question in the chapter
+              chapter.forEach((testDetails) => {
+                if (testDetails.test_name && testDetails.duration) {
+                  // If it's a test metadata entry, update the current test name and duration
+                  currentTestName = testDetails.test_name;
+                  currentTestDuration = parseInt(testDetails.duration, 10);
+                  currentTestDuration =
+                    isNaN(currentTestDuration) || currentTestDuration <= 0
+                      ? 60
+                      : currentTestDuration;
+                }
+
+                if (testDetails.id) {
+                  // Create or find the test entry in groupedTests
+                  let test = groupedTests.find(
+                    (t) => t.test_name === currentTestName
+                  );
+                  if (!test) {
+                    test = {
+                      test_name: currentTestName,
+                      exam_duration: currentTestDuration,
+                      questions: [],
+                    };
+                    groupedTests.push(test);
+                  }
+
+                  // Set the timer duration once (based on the first valid test)
+                  if (groupedTests.length === 1) {
+                    setTimerDuration(currentTestDuration);
+                  }
+
+                  // Add the question to the test
+                  test.questions.push({
+                    id: testDetails.id,
+                    question: testDetails.question,
+                    options: [
+                      testDetails.option_1,
+                      testDetails.option_2,
+                      testDetails.option_3,
+                      testDetails.option_4,
+                    ],
+                    correctAnswer: testDetails.correct_answer,
+                    marks: testDetails.marks,
+                    negativeMarks: testDetails.negative_marks,
+                    subjects_details: testDetails.subjects_details,
+                    test_name: currentTestName, // Associate the test name with each question
+                    duration: currentTestDuration, // Associate the duration with each question
+                  });
+                }
+              });
             }
+          });
 
-            // Add the question to the respective test
-            test.questions.push({
-              id: testDetails.id,
-              question: testDetails.question,
-              options: [
-                testDetails.option_1,
-                testDetails.option_2,
-                testDetails.option_3,
-                testDetails.option_4,
-              ],
-              correctAnswer: testDetails.correct_answer,
-              marks: testDetails.marks,
-              negativeMarks: testDetails.negative_marks,
-              subjects_details: testDetails.subjects_details, // Include subjects_details
-            });
-
-            return acc;
-          }, []);
-
-          console.log("Mapped Tests Data:", groupedTests);
+          console.log("Mapped Tests Data for Selected Chapter:", groupedTests);
           setMockTestData(groupedTests);
         } else {
           console.error(
-            "Data field is missing or malformed in the API response"
+            "Chapters field is missing or malformed in the API response"
           );
         }
       } catch (error) {
@@ -426,8 +451,7 @@ const MockChapter = () => {
             onSelectQuestion={(index) => setCurrentQuestionIndex(index)}
             onSubmit={() => setSubmitted(true)}
             sectionName={
-              mockTestData[currentSectionIndex]?.questions?.[0]
-                ?.subjects_details?.[0]?.name || "Unknown Subject"
+              mockTestData[currentSectionIndex]?.test_name || "Unknown Test"
             }
             answeredQuestions={answeredQuestions[currentSectionIndex] || []}
             markedForReview={markedForReview[currentSectionIndex] || []}

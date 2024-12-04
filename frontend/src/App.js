@@ -32,6 +32,7 @@ import ScoreCard from "./components/Home/Mock/Score.jsx";
 import Instructions from "./components/Home/Mock/Instructions.jsx";
 import MockChapter from "./components/Home/Mock/MockChapter.jsx";
 import ChapterTestInstructions from "./components/Home/Mock/ChapterTestInstruction.jsx";
+import SubscriptionForm from "./components/Home/SubscriptionForm.jsx";
 
 function App() {
   const location = useLocation();
@@ -43,7 +44,7 @@ function App() {
   const isNavbarFooterVisible =
     userRole !== "owner" &&
     userRole !== "admin" &&
-    ["/", "/login", "/contact"].includes(location.pathname);
+    ["/", "/login", "/contact", "/subscriptionform"].includes(location.pathname);
 
   return (
     <UserProvider>
@@ -81,8 +82,16 @@ function App() {
           <Route path="/score" element={<ScoreCard />} />
           <Route path="/instruction" element={<Instructions />} />
           <Route path="/chapter-exam" element={<MockChapter />} />
-          <Route path="/chapterinstruction" element={<ChapterTestInstructions />} />
+          <Route
+            path="/chapterinstruction"
+            element={<ChapterTestInstructions />}
+          />
+           <Route
+            path="/subscriptionform"
+            element={<SubscriptionForm />}
+          />
         </Routes>
+        
 
         {isNavbarFooterVisible && <Footer />}
       </div>

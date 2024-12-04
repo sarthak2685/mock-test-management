@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { RiInformation2Line } from "react-icons/ri";
+import Timer from "./Timer"; // Assuming Timer is a separate component
 
 const InstructionsModal = ({ isVisible, onClose }) => {
   const [optionalSubject, setOptionalSubject] = useState(
@@ -285,74 +286,80 @@ const QuestionNavigation = ({
 
   console.log("Fetched Data ", S);
 
+  const SubjectId = localStorage.getItem("selectedSubjectId");
+  const Test = localStorage.getItem("selectedTestName");
+
+  const [totalMinutes, setTotalMinutes] = useState(() => {
+    const savedMinutes = localStorage.getItem("totalMinutes");
+    return savedMinutes ? parseInt(savedMinutes, 10) : 10;
+  });
+
   const handleSubmit = async () => {
     try {
-      console.log("Questions:", questions);
-      console.log("Answered Questions:", answeredQuestions);
-
       const user = JSON.parse(localStorage.getItem("user"));
+      if (!user) {
+        alert("User data not found. Please log in again.");
+        return;
+      }
 
-      // Extract the test_name and exam_id from the payload
-      const test_name = questions[0]?.test_name || "Default Test Name"; // Assuming all questions have the same test_name
-      const exam_id = questions[0]?.id || "default_exam_id"; // Use the first question's ID as exam_id (or adjust as needed)
+      const test_name = (Test || "Default Test Name").replace(/ /g, " ");
+      const exam_id = (SubjectId || "default_exam_id").replace(/ /g, " ");
+      const student_id = user.id;
 
-      // Extract additional parameters
-      const student_id = user.id; // Assuming the student_id is stored in user object
-      const start_time = new Date().toISOString(); // Current time, adjust based on your needs
-      const end_time = new Date().toISOString(); // Set this based on your exam timing logic
+      // Retrieve the formatted start time from localStorage
+      const start_time = localStorage.getItem("start_time") || "N/A";
 
-      // Prepare payload
-      const payload = questions.map((question, index) => {
-        const answer = answeredQuestions[index] || {}; // Ensure the answer exists
-        console.log("Answer Object at Index", index, answer);
+      // Record end time before submission
+      const end_time = new Intl.DateTimeFormat("en-GB", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      })
+        .format(new Date())
+        .replace(", ", "_")
+        .replace(/\//g, "-");
 
-        // Use the selected text-based answer or image-based answer
-        return {
-          selected_answer: answeredQuestions[index] || null, // Text-based answer
-          selected_answer_2: answer.image || null, // Image-based answer
-          student: user.id, // Extract student user ID
-          question: question.id, // Question ID
-        };
-      });
+      const storedData =
+        JSON.parse(localStorage.getItem("submittedData")) || {};
+      const payload = Object.values(storedData).flat();
 
-      console.log("Submitting payload:", payload);
+      // Add start_time and end_time to each item in the payload
+      const enhancedPayload = payload.map((item) => ({
+        ...item,
+        start_time: start_time,
+        end_time: end_time,
+      }));
 
-      // Construct query parameters
-      const queryParams = new URLSearchParams({
-        student_id,
-        test_name,
-        start_time,
-        end_time,
-        exam_id,
-      }).toString();
+      // Build query parameters
+      const queryParams = `student_id=${student_id}&test_name=${test_name}&start_time=${start_time}&exam_id=${exam_id}&end_time=${end_time}`;
 
-      // Send POST request to the server with query parameters
+      // Submit the data to the server in one request
       const response = await fetch(
         `https://mockexam.pythonanywhere.com/submit-answers/?${queryParams}`,
         {
           method: "POST",
           headers: {
-            Authorization: `Token ${user.token}`, // Use token for authentication
+            Authorization: `Token ${user.token}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(payload), // Convert payload to JSON string
+          body: JSON.stringify(enhancedPayload), // Send the enhanced payload
         }
       );
 
       if (response.ok) {
-        console.log("Test submitted successfully!");
-        const result = await response.json(); // Parse response if needed
-        console.log("Server response:", result);
+        const result = await response.json();
+        console.log("Submission successful", result);
 
-        // Redirect to score page
-        window.location.href = "/score";
+        // Store the result in localStorage
+        localStorage.setItem("submissionResult", JSON.stringify(result));
+
+        alert("Submission successful!");
       } else {
         const errorDetails = await response.json();
-        console.error(
-          "Failed to submit answers:",
-          response.statusText,
-          errorDetails
-        );
         alert(
           `Submission failed: ${response.statusText}. Please try again later.`
         );
@@ -360,6 +367,13 @@ const QuestionNavigation = ({
     } catch (error) {
       console.error("Error submitting answers:", error);
       alert("An unexpected error occurred. Please try again.");
+    }
+  };
+
+  // Function that mimics the button click behavior (including the alert)
+  const handleAutoSubmit = () => {
+    if (window.confirm("Are you sure you want to submit the test?")) {
+      handleSubmit();
     }
   };
 
@@ -457,12 +471,11 @@ const QuestionNavigation = ({
         )}
       </div>
       {/* Submit Button */}
+      <div className="hidden">
+        <Timer totalMinutes={totalMinutes} onTimeUp={handleAutoSubmit} />
+      </div>
       <button
-        onClick={() => {
-          if (window.confirm("Are you sure you want to submit the test?")) {
-            handleSubmit(); // Submit the test and navigate
-          }
-        }}
+        onClick={handleAutoSubmit}
         className="w-full bg-green-500 text-white py-3 rounded-md font-semibold hover:bg-green-600 transition duration-300 shadow-sm mt-4"
       >
         Submit Test

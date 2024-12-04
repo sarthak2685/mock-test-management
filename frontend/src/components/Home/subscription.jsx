@@ -1,6 +1,8 @@
 import React from "react";
 import { FaCheckCircle, FaTimesCircle } from "react-icons/fa";
 import { AiOutlineQuestionCircle } from "react-icons/ai";
+import { Link } from "react-router-dom";
+
 
 function Subscription() {
   const plans = [
@@ -76,12 +78,14 @@ function Subscription() {
                   </li>
                 ))}
               </ul>
+              <Link to="/subscriptionform">
               <button
                 className="text-white bg-[#007bff] hover:bg-blue-700 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
                 aria-label={`Subscribe to the ${plan.name}`}
               >
                 Subscribe Now
               </button>
+              </Link>
             </article>
           ))}
         </div>

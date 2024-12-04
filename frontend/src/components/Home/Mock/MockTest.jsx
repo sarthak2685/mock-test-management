@@ -13,7 +13,7 @@ const MockTest = () => {
     const fetchMockTests = async () => {
       try {
         const response = await fetch(
-          `${config.apiUrl}/get-single-exam-details/?id=${SubjectId}`
+          `${config.apiUrl}/get-single-exam-details/?exam_id=${SubjectId}`
         );
         if (!response.ok) {
           throw new Error("Failed to fetch mock test data");
@@ -21,22 +21,32 @@ const MockTest = () => {
         const result = await response.json();
         console.log("Response JSON:", result);
 
-        const groupedTests = Object.entries(result.data || {}).map(
-          ([testName, testDetails]) => {
-            const examDuration =
-              testDetails.questions[0]?.exam_duration || "N/A";
-            const subjects = testDetails.subjects
-              .map((subject) => subject.name)
+        // Extract exam_domain separately
+        const examDomain = result.data.exam_domain || "N/A";
+
+        // Process mock test data excluding "exam_domain"
+        const groupedTests = Object.entries(result.data || {})
+          .filter(([key]) => key !== "exam_domain") // Exclude "exam_domain"
+          .map(([testName, testDetails]) => {
+            const subjects = Object.keys(testDetails)
+              .filter(
+                (key) =>
+                  key !== "exam_duration" &&
+                  key !== "total_marks" &&
+                  key !== "total_questions"
+              )
               .join(", ");
+            console.log("test", testName);
 
             return {
+              exam_domain: examDomain, // Include the global exam domain
               test_name: testName,
               subjects: subjects || "N/A",
-              total_questions: testDetails.total_number_of_questions || 0,
-              exam_duration: examDuration,
+              total_questions: testDetails.total_questions || 0,
+              exam_duration: testDetails.exam_duration || "N/A",
             };
-          }
-        );
+          });
+
         setMockTestData(groupedTests);
       } catch (error) {
         console.error("Error fetching mock test data:", error);
@@ -45,6 +55,13 @@ const MockTest = () => {
 
     fetchMockTests();
   }, [SubjectId]);
+
+  // Function to handle storing the test name when a card is clicked
+  const handleCardClick = (testName) => {
+    // Store the test name in localStorage
+    localStorage.setItem("selectedTestName", testName);
+    console.log(`Test name '${testName}' saved to localStorage`);
+  };
 
   return (
     <div className="relative bg-gray-100 min-h-screen overflow-hidden">
@@ -61,8 +78,9 @@ const MockTest = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
           {mockTestData.map((test, index) => (
             <div
-              key={test.id}
+              key={test.test_name} // Ensure unique key
               className="relative p-8 rounded-2xl shadow-lg transform transition duration-500 ease-in-out hover:scale-105 hover:rotate-1 hover:-translate-y-1 hover:shadow-2xl card-3d"
+              onClick={() => handleCardClick(test.test_name)} // Store test name on click
             >
               <div className="relative z-20 flex flex-col justify-between h-full p-4">
                 <div className="mb-6">
