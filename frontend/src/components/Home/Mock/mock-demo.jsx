@@ -6,6 +6,7 @@ import MobileQuizLayout from "./MobileQuizLayout";
 import config from "../../../config";
 import { FaBrain, FaBook, FaCalculator, FaLanguage } from "react-icons/fa"; // Icons for sections
 import Timer from "../Mock/Timer";
+import UserProfile from "../Mock/UserProfile";
 
 const MockDemo = () => {
   const user = {
@@ -27,43 +28,43 @@ const MockDemo = () => {
   const storedTestName = localStorage.getItem("selectedTestName");
   console.log("hii", storedTestName); // Logs the last stored test name
 
-  const UserProfile = () => {
-    const [user, setUser] = useState({ name: "Unknown User", role: "Student" }); // Default user state with name and role
-    useEffect(() => {
-      // Fetch user details from local storage
-      const storedData = localStorage.getItem("user"); // Assuming JSON object is stored under this key
-      if (storedData) {
-        try {
-          const parsedData = JSON.parse(storedData); // Parse the JSON string
-          if (parsedData && parsedData.name) {
-            setUser({ name: parsedData.name, role: parsedData.type }); // Set user name and role (assuming type is role)
-          }
-        } catch (error) {
-          console.error("Error parsing stored user data:", error);
-          setUser({ name: "Unknown User", role: "Student" }); // Fallback in case of error
-        }
-      }
-    }, []); // Runs once when the component mounts
+  // const UserProfile = () => {
+  //   const [user, setUser] = useState({ name: "Unknown User", role: "Student" }); // Default user state with name and role
+  //   useEffect(() => {
+  //     // Fetch user details from local storage
+  //     const storedData = localStorage.getItem("user"); // Assuming JSON object is stored under this key
+  //     if (storedData) {
+  //       try {
+  //         const parsedData = JSON.parse(storedData); // Parse the JSON string
+  //         if (parsedData && parsedData.name) {
+  //           setUser({ name: parsedData.name, role: parsedData.type }); // Set user name and role (assuming type is role)
+  //         }
+  //       } catch (error) {
+  //         console.error("Error parsing stored user data:", error);
+  //         setUser({ name: "Unknown User", role: "Student" }); // Fallback in case of error
+  //       }
+  //     }
+  //   }, []); // Runs once when the component mounts
 
-    return (
-      <div className="flex items-center space-x-3 px-2 bg-gray-50 rounded-lg shadow-sm">
-        {/* Render initials based on user name */}
-        <div className="w-12 h-12 p-2 rounded-full bg-blue-500 text-white flex items-center justify-center">
-          <span className="text-lg font-semibold">
-            {user.name ? user.name.charAt(0).toUpperCase() : "U"}
-          </span>{" "}
-          {/* Initial of the name */}
-        </div>
+  //   return (
+  //     <div className="flex items-center space-x-3 px-2 bg-gray-50 rounded-lg shadow-sm">
+  //       {/* Render initials based on user name */}
+  //       <div className="w-12 h-12 p-2 rounded-full bg-blue-500 text-white flex items-center justify-center">
+  //         <span className="text-lg font-semibold">
+  //           {user.name ? user.name.charAt(0).toUpperCase() : "U"}
+  //         </span>{" "}
+  //         {/* Initial of the name */}
+  //       </div>
 
-        <div>
-          <h2 className="text-lg font-semibold text-gray-700">{user.name}</h2>{" "}
-          {/* Display the user's name */}
-          <p className="text-sm text-gray-500">{user.role}</p>{" "}
-          {/* Display the user's role */}
-        </div>
-      </div>
-    );
-  };
+  //       <div>
+  //         <h2 className="text-lg font-semibold text-gray-700">{user.name}</h2>{" "}
+  //         {/* Display the user's name */}
+  //         <p className="text-sm text-gray-500">{user.role}</p>{" "}
+  //         {/* Display the user's role */}
+  //       </div>
+  //     </div>
+  //   );
+  // };
 
   const [answeredQuestions, setAnsweredQuestions] = useState(
     quizData.map(() => [])
@@ -156,7 +157,6 @@ const MockDemo = () => {
 
       const student_id = user.id;
       const sectionName = currentSection?.subject || "Default Section";
-      const questionId = currentQuestion.id;
 
       // Ensure the section exists in stored data
       if (!storedData[sectionName]) {
@@ -164,7 +164,7 @@ const MockDemo = () => {
       }
 
       // Add/update the specific question's selected answer within the section
-      storedData[sectionName][questionId] = {
+      storedData[sectionName] = {
         question: currentQuestion.id,
         selected_answer: userAnswer || "No Answer Provided",
         selected_answer_2: userAnswer.image || null,
@@ -184,6 +184,12 @@ const MockDemo = () => {
         // Move to the next section and reset question index
         setCurrentSectionIndex(currentSectionIndex + 1);
         setCurrentQuestionIndex(0);
+
+        // Update the selected subject for the new section
+        const nextSubject =
+          mockTestData[currentSectionIndex + 1]?.questions[0]?.subject ||
+          "Unknown Subject";
+        setSelectedSubject(nextSubject); // Update the selected subject dynamically
       } else {
         // End of all sections and questions
         console.log("All sections and questions completed.");
@@ -263,7 +269,7 @@ const MockDemo = () => {
                   no_of_questions: subjectDetails.no_of_questions,
                   questions: subjectDetails.questions.map(
                     (question, index) => ({
-                      id: index + 1,
+                      id: question.id,
                       question: question.question,
                       marks: question.positive_marks,
                       negativeMarks: question.negative_marks,
@@ -322,13 +328,17 @@ const MockDemo = () => {
   console.log("Filtered Data", filteredSections);
 
   useEffect(() => {
-    // When the component mounts, set the first section to blue
-    if (mockTestData.length > 0 && mockTestData[0]?.questions.length > 0) {
-      const firstSubject =
-        mockTestData[0].questions[0]?.subject || "Unknown Subject";
-      setSelectedSubject(firstSubject); // Set the selected subject
+    // Automatically set the active subject when the section index changes
+    if (
+      mockTestData.length > 0 &&
+      mockTestData[currentSectionIndex]?.questions.length > 0
+    ) {
+      const activeSubject =
+        mockTestData[currentSectionIndex]?.questions[0]?.subject ||
+        "Unknown Subject";
+      setSelectedSubject(activeSubject); // Set the selected subject dynamically
     }
-  }, [mockTestData]);
+  }, [mockTestData, currentSectionIndex]); // Re-run the effect when the section index changes
 
   return isMobile ? (
     <MobileQuizLayout

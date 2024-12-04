@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { RiInformation2Line } from "react-icons/ri";
+import Timer from "./Timer"; // Assuming Timer is a separate component
 
 const InstructionsModal = ({ isVisible, onClose }) => {
   const [optionalSubject, setOptionalSubject] = useState(
@@ -288,6 +289,11 @@ const QuestionNavigation = ({
   const SubjectId = localStorage.getItem("selectedSubjectId");
   const Test = localStorage.getItem("selectedTestName");
 
+  const [totalMinutes, setTotalMinutes] = useState(() => {
+    const savedMinutes = localStorage.getItem("totalMinutes");
+    return savedMinutes ? parseInt(savedMinutes, 10) : 10;
+  });
+
   const handleSubmit = async () => {
     try {
       const user = JSON.parse(localStorage.getItem("user"));
@@ -296,44 +302,42 @@ const QuestionNavigation = ({
         return;
       }
 
-      const test_name = (Test || "Default Test Name").replace(/ /g, "_");
-      const exam_id = (SubjectId || "default_exam_id").replace(/ /g, "_");
+      const test_name = (Test || "Default Test Name").replace(/ /g, " ");
+      const exam_id = (SubjectId || "default_exam_id").replace(/ /g, " ");
       const student_id = user.id;
 
-      const formatDateTime = (date) => {
-        return new Intl.DateTimeFormat("en-GB", {
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-          hour12: false,
-        })
-          .format(date)
-          .replace(", ", "_")
-          .replace(/\//g, "-");
-      };
+      // Retrieve the formatted start time from localStorage
+      const start_time = localStorage.getItem("start_time") || "N/A";
 
-      const start_time = formatDateTime(new Date());
+      // Record end time before submission
+      const end_time = new Intl.DateTimeFormat("en-GB", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false,
+      })
+        .format(new Date())
+        .replace(", ", "_")
+        .replace(/\//g, "-");
 
-      // Retrieve submitted data from localStorage
       const storedData =
         JSON.parse(localStorage.getItem("submittedData")) || {};
-      console.log("Retrieved LocalStorage Data:", storedData);
+      const payload = Object.values(storedData).flat();
 
-      // Format the data for submission
-      const payload = Object.entries(storedData).map(
-        ([section, questions]) => ({
-          section_name: section,
-          questions: Object.values(questions), // Convert question objects to an array
-        })
-      );
+      // Add start_time and end_time to each item in the payload
+      const enhancedPayload = payload.map((item) => ({
+        ...item,
+        start_time: start_time,
+        end_time: end_time,
+      }));
 
-      console.log("Final Payload:", payload);
+      // Build query parameters
+      const queryParams = `student_id=${student_id}&test_name=${test_name}&start_time=${start_time}&exam_id=${exam_id}&end_time=${end_time}`;
 
-      const queryParams = `student_id=${student_id}&test_name=${test_name}&start_time=${start_time}&exam_id=${exam_id}`;
-
+      // Submit the data to the server in one request
       const response = await fetch(
         `https://mockexam.pythonanywhere.com/submit-answers/?${queryParams}`,
         {
@@ -342,37 +346,20 @@ const QuestionNavigation = ({
             Authorization: `Token ${user.token}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(payload),
+          body: JSON.stringify(enhancedPayload), // Send the enhanced payload
         }
       );
 
-      const end_time = formatDateTime(new Date());
-
       if (response.ok) {
-        console.log("Test submitted successfully!");
         const result = await response.json();
-        console.log("Server response:", result);
+        console.log("Submission successful", result);
 
-        const updatedQueryParams = `${queryParams}&end_time=${end_time}`;
+        // Store the result in localStorage
+        localStorage.setItem("submissionResult", JSON.stringify(result));
 
-        await fetch(
-          `https://mockexam.pythonanywhere.com/submit-answers/?${updatedQueryParams}`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Token ${user.token}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(payload),
-          }
-        );
+        alert("Submission successful!");
       } else {
         const errorDetails = await response.json();
-        console.error(
-          "Failed to submit answers:",
-          response.statusText,
-          errorDetails
-        );
         alert(
           `Submission failed: ${response.statusText}. Please try again later.`
         );
@@ -380,6 +367,13 @@ const QuestionNavigation = ({
     } catch (error) {
       console.error("Error submitting answers:", error);
       alert("An unexpected error occurred. Please try again.");
+    }
+  };
+
+  // Function that mimics the button click behavior (including the alert)
+  const handleAutoSubmit = () => {
+    if (window.confirm("Are you sure you want to submit the test?")) {
+      handleSubmit();
     }
   };
 
@@ -477,15 +471,11 @@ const QuestionNavigation = ({
         )}
       </div>
       {/* Submit Button */}
+      <div className="hidden">
+        <Timer totalMinutes={totalMinutes} onTimeUp={handleAutoSubmit} />
+      </div>
       <button
-        onClick={() => {
-          if (window.confirm("Are you sure you want to submit the test?")) {
-            handleSubmit();
-            if (onSubmit) {
-              onSubmit(); // Trigger onSubmit prop if provided
-            }
-          }
-        }}
+        onClick={handleAutoSubmit}
         className="w-full bg-green-500 text-white py-3 rounded-md font-semibold hover:bg-green-600 transition duration-300 shadow-sm mt-4"
       >
         Submit Test
