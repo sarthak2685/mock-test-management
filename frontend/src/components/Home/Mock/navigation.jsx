@@ -360,10 +360,13 @@ const QuestionNavigation = ({
         const result = await response.json();
         console.log("Submission successful", result);
 
-        // Store the result in localStorage
-        localStorage.setItem("submissionResult", JSON.stringify(result));
+        // // Store the result in localStorage
+        // localStorage.setItem("submissionResult", JSON.stringify(result));
 
         alert("Submission successful!");
+
+        // Redirect to score page
+        window.location.href = "/score";
       } else {
         const errorDetails = await response.json();
         alert(
