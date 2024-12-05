@@ -4,7 +4,7 @@ import { quizData } from "../Mock/quiz";
 import QuestionNavigation from "../Mock/navigation";
 import MobileQuizLayout from "./MobileQuizLayout";
 import config from "../../../config";
-import { FaBrain, FaBook, FaCalculator, FaLanguage } from "react-icons/fa"; // Icons for sections
+// import { FaBrain, FaBook, FaCalculator, FaLanguage } from "react-icons/fa"; // Icons for sections
 import Timer from "../Mock/Timer";
 import UserProfile from "../Mock/UserProfile";
 
@@ -160,16 +160,31 @@ const MockDemo = () => {
 
       // Ensure the section exists in stored data
       if (!storedData[sectionName]) {
-        storedData[sectionName] = {};
+        storedData[sectionName] = {}; // Initialize section if not exists
       }
 
-      // Add/update the specific question's selected answer within the section
-      storedData[sectionName] = {
-        question: currentQuestion.id,
-        selected_answer: userAnswer || "No Answer Provided",
-        selected_answer_2: userAnswer.image || null,
-        student: student_id,
-      };
+      // If the section already has answers, accumulate them; otherwise, initialize the section with an empty object
+      if (!storedData[sectionName].questions) {
+        storedData[sectionName].questions = {};
+      }
+
+      // Ensure questions is always an array
+      if (!Array.isArray(storedData[sectionName].questions)) {
+        storedData[sectionName].questions = [];
+      }
+
+      // Update the selected answer for the current question
+      storedData[sectionName].questions = [
+        ...storedData[sectionName].questions.filter(
+          (q) => q.question !== currentQuestion.id
+        ), // Remove the old entry with the same question ID (if exists)
+        {
+          question: currentQuestion.id,
+          selected_answer: userAnswer || "No Answer Provided", // If userAnswer is an object, use text
+          selected_answer_2: userAnswer.image || null,
+          student: student_id,
+        },
+      ];
 
       // Save the updated structure to localStorage
       localStorage.setItem("submittedData", JSON.stringify(storedData));
@@ -259,7 +274,7 @@ const MockDemo = () => {
 
               const groupedTests = Object.entries(testDetails)
                 .filter(
-                  ([key, value]) =>
+                  ([key]) =>
                     key !== "exam_duration" &&
                     key !== "total_marks" &&
                     key !== "total_questions"
@@ -293,7 +308,21 @@ const MockDemo = () => {
               console.log("Grouped Test Data:", groupedTests);
               setMockTestData(groupedTests);
 
+              // Set the first subject as the selected subject
               setSelectedSubject(groupedTests[0]?.subject || "");
+
+              // Store unique subjects in local storage
+              const uniqueSubjects = [
+                ...new Set(groupedTests.map((test) => test.subject)),
+              ];
+
+              console.log("Unique Subjects:", uniqueSubjects);
+
+              // Save unique subjects to localStorage
+              localStorage.setItem(
+                "uniqueSubjects",
+                JSON.stringify(uniqueSubjects)
+              );
             } else {
               console.error("Mock test data is missing");
             }
@@ -320,6 +349,9 @@ const MockDemo = () => {
     console.log("Updated Timer Duration:", timerDuration);
     console.log("Updated mockTestData:", mockTestData);
   }, [timerDuration, mockTestData]);
+
+  localStorage.setItem("timerDuration", timerDuration);
+  // localStorage.setItem("mockTestData", mockTestData);
 
   const filteredSections = mockTestData.filter((section) =>
     section.questions.some((q) => q.subject === selectedSubject)
