@@ -44,9 +44,10 @@ const Login = () => {
         // Save the object in localStorage
         localStorage.setItem("user", JSON.stringify(userData));
 
-        // Clear the submittedData from localStorage
+        // Clear the Data from localStorage
         localStorage.removeItem("submittedData");
-        localStorage.removeItem("totalMinutes");
+        localStorage.removeItem("selectedExamDuration");
+        localStorage.removeItem("timerDuration");
         localStorage.removeItem("start_time");
         localStorage.removeItem("submissionResult");
 

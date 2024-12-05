@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { RiInformation2Line } from "react-icons/ri";
-import Timer from "./Timer"; // Assuming Timer is a separate component
+import Timer from "../Mock/Timer"; // Assuming Timer is a separate component
 
 const InstructionsModal = ({ isVisible, onClose }) => {
   const [optionalSubject, setOptionalSubject] = useState(
@@ -289,10 +289,16 @@ const QuestionNavigation = ({
   const SubjectId = localStorage.getItem("selectedSubjectId");
   const Test = localStorage.getItem("selectedTestName");
 
-  const [totalMinutes, setTotalMinutes] = useState(() => {
-    const savedMinutes = localStorage.getItem("totalMinutes");
-    return savedMinutes ? parseInt(savedMinutes, 10) : 10;
-  });
+  // const [totalMinutes, setTotalMinutes] = useState(() => {
+  //   const savedMinutes = localStorage.getItem("totalMinutes");
+  //   console.log("timeee", savedMinutes);
+  //   return savedMinutes ? parseInt(savedMinutes, 10) : 10;
+  // });
+
+  // console.log("Time", totalMinutes);
+  const savedMinutes = localStorage.getItem("selectedExamDuration");
+
+  console.log("Tim3333e", savedMinutes);
 
   const handleSubmit = async () => {
     try {
@@ -330,8 +336,8 @@ const QuestionNavigation = ({
       // Add start_time and end_time to each item in the payload
       const enhancedPayload = payload.map((item) => ({
         ...item,
-        start_time: start_time,
-        end_time: end_time,
+        // start_time: start_time,
+        // end_time: end_time,
       }));
 
       // Build query parameters
@@ -472,7 +478,7 @@ const QuestionNavigation = ({
       </div>
       {/* Submit Button */}
       <div className="hidden">
-        <Timer totalMinutes={totalMinutes} onTimeUp={handleAutoSubmit} />
+        <Timer totalMinutes={savedMinutes} onTimeUp={handleAutoSubmit} />
       </div>
       <button
         onClick={handleAutoSubmit}

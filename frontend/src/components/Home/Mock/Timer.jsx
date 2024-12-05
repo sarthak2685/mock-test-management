@@ -5,9 +5,10 @@ const Timer = ({ totalMinutes = 10, onTimeUp }) => {
   const [timeLeft, setTimeLeft] = useState(totalMinutes * 60);
 
   // Save totalMinutes to localStorage on component mount
-  useEffect(() => {
-    localStorage.setItem("totalMinutes", totalMinutes);
-  }, [totalMinutes]);
+  //   useEffect(() => {
+  //     localStorage.setItem("totalMinutes", totalMinutes);
+  //     console.log("Time 1", totalMinutes);
+  //   }, [totalMinutes]);
 
   // Timer countdown logic
   useEffect(() => {
