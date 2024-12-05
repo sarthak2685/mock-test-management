@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import { FaBars, FaTimes, FaChevronDown } from "react-icons/fa";
 import QuestionNavigation from "../Mock/navigation";
 import Timer from "./Timer";
-import config from "../../../config";
+// import config from "../../../config";
+import UserProfile from "../Mock/UserProfile";
 
 const MobileQuizLayout = ({
   currentSectionIndex,
@@ -27,11 +28,11 @@ const MobileQuizLayout = ({
   const [showNavigation, setShowNavigation] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [user, setUser] = useState({ id: "Unknown User", role: "Student" });
-  const S = JSON.parse(localStorage.getItem("user"));
-  const token = S.token;
-  const [selectedSubject, setSelectedSubject] = useState(
-    localStorage.getItem("selectedOptionalSubject") || ""
-  );
+  // const S = JSON.parse(localStorage.getItem("user"));
+  // const token = S.token;
+  // const [selectedSubject, setSelectedSubject] = useState(
+  //   localStorage.getItem("selectedOptionalSubject") || ""
+  // );
 
   // Function to close dropdown on outside click
   useEffect(() => {
@@ -45,78 +46,92 @@ const MobileQuizLayout = ({
   }, [dropdownOpen]);
 
   // UserProfile Component
-  const UserProfile = () => {
-    const [user, setUser] = useState({ name: "Unknown User", role: "Student" }); // Default state with name and role
+  // const UserProfile = () => {
+  //   const [user, setUser] = useState({ name: "Unknown User", role: "Student" }); // Default state with name and role
 
-    useEffect(() => {
-      // Fetch user details from local storage
-      const storedData = localStorage.getItem("user"); // Assuming JSON object is stored under this key
-      if (storedData) {
-        try {
-          const parsedData = JSON.parse(storedData); // Parse the JSON string
-          if (parsedData) {
-            // Check for 'name', if not use 'id'
-            setUser({
-              name: parsedData.name || parsedData.user || "Unknown User", // Use name if available, else fallback to user id
-              role: parsedData.type || "Student", // Assuming 'type' is role (e.g., "student")
-            });
-          }
-        } catch (error) {
-          console.error("Error parsing stored user data:", error);
-          setUser({ name: "Unknown User", role: "Student" }); // Fallback in case of error
-        }
-      }
-    }, []); // Runs once when the component mounts
+  //   useEffect(() => {
+  //     // Fetch user details from local storage
+  //     const storedData = localStorage.getItem("user"); // Assuming JSON object is stored under this key
+  //     if (storedData) {
+  //       try {
+  //         const parsedData = JSON.parse(storedData); // Parse the JSON string
+  //         if (parsedData) {
+  //           // Check for 'name', if not use 'id'
+  //           setUser({
+  //             name: parsedData.name || parsedData.user || "Unknown User", // Use name if available, else fallback to user id
+  //             role: parsedData.type || "Student", // Assuming 'type' is role (e.g., "student")
+  //           });
+  //         }
+  //       } catch (error) {
+  //         console.error("Error parsing stored user data:", error);
+  //         setUser({ name: "Unknown User", role: "Student" }); // Fallback in case of error
+  //       }
+  //     }
+  //   }, []); // Runs once when the component mounts
 
-    return (
-      <div className="flex items-center space-x-3 px-2 bg-gray-50 rounded-lg shadow-sm">
-        {/* Render initials based on user name or id */}
-        <div className="w-12 h-12 p-2 rounded-full bg-blue-500 text-white flex items-center justify-center">
-          <span className="text-lg font-semibold">
-            {user.name
-              ? user.name.charAt(0).toUpperCase()
-              : user.id.charAt(0).toUpperCase()}{" "}
-            {/* Initial of name or id */}
-          </span>
-        </div>
+  //   return (
+  //     <div className="flex items-center space-x-3 px-2 bg-gray-50 rounded-lg shadow-sm">
+  //       {/* Render initials based on user name or id */}
+  //       <div className="w-12 h-12 p-2 rounded-full bg-blue-500 text-white flex items-center justify-center">
+  //         <span className="text-lg font-semibold">
+  //           {user.name
+  //             ? user.name.charAt(0).toUpperCase()
+  //             : user.id.charAt(0).toUpperCase()}{" "}
+  //           {/* Initial of name or id */}
+  //         </span>
+  //       </div>
 
-        <div>
-          <h2 className="text-lg font-semibold text-gray-700">{user.name}</h2>{" "}
-          {/* Display the user's name */}
-          <p className="text-sm text-gray-500">{user.role}</p>{" "}
-          {/* Display the user's role */}
-        </div>
-      </div>
-    );
-  };
+  //       <div>
+  //         <h2 className="text-lg font-semibold text-gray-700">{user.name}</h2>{" "}
+  //         {/* Display the user's name */}
+  //         <p className="text-sm text-gray-500">{user.role}</p>{" "}
+  //         {/* Display the user's role */}
+  //       </div>
+  //     </div>
+  //   );
+  // };
 
   // const [mockTestData, setMockTestData] = useState([]);
   const [timerDuration, setTimerDuration] = useState(0); // State for timer
-  const SubjectId = localStorage.getItem("selectedSubjectId");
+  // const SubjectId = localStorage.getItem("selectedSubjectId");
 
-  // Function to handle filtered data (to display only relevant sections)
-  const filteredQuizData = quizData.filter((section) => {
-    if (selectedSubject) {
-      return (
-        section.section === "General Intelligence and Reasoning" ||
-        section.section === "General Awareness" ||
-        section.section === "Quantitative Aptitude" ||
-        section.section === selectedSubject
-      );
-    }
-    return true;
-  });
+  // // Function to handle filtered data (to display only relevant sections)
+  // const filteredQuizData = quizData.filter((section) => {
+  //   if (selectedSubject) {
+  //     return (
+  //       section.section === "General Intelligence and Reasoning" ||
+  //       section.section === "General Awareness" ||
+  //       section.section === "Quantitative Aptitude" ||
+  //       section.section === selectedSubject
+  //     );
+  //   }
+  //   return true;
+  // });
 
-  console.log("Data", filteredQuizData);
+  // console.log("Data", filteredQuizData);
 
   console.log("Section", currentSection);
 
-  // Check if mockTestData and subjects exist and have data
-  const subjects = Array.isArray(currentQuestion?.subject)
-    ? currentQuestion?.subject
-    : [currentQuestion?.subject || "No Subject"]; // Ensure subjects is always an array
+  // console.log("Duration", localStorage.getItem("timerDuration", timerDuration));
 
-  console.log("Subjects from Question:", subjects);
+  // Check if mockTestData and subjects exist and have data
+  // const subjects = Array.isArray(currentQuestion?.subject)
+  //   ? currentQuestion?.subject
+  //   : [currentQuestion?.subject || "No Subject"]; // Ensure subjects is always an array
+
+  // console.log("Subjects from Question:", subjects);
+
+  // Retrieve stored subjects from local storage
+  const storedSubjects =
+    JSON.parse(localStorage.getItem("uniqueSubjects")) || [];
+
+  // Ensure subjects are always an array
+  const subjects =
+    Array.isArray(storedSubjects) && storedSubjects.length > 0
+      ? storedSubjects
+      : [currentQuestion?.subject || "No Subject"];
+
+  console.log("Subjects:", subjects);
 
   return (
     <div className="flex flex-col bg-gray-100 min-h-screen relative">
@@ -209,7 +224,9 @@ const MobileQuizLayout = ({
             {mockTestData.length > 0 && (
               <Timer
                 className="col-span-1 items-center"
-                totalMinutes={Number(mockTestData[0]?.exam_duration) || 0}
+                totalMinutes={
+                  localStorage.getItem("timerDuration", timerDuration) || 0
+                }
               />
             )}
           </div>

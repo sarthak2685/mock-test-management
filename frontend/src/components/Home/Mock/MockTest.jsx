@@ -57,10 +57,13 @@ const MockTest = () => {
   }, [SubjectId]);
 
   // Function to handle storing the test name when a card is clicked
-  const handleCardClick = (testName) => {
-    // Store the test name in localStorage
+  const handleCardClick = (testName, examDuration) => {
+    // Store both test name and exam duration in localStorage
     localStorage.setItem("selectedTestName", testName);
-    console.log(`Test name '${testName}' saved to localStorage`);
+    localStorage.setItem("selectedExamDuration", examDuration);
+    console.log(
+      `Test name '${testName}' and Exam Duration '${examDuration}' saved to localStorage`
+    );
   };
 
   return (
@@ -80,7 +83,9 @@ const MockTest = () => {
             <div
               key={test.test_name} // Ensure unique key
               className="relative p-8 rounded-2xl shadow-lg transform transition duration-500 ease-in-out hover:scale-105 hover:rotate-1 hover:-translate-y-1 hover:shadow-2xl card-3d"
-              onClick={() => handleCardClick(test.test_name)} // Store test name on click
+              onClick={() =>
+                handleCardClick(test.test_name, test.exam_duration)
+              }
             >
               <div className="relative z-20 flex flex-col justify-between h-full p-4">
                 <div className="mb-6">
