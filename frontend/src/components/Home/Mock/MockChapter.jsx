@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useMediaQuery } from "react-responsive";
-import { quizData } from "../Mock/quiz";
+// import { quizData } from "../Mock/quiz";
 import ChapterNavigation from "../Mock/ChapterNavigation";
-import MobileQuizLayout from "./MobileQuizLayout";
+import ChapterMobile from "../Mock/ChapterMobile";
 import config from "../../../config";
-import { FaBrain, FaBook, FaCalculator, FaLanguage } from "react-icons/fa"; // Icons for sections
+// import { FaBrain, FaBook, FaCalculator, FaLanguage } from "react-icons/fa"; // Icons for sections
 import Timer from "../Mock/Timer";
+import UserProfile from "../Mock/UserProfile";
 
 const MockChapter = () => {
   const user = {
@@ -24,151 +25,76 @@ const MockChapter = () => {
   const S = JSON.parse(localStorage.getItem("user"));
   const token = S.token;
 
-  const sectionIcons = [
-    <FaBrain />,
-    <FaBook />,
-    <FaCalculator />,
-    <FaLanguage />,
-    <FaLanguage />,
-  ];
+  // const sectionIcons = [
+  //   <FaBrain />,
+  //   <FaBook />,
+  //   <FaCalculator />,
+  //   <FaLanguage />,
+  //   <FaLanguage />,
+  // ];
 
-  const UserProfile = () => {
-    const [user, setUser] = useState({ name: "Unknown User", role: "Student" }); // Default user state with name and role
-    useEffect(() => {
-      // Fetch user details from local storage
-      const storedData = localStorage.getItem("user"); // Assuming JSON object is stored under this key
-      if (storedData) {
-        try {
-          const parsedData = JSON.parse(storedData); // Parse the JSON string
-          if (parsedData && parsedData.name) {
-            setUser({ name: parsedData.name, role: parsedData.type }); // Set user name and role (assuming type is role)
-          }
-        } catch (error) {
-          console.error("Error parsing stored user data:", error);
-          setUser({ name: "Unknown User", role: "Student" }); // Fallback in case of error
-        }
-      }
-    }, []); // Runs once when the component mounts
+  // const UserProfile = () => {
+  //   const [user, setUser] = useState({ name: "Unknown User", role: "Student" }); // Default user state with name and role
+  //   useEffect(() => {
+  //     // Fetch user details from local storage
+  //     const storedData = localStorage.getItem("user"); // Assuming JSON object is stored under this key
+  //     if (storedData) {
+  //       try {
+  //         const parsedData = JSON.parse(storedData); // Parse the JSON string
+  //         if (parsedData && parsedData.name) {
+  //           setUser({ name: parsedData.name, role: parsedData.type }); // Set user name and role (assuming type is role)
+  //         }
+  //       } catch (error) {
+  //         console.error("Error parsing stored user data:", error);
+  //         setUser({ name: "Unknown User", role: "Student" }); // Fallback in case of error
+  //       }
+  //     }
+  //   }, []); // Runs once when the component mounts
 
-    return (
-      <div className="flex items-center space-x-3 px-2 bg-gray-50 rounded-lg shadow-sm">
-        {/* Render initials based on user name */}
-        <div className="w-12 h-12 p-2 rounded-full bg-blue-500 text-white flex items-center justify-center">
-          <span className="text-lg font-semibold">
-            {user.name ? user.name.charAt(0).toUpperCase() : "U"}
-          </span>{" "}
-          {/* Initial of the name */}
-        </div>
+  //   return (
+  //     <div className="flex items-center space-x-3 px-2 bg-gray-50 rounded-lg shadow-sm">
+  //       {/* Render initials based on user name */}
+  //       <div className="w-12 h-12 p-2 rounded-full bg-blue-500 text-white flex items-center justify-center">
+  //         <span className="text-lg font-semibold">
+  //           {user.name ? user.name.charAt(0).toUpperCase() : "U"}
+  //         </span>{" "}
+  //         {/* Initial of the name */}
+  //       </div>
 
-        <div>
-          <h2 className="text-lg font-semibold text-gray-700">{user.name}</h2>{" "}
-          {/* Display the user's name */}
-          <p className="text-sm text-gray-500">{user.role}</p>{" "}
-          {/* Display the user's role */}
-        </div>
-      </div>
-    );
-  };
+  //       <div>
+  //         <h2 className="text-lg font-semibold text-gray-700">{user.name}</h2>{" "}
+  //         {/* Display the user's name */}
+  //         <p className="text-sm text-gray-500">{user.role}</p>{" "}
+  //         {/* Display the user's role */}
+  //       </div>
+  //     </div>
+  //   );
+  // };
 
-  const [answeredQuestions, setAnsweredQuestions] = useState(
-    quizData.map(() => [])
-  );
+  // const [answeredQuestions, setAnsweredQuestions] = useState(
+  //   quizData.map(() => [])
+  // );
 
-  const [markedForReview, setMarkedForReview] = useState(
-    quizData.map(() => [])
-  );
+  // const [markedForReview, setMarkedForReview] = useState(
+  //   quizData.map(() => [])
+  // );
 
-  const [selectedSubject, setSelectedSubject] = useState(
-    localStorage.getItem("selectedOptionalSubject") || ""
-  );
+  // const [selectedSubject, setSelectedSubject] = useState(
+  //   localStorage.getItem("selectedOptionalSubject") || ""
+  // );
 
   // Function to handle filtered data (to display only relevant sections)
-  const filteredQuizData = quizData.filter((section) => {
-    if (selectedSubject) {
-      return (
-        section.section === "General Intelligence and Reasoning" ||
-        section.section === "General Awareness" ||
-        section.section === "Quantitative Aptitude" ||
-        section.section === selectedSubject
-      );
-    }
-    return true;
-  });
-
-  // Ensure that the current section is correctly assigned based on index
-  const currentSection = filteredQuizData[currentSectionIndex] || {};
-  const currentQuestion = currentSection.questions
-    ? currentSection.questions[currentQuestionIndex]
-    : null;
-
-  const isMobile = useMediaQuery({ query: "(max-width: 768px)" });
-
-  useEffect(() => {
-    setSelectedOption(
-      answeredQuestions[currentSectionIndex]?.[currentQuestionIndex]
-    );
-  }, [currentQuestionIndex, currentSectionIndex, answeredQuestions]);
-
-  const handleOptionChange = (option) => {
-    setSelectedOption(option);
-    setAnsweredQuestions((prevAnswers) => {
-      const updatedAnswers = [...prevAnswers];
-      updatedAnswers[currentSectionIndex][currentQuestionIndex] = option;
-      return updatedAnswers;
-    });
-  };
-
-  const handlePrevious = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(currentQuestionIndex - 1);
-    } else if (currentSectionIndex > 0) {
-      setCurrentSectionIndex(currentSectionIndex - 1);
-      setCurrentQuestionIndex(
-        filteredQuizData[currentSectionIndex - 1].questions.length - 1
-      );
-    }
-  };
-
-  const handleNext = () => {
-    if (currentQuestionIndex < currentSection.questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-    } else if (currentSectionIndex < filteredQuizData.length - 1) {
-      setCurrentSectionIndex(currentSectionIndex + 1);
-      setCurrentQuestionIndex(0);
-    }
-  };
-
-  const handleSubmitNext = () => {
-    if (currentQuestionIndex < currentSection.questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-    } else if (currentSectionIndex < filteredQuizData.length - 1) {
-      setCurrentSectionIndex(currentSectionIndex + 1);
-      setCurrentQuestionIndex(0);
-    }
-  };
-
-  const isFirstQuestion = currentQuestionIndex === 0;
-  const isLastQuestion =
-    currentQuestionIndex === currentSection.questions.length - 1;
-  const isLastSection = currentSectionIndex === filteredQuizData.length - 1;
-
-  //   const handleSectionChange = (sectionIndex, subject) => {
-  //     setCurrentSectionIndex(sectionIndex); // Update the active section index
-  //     setSelectedSubject(subject); // Update the active subject
-  //   };
-
-  const handleMarkForReview = () => {
-    setMarkedForReview((prevMarked) => {
-      const updatedMarked = [...prevMarked];
-      if (!updatedMarked[currentSectionIndex].includes(currentQuestionIndex)) {
-        updatedMarked[currentSectionIndex] = [
-          ...updatedMarked[currentSectionIndex],
-          currentQuestionIndex,
-        ];
-      }
-      return updatedMarked;
-    });
-  };
+  // const filteredQuizData = quizData.filter((section) => {
+  //   if (selectedSubject) {
+  //     return (
+  //       section.section === "General Intelligence and Reasoning" ||
+  //       section.section === "General Awareness" ||
+  //       section.section === "Quantitative Aptitude" ||
+  //       section.section === selectedSubject
+  //     );
+  //   }
+  //   return true;
+  // });
 
   const [mockTestData, setMockTestData] = useState([]);
   const [timerDuration, setTimerDuration] = useState(0); // State for timer
@@ -286,8 +212,169 @@ const MockChapter = () => {
     console.log("Updated mockTestData:", mockTestData);
   }, [timerDuration, mockTestData]);
 
+  const [answeredQuestions, setAnsweredQuestions] = useState(
+    mockTestData.map((subject) => new Array(subject.no_of_questions).fill(null)) // Initialize with null (or any default value)
+  );
+
+  const [markedForReview, setMarkedForReview] = useState(
+    mockTestData.map((subject) =>
+      new Array(subject.no_of_questions).fill(false)
+    ) // Initialize with false (not marked for review)
+  );
+
+  // Ensure that the current section is correctly assigned based on index
+  const currentSection = mockTestData[currentSectionIndex] || {};
+  const currentQuestion = currentSection.questions
+    ? currentSection.questions[currentQuestionIndex]
+    : null;
+
+  const isMobile = useMediaQuery({ query: "(max-width: 768px)" });
+
+  useEffect(() => {
+    setSelectedOption(
+      answeredQuestions[currentSectionIndex]?.[currentQuestionIndex]
+    );
+  }, [currentQuestionIndex, currentSectionIndex, answeredQuestions]);
+
+  const handleOptionChange = (option) => {
+    setSelectedOption(option);
+
+    setAnsweredQuestions((prevAnswers) => {
+      // Ensure the previous structure exists
+      const updatedAnswers = [...prevAnswers];
+
+      // Initialize the current section if it doesn't exist
+      if (!updatedAnswers[currentSectionIndex]) {
+        updatedAnswers[currentSectionIndex] = [];
+      }
+
+      // Update the specific question
+      updatedAnswers[currentSectionIndex][currentQuestionIndex] = option;
+
+      return updatedAnswers;
+    });
+  };
+
+  const handlePrevious = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
+    } else if (currentSectionIndex > 0) {
+      setCurrentSectionIndex(currentSectionIndex - 1);
+      setCurrentQuestionIndex(
+        mockTestData[currentSectionIndex - 1].questions.length - 1
+      );
+    }
+  };
+
+  const handleNext = () => {
+    if (currentQuestionIndex < currentSection.questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    } else if (currentSectionIndex < mockTestData.length - 1) {
+      setCurrentSectionIndex(currentSectionIndex + 1);
+      setCurrentQuestionIndex(0);
+    }
+  };
+
+  const handleSubmitNext = () => {
+    try {
+      // Retrieve existing data from localStorage or initialize an empty object
+      const storedData =
+        JSON.parse(localStorage.getItem("submittedData")) || {};
+
+      // Get the current section and question
+      const currentSection = mockTestData[currentSectionIndex];
+      const currentQuestion =
+        currentSection?.questions[currentQuestionIndex] || {};
+
+      // Fetch the user's answer for the current question
+      const userAnswer =
+        answeredQuestions[currentSectionIndex]?.[currentQuestionIndex] || {}; // Fetch based on both section and question index
+      const user = JSON.parse(localStorage.getItem("user"));
+
+      if (!user) {
+        alert("User data not found. Please log in again.");
+        return;
+      }
+
+      const student_id = user.id;
+      const sectionName = currentSection?.test_name || "Default Section";
+
+      // Ensure the section exists in stored data
+      if (!storedData[sectionName]) {
+        storedData[sectionName] = { questions: [] }; // Initialize section with empty questions array
+      }
+
+      // Update the selected answer for the current question
+      storedData[sectionName].questions = [
+        ...storedData[sectionName].questions.filter(
+          (q) => q.question !== currentQuestion.id
+        ), // Remove old entry with the same question ID (if exists)
+        {
+          question: currentQuestion.id,
+          selected_answer: userAnswer || "No Answer Provided", // Use text from userAnswer
+          selected_answer_2: userAnswer.image || null, // Use image if available
+          student: student_id,
+        },
+      ];
+
+      // Save the updated structure to localStorage
+      localStorage.setItem("submittedData", JSON.stringify(storedData));
+
+      console.log("Updated LocalStorage Data:", storedData);
+
+      // Move to the next question or section
+      if (currentQuestionIndex < currentSection.questions.length - 1) {
+        // Move to the next question in the current section
+        setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
+      } else if (currentSectionIndex < mockTestData.length - 1) {
+        // Move to the next section and reset question index
+        setCurrentSectionIndex((prevIndex) => prevIndex + 1);
+        setCurrentQuestionIndex(0);
+
+        // Update the selected subject for the new section
+        // const nextSubject =
+        //   mockTestData[currentSectionIndex + 1]?.test_name || "Unknown Subject";
+        // setSelectedSubject(nextSubject);
+      } else {
+        // End of all sections and questions
+        console.log("All sections and questions completed.");
+      }
+    } catch (error) {
+      console.error("Error in handleSubmitNext:", error);
+      alert("An error occurred while saving your answer. Please try again.");
+    }
+  };
+
+  const isFirstQuestion = currentQuestionIndex === 0;
+  const isLastQuestion =
+    (currentSection?.questions?.length || 0) > 0 &&
+    currentQuestionIndex === (currentSection?.questions?.length || 0) - 1;
+  const isLastSection =
+    (mockTestData?.length || 0) > 0 &&
+    currentSectionIndex === (mockTestData?.length || 0) - 1;
+
+  //   const handleSectionChange = (sectionIndex, subject) => {
+  //     setCurrentSectionIndex(sectionIndex); // Update the active section index
+  //     setSelectedSubject(subject); // Update the active subject
+  //   };
+
+  const handleMarkForReview = () => {
+    setMarkedForReview((prevMarked) => {
+      const updatedMarked = [...prevMarked];
+      if (!updatedMarked[currentSectionIndex].includes(currentQuestionIndex)) {
+        updatedMarked[currentSectionIndex] = [
+          ...updatedMarked[currentSectionIndex],
+          currentQuestionIndex,
+        ];
+      }
+      return updatedMarked;
+    });
+  };
+
+  localStorage.setItem("timerDuration", timerDuration);
+
   return isMobile ? (
-    <MobileQuizLayout
+    <ChapterMobile
       currentSectionIndex={currentSectionIndex}
       currentQuestionIndex={currentQuestionIndex}
       handleOptionChange={handleOptionChange}
@@ -298,7 +385,7 @@ const MockChapter = () => {
       setSubmitted={setSubmitted}
       submitted={submitted}
       mockTestData={mockTestData}
-      quizData={quizData} // Pass the fetched data here
+      // quizData={quizData} // Pass the fetched data here
       currentSection={mockTestData[currentSectionIndex]} // Adjusted to the fetched data
       currentQuestion={
         mockTestData[currentSectionIndex]?.questions[currentQuestionIndex]
@@ -307,6 +394,7 @@ const MockChapter = () => {
       setCurrentQuestionIndex={setCurrentQuestionIndex}
       answeredQuestions={answeredQuestions}
       markedForReview={markedForReview}
+      selectedOption={selectedOption}
     />
   ) : (
     <div className="flex flex-col items-center bg-gray-100 min-h-full">
@@ -429,11 +517,12 @@ const MockChapter = () => {
 
                 <button
                   onClick={handleSubmitNext}
-                  disabled={isLastQuestion && isLastSection}
+                  // disabled={isLastQuestion && isLastSection}
                   className={`px-5 py-3 col-span-3 rounded-lg shadow-md ${
-                    isLastQuestion && isLastSection
-                      ? "bg-green-200 text-green-700 cursor-not-allowed"
-                      : "bg-green-500 text-white hover:bg-green-600"
+                    // isLastQuestion && isLastSection
+                    //   ? "bg-green-200 text-green-700 cursor-not-allowed"
+                    // :
+                    "bg-green-500 text-white hover:bg-green-600"
                   }`}
                 >
                   Save & Next

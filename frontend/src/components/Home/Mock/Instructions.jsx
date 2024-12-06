@@ -41,7 +41,8 @@ const Instructions = () => {
         setError2("Please select an optional subject before proceeding.");
         return;
       }
-
+      setStep(2); // Move to the next step
+    } else if (step === 2 && isChecked) {
       // Format function for date-time (same as in handleSubmit)
       const formatDateTime = (date) => {
         return new Intl.DateTimeFormat("en-GB", {
@@ -61,9 +62,6 @@ const Instructions = () => {
       // Store formatted start time when transitioning to step 2
       const startTimeFormatted = formatDateTime(new Date());
       localStorage.setItem("start_time", startTimeFormatted);
-
-      setStep(2); // Move to the next step
-    } else if (step === 2 && isChecked) {
       navigate("/mock-demo");
     }
   };

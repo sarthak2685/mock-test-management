@@ -50,6 +50,7 @@ const Login = () => {
         localStorage.removeItem("timerDuration");
         localStorage.removeItem("start_time");
         localStorage.removeItem("submissionResult");
+        localStorage.removeItem("testDuration");
 
         // Navigation logic
         if (type === "owner") {

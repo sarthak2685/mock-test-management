@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useMediaQuery } from "react-responsive";
-import { quizData } from "../Mock/quiz";
+// import { quizData } from "../Mock/quiz";
 import QuestionNavigation from "../Mock/navigation";
 import MobileQuizLayout from "./MobileQuizLayout";
 import config from "../../../config";
@@ -65,181 +65,6 @@ const MockDemo = () => {
   //     </div>
   //   );
   // };
-
-  const [answeredQuestions, setAnsweredQuestions] = useState(
-    quizData.map(() => [])
-  );
-
-  const [markedForReview, setMarkedForReview] = useState(
-    quizData.map(() => [])
-  );
-
-  const [selectedSubject, setSelectedSubject] = useState(
-    localStorage.getItem("selectedOptionalSubject") || ""
-  );
-
-  // Function to handle filtered data (to display only relevant sections)
-  const filteredQuizData = quizData.filter((section) => {
-    if (selectedSubject) {
-      return (
-        section.section === "General Intelligence and Reasoning" ||
-        section.section === "General Awareness" ||
-        section.section === "Quantitative Aptitude" ||
-        section.section === selectedSubject
-      );
-    }
-    return true;
-  });
-
-  // Ensure that the current section is correctly assigned based on index
-  const currentSection = filteredQuizData[currentSectionIndex] || {};
-  const currentQuestion = currentSection.questions
-    ? currentSection.questions[currentQuestionIndex]
-    : null;
-
-  const isMobile = useMediaQuery({ query: "(max-width: 768px)" });
-
-  useEffect(() => {
-    setSelectedOption(
-      answeredQuestions[currentSectionIndex]?.[currentQuestionIndex]
-    );
-  }, [currentQuestionIndex, currentSectionIndex, answeredQuestions]);
-
-  const handleOptionChange = (option) => {
-    setSelectedOption(option);
-    setAnsweredQuestions((prevAnswers) => {
-      const updatedAnswers = [...prevAnswers];
-      updatedAnswers[currentSectionIndex][currentQuestionIndex] = option;
-      return updatedAnswers;
-    });
-  };
-
-  const handlePrevious = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(currentQuestionIndex - 1);
-    } else if (currentSectionIndex > 0) {
-      setCurrentSectionIndex(currentSectionIndex - 1);
-      setCurrentQuestionIndex(
-        filteredQuizData[currentSectionIndex - 1].questions.length - 1
-      );
-    }
-  };
-
-  const handleNext = () => {
-    if (currentQuestionIndex < currentSection.questions.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-    } else if (currentSectionIndex < filteredQuizData.length - 1) {
-      setCurrentSectionIndex(currentSectionIndex + 1);
-      setCurrentQuestionIndex(0);
-    }
-  };
-
-  const handleSubmitNext = () => {
-    try {
-      // Retrieve existing data from localStorage or initialize an empty object
-      const storedData =
-        JSON.parse(localStorage.getItem("submittedData")) || {};
-
-      // Get the current section and question
-      const currentSection = mockTestData[currentSectionIndex];
-      const currentQuestion =
-        currentSection?.questions[currentQuestionIndex] || {};
-
-      // Fetch the user's answer for the current question
-      const userAnswer =
-        answeredQuestions[currentSectionIndex]?.[currentQuestionIndex] || {}; // Fetch based on both section and question index
-      const user = JSON.parse(localStorage.getItem("user"));
-
-      if (!user) {
-        alert("User data not found. Please log in again.");
-        return;
-      }
-
-      const student_id = user.id;
-      const sectionName = currentSection?.subject || "Default Section";
-
-      // Ensure the section exists in stored data
-      if (!storedData[sectionName]) {
-        storedData[sectionName] = {}; // Initialize section if not exists
-      }
-
-      // If the section already has answers, accumulate them; otherwise, initialize the section with an empty object
-      if (!storedData[sectionName].questions) {
-        storedData[sectionName].questions = {};
-      }
-
-      // Ensure questions is always an array
-      if (!Array.isArray(storedData[sectionName].questions)) {
-        storedData[sectionName].questions = [];
-      }
-
-      // Update the selected answer for the current question
-      storedData[sectionName].questions = [
-        ...storedData[sectionName].questions.filter(
-          (q) => q.question !== currentQuestion.id
-        ), // Remove the old entry with the same question ID (if exists)
-        {
-          question: currentQuestion.id,
-          selected_answer: userAnswer || "No Answer Provided", // If userAnswer is an object, use text
-          selected_answer_2: userAnswer.image || null,
-          student: student_id,
-        },
-      ];
-
-      // Save the updated structure to localStorage
-      localStorage.setItem("submittedData", JSON.stringify(storedData));
-
-      console.log("Updated LocalStorage Data:", storedData);
-
-      // Move to the next question or section
-      if (currentQuestionIndex < currentSection.questions.length - 1) {
-        // Move to the next question in the current section
-        setCurrentQuestionIndex(currentQuestionIndex + 1);
-      } else if (currentSectionIndex < mockTestData.length - 1) {
-        // Move to the next section and reset question index
-        setCurrentSectionIndex(currentSectionIndex + 1);
-        setCurrentQuestionIndex(0);
-
-        // Update the selected subject for the new section
-        const nextSubject =
-          mockTestData[currentSectionIndex + 1]?.questions[0]?.subject ||
-          "Unknown Subject";
-        setSelectedSubject(nextSubject); // Update the selected subject dynamically
-      } else {
-        // End of all sections and questions
-        console.log("All sections and questions completed.");
-      }
-    } catch (error) {
-      console.error("Error in handleSubmitNext:", error);
-      alert("An error occurred while saving your answer. Please try again.");
-    }
-  };
-
-  const isFirstQuestion = currentQuestionIndex === 0;
-  const isLastQuestion =
-    (currentSection?.questions?.length || 0) > 0 &&
-    currentQuestionIndex === (currentSection?.questions?.length || 0) - 1;
-  const isLastSection =
-    (filteredQuizData?.length || 0) > 0 &&
-    currentSectionIndex === (filteredQuizData?.length || 0) - 1;
-
-  const handleSectionChange = (sectionIndex, subject) => {
-    setCurrentSectionIndex(sectionIndex); // Update the active section index
-    setSelectedSubject(subject); // Update the active subject
-  };
-
-  const handleMarkForReview = () => {
-    setMarkedForReview((prevMarked) => {
-      const updatedMarked = [...prevMarked];
-      if (!updatedMarked[currentSectionIndex].includes(currentQuestionIndex)) {
-        updatedMarked[currentSectionIndex] = [
-          ...updatedMarked[currentSectionIndex],
-          currentQuestionIndex,
-        ];
-      }
-      return updatedMarked;
-    });
-  };
 
   const [mockTestData, setMockTestData] = useState([]);
   const [timerDuration, setTimerDuration] = useState(0); // State for timer
@@ -350,6 +175,207 @@ const MockDemo = () => {
     console.log("Updated mockTestData:", mockTestData);
   }, [timerDuration, mockTestData]);
 
+  // const [answeredQuestions, setAnsweredQuestions] = useState(
+  //   quizData.map(() => [])
+  // );
+
+  // const [markedForReview, setMarkedForReview] = useState(
+  //   quizData.map(() => [])
+  // );
+
+  const [answeredQuestions, setAnsweredQuestions] = useState(
+    mockTestData.map((subject) => new Array(subject.no_of_questions).fill(null)) // Initialize with null (or any default value)
+  );
+
+  const [markedForReview, setMarkedForReview] = useState(
+    mockTestData.map((subject) =>
+      new Array(subject.no_of_questions).fill(false)
+    ) // Initialize with false (not marked for review)
+  );
+
+  useEffect(() => {
+    // When mockTestData is fetched, update the answeredQuestions and markedForReview state
+    if (mockTestData.length > 0) {
+      setAnsweredQuestions(
+        mockTestData.map((subject) =>
+          new Array(subject.no_of_questions).fill(null)
+        ) // Reset answered questions for each subject
+      );
+      setMarkedForReview(
+        mockTestData.map((subject) =>
+          new Array(subject.no_of_questions).fill(false)
+        ) // Reset marked for review for each subject
+      );
+    }
+  }, [mockTestData]); // Re-run whenever mockTestData changes
+
+  const [selectedSubject, setSelectedSubject] = useState(
+    localStorage.getItem("selectedOptionalSubject") || ""
+  );
+
+  // Function to handle filtered data (to display only relevant sections)
+  // const filteredQuizData = quizData.filter((section) => {
+  //   if (selectedSubject) {
+  //     return (
+  //       section.section === "General Intelligence and Reasoning" ||
+  //       section.section === "General Awareness" ||
+  //       section.section === "Quantitative Aptitude" ||
+  //       section.section === selectedSubject
+  //     );
+  //   }
+  //   return true;
+  // });
+
+  // Ensure that the current section is correctly assigned based on index
+  const currentSection = mockTestData[currentSectionIndex] || {};
+  const currentQuestion = currentSection.questions
+    ? currentSection.questions[currentQuestionIndex]
+    : null;
+
+  const isMobile = useMediaQuery({ query: "(max-width: 768px)" });
+
+  useEffect(() => {
+    setSelectedOption(
+      answeredQuestions[currentSectionIndex]?.[currentQuestionIndex]
+    );
+  }, [currentQuestionIndex, currentSectionIndex, answeredQuestions]);
+
+  const handleOptionChange = (option) => {
+    setSelectedOption(option);
+    setAnsweredQuestions((prevAnswers) => {
+      const updatedAnswers = [...prevAnswers];
+      updatedAnswers[currentSectionIndex][currentQuestionIndex] = option;
+      return updatedAnswers;
+    });
+  };
+
+  const handlePrevious = () => {
+    if (currentQuestionIndex > 0) {
+      setCurrentQuestionIndex(currentQuestionIndex - 1);
+    } else if (currentSectionIndex > 0) {
+      setCurrentSectionIndex(currentSectionIndex - 1);
+      setCurrentQuestionIndex(
+        mockTestData[currentSectionIndex - 1].questions.length - 1
+      );
+    }
+  };
+
+  const handleNext = () => {
+    if (currentQuestionIndex < currentSection.questions.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+    } else if (currentSectionIndex < mockTestData.length - 1) {
+      setCurrentSectionIndex(currentSectionIndex + 1);
+      setCurrentQuestionIndex(0);
+    }
+  };
+
+  const handleSubmitNext = () => {
+    try {
+      // Retrieve existing data from localStorage or initialize an empty object
+      const storedData =
+        JSON.parse(localStorage.getItem("submittedData")) || {};
+
+      // Get the current section and question
+      const currentSection = mockTestData[currentSectionIndex];
+      const currentQuestion =
+        currentSection?.questions[currentQuestionIndex] || {};
+
+      // Fetch the user's answer for the current question
+      const userAnswer =
+        answeredQuestions[currentSectionIndex]?.[currentQuestionIndex] || {}; // Fetch based on both section and question index
+      const user = JSON.parse(localStorage.getItem("user"));
+
+      if (!user) {
+        alert("User data not found. Please log in again.");
+        return;
+      }
+
+      const student_id = user.id;
+      const sectionName = currentSection?.subject || "Default Section";
+
+      // Ensure the section exists in stored data
+      if (!storedData[sectionName]) {
+        storedData[sectionName] = {}; // Initialize section if not exists
+      }
+
+      // If the section already has answers, accumulate them; otherwise, initialize the section with an empty object
+      if (!storedData[sectionName].questions) {
+        storedData[sectionName].questions = {};
+      }
+
+      // Ensure questions is always an array
+      if (!Array.isArray(storedData[sectionName].questions)) {
+        storedData[sectionName].questions = [];
+      }
+
+      // Update the selected answer for the current question
+      storedData[sectionName].questions = [
+        ...storedData[sectionName].questions.filter(
+          (q) => q.question !== currentQuestion.id
+        ), // Remove the old entry with the same question ID (if exists)
+        {
+          question: currentQuestion.id,
+          selected_answer: userAnswer || "No Answer Provided", // If userAnswer is an object, use text
+          selected_answer_2: userAnswer.image || null,
+          student: student_id,
+        },
+      ];
+
+      // Save the updated structure to localStorage
+      localStorage.setItem("submittedData", JSON.stringify(storedData));
+
+      console.log("Updated LocalStorage Data:", storedData);
+
+      // Move to the next question or section
+      if (currentQuestionIndex < currentSection.questions.length - 1) {
+        // Move to the next question in the current section
+        setCurrentQuestionIndex(currentQuestionIndex + 1);
+      } else if (currentSectionIndex < mockTestData.length - 1) {
+        // Move to the next section and reset question index
+        setCurrentSectionIndex(currentSectionIndex + 1);
+        setCurrentQuestionIndex(0);
+
+        // Update the selected subject for the new section
+        const nextSubject =
+          mockTestData[currentSectionIndex + 1]?.questions[0]?.subject ||
+          "Unknown Subject";
+        setSelectedSubject(nextSubject); // Update the selected subject dynamically
+      } else {
+        // End of all sections and questions
+        console.log("All sections and questions completed.");
+      }
+    } catch (error) {
+      console.error("Error in handleSubmitNext:", error);
+      alert("An error occurred while saving your answer. Please try again.");
+    }
+  };
+
+  const isFirstQuestion = currentQuestionIndex === 0;
+  const isLastQuestion =
+    (currentSection?.questions?.length || 0) > 0 &&
+    currentQuestionIndex === (currentSection?.questions?.length || 0) - 1;
+  const isLastSection =
+    (mockTestData?.length || 0) > 0 &&
+    currentSectionIndex === (mockTestData?.length || 0) - 1;
+
+  const handleSectionChange = (sectionIndex, subject) => {
+    setCurrentSectionIndex(sectionIndex); // Update the active section index
+    setSelectedSubject(subject); // Update the active subject
+  };
+
+  const handleMarkForReview = () => {
+    setMarkedForReview((prevMarked) => {
+      const updatedMarked = [...prevMarked];
+      if (!updatedMarked[currentSectionIndex].includes(currentQuestionIndex)) {
+        updatedMarked[currentSectionIndex] = [
+          ...updatedMarked[currentSectionIndex],
+          currentQuestionIndex,
+        ];
+      }
+      return updatedMarked;
+    });
+  };
+
   localStorage.setItem("timerDuration", timerDuration);
   // localStorage.setItem("mockTestData", mockTestData);
 
@@ -384,7 +410,7 @@ const MockDemo = () => {
       setSubmitted={setSubmitted}
       submitted={submitted}
       mockTestData={mockTestData}
-      quizData={quizData} // Pass the fetched data here
+      // quizData={quizData} // Pass the fetched data here
       currentSection={mockTestData[currentSectionIndex]} // Adjusted to the fetched data
       currentQuestion={
         mockTestData[currentSectionIndex]?.questions[currentQuestionIndex]
@@ -393,6 +419,7 @@ const MockDemo = () => {
       setCurrentQuestionIndex={setCurrentQuestionIndex}
       answeredQuestions={answeredQuestions}
       markedForReview={markedForReview}
+      selectedOption={selectedOption}
     />
   ) : (
     <div className="flex flex-col items-center bg-gray-100 min-h-full">
@@ -546,11 +573,12 @@ const MockDemo = () => {
 
                 <button
                   onClick={handleSubmitNext}
-                  disabled={isLastQuestion && isLastSection}
+                  // disabled={isLastQuestion && isLastSection}
                   className={`px-5 py-3 col-span-3 rounded-lg shadow-md ${
-                    isLastQuestion && isLastSection
-                      ? "bg-green-200 text-green-700 cursor-not-allowed"
-                      : "bg-green-500 text-white hover:bg-green-600"
+                    // isLastQuestion && isLastSection
+                    //   ? "bg-green-200 text-green-700 cursor-not-allowed"
+                    //   :
+                    "bg-green-500 text-white hover:bg-green-600"
                   }`}
                 >
                   Save & Next

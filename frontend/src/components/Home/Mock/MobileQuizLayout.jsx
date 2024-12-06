@@ -16,7 +16,7 @@ const MobileQuizLayout = ({
   handleSubmit,
   submitted,
   mockTestData,
-  quizData,
+  // quizData,
   setCurrentSectionIndex,
   setCurrentQuestionIndex,
   answeredQuestions,
@@ -132,6 +132,36 @@ const MobileQuizLayout = ({
       : [currentQuestion?.subject || "No Subject"];
 
   console.log("Subjects:", subjects);
+
+  // const [selectedOption, setSelectedOption] = useState(null);
+
+  // const [answeredQuestions, setAnsweredQuestions] = useState(
+  //   mockTestData.map((subject) => new Array(subject.no_of_questions).fill(null)) // Initialize with null (or any default value)
+  // );
+
+  // useEffect(() => {
+  //   setSelectedOption(
+  //     answeredQuestions[currentSectionIndex]?.[currentQuestionIndex]
+  //   );
+  // }, [currentQuestionIndex, currentSectionIndex, answeredQuestions]);
+
+  // const handleOptionChange = (option) => {
+  //   setSelectedOption(option);
+
+  //   setAnsweredQuestions((prevAnswers) => {
+  //     const updatedAnswers = [...prevAnswers];
+
+  //     // Ensure the section exists
+  //     if (!updatedAnswers[currentSectionIndex]) {
+  //       updatedAnswers[currentSectionIndex] = [];
+  //     }
+
+  //     // Ensure the question exists within the section
+  //     updatedAnswers[currentSectionIndex][currentQuestionIndex] = option;
+
+  //     return updatedAnswers;
+  //   });
+  // };
 
   return (
     <div className="flex flex-col bg-gray-100 min-h-screen relative">
