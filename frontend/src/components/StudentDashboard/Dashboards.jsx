@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import DashboardHeader from "./DashboardHeaders";
 import Sidebar from "./Sidebar/Sidebarr";
 import { FaTrophy } from "react-icons/fa";
+import config from "../../config"; // Assuming config contains the API URL
 
 const timeToMinutes = (timeString) => {
   const [value, unit] = timeString.split(" ");
@@ -11,33 +12,50 @@ const timeToMinutes = (timeString) => {
 const Dashboards = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [user, setUser] = useState(null); // State to hold user data
+  const [leaderboardData, setLeaderboardData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const S = JSON.parse(localStorage.getItem("user"));
+  const token = S.token;
+  const [currentUserRank, setCurrentUserRank] = useState(null);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
-    console.log("Stored User Data:", storedUser);
-
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
       setUser(parsedUser);
     }
   }, []);
+  const userInfo = JSON.parse(localStorage.getItem("user"))
+  const id = userInfo.id;
+  useEffect(() => {
+    const fetchLeaderboardData = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(`${config.apiUrl}/student_performance_single/?student_id=${id}`, {
+          headers: {
+            Authorization: `Token ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+        const data = await response.json();
+        const leaderboard = data.data.last_exam_leaderboard || [];
+        const userRank = data.data.student_rank_in_last_exam;
+        setLeaderboardData(leaderboard);
+        setCurrentUserRank(userRank);
+      } catch (error) {
+        console.error("Error fetching leaderboard data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  let leaderboardData = [
-    { id: 1, name: "Self-confident Swan", score: 5, timeTaken: "12 mins" },
-    { id: 2, name: "Ambitious Swan", score: 5, timeTaken: "13 mins" },
-    { id: 3, name: "Impartial Duck", score: 4, timeTaken: "12 mins" },
-    { id: 4, name: "Straightforward Dove", score: 4, timeTaken: "15 mins" },
-    { id: 5, name: "Frank Dove", score: 3, timeTaken: "13 mins" },
-    { id: 6, name: "Modest Pigeon", score: 3, timeTaken: "15 mins" },
-    { id: 10, name: "John Doe", score: 4, timeTaken: "14 mins" }, // Example logged-in user's rank
-    { id: 7, name: "Courageous Hawk", score: 5, timeTaken: "11 mins" },
-  ];
+    if (user) {
+      fetchLeaderboardData();
+    }
+  }, [user]);
 
-  const toggleSidebar = () => {
-    setIsCollapsed((prev) => !prev);
-  };
-
-  leaderboardData = leaderboardData.sort((a, b) => {
+  // Sort leaderboard data by score and time taken
+  const sortedLeaderboard = leaderboardData.sort((a, b) => {
     if (b.score !== a.score) {
       return b.score - a.score;
     }
@@ -45,22 +63,13 @@ const Dashboards = () => {
   });
 
   // Update user's rank after sorting
-  const userRank = leaderboardData.findIndex(
-    (student) => student.name === user?.name // Use user?.name to avoid errors if user is null
+  const userRank = sortedLeaderboard.findIndex(
+    (student) => student.name === user?.name
   ) + 1;
 
-  useEffect(() => {
-    const handleResize = () => {
-      setIsCollapsed(window.innerWidth < 768);
-    };
-
-    handleResize();
-    window.addEventListener("resize", handleResize);
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, []);
+  const toggleSidebar = () => {
+    setIsCollapsed((prev) => !prev);
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -86,7 +95,9 @@ const Dashboards = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
               <div className="bg-white shadow-md rounded-lg p-3">
                 <h2 className="text-base md:text-lg">Current Rank</h2>
-                <p className="text-xl md:text-2xl font-bold">{userRank}</p>
+                <p className="text-xl md:text-2xl font-bold">
+                  {currentUserRank ? currentUserRank.rank : "Loading..."}
+                </p>
               </div>
 
               <div className="bg-white shadow-md rounded-lg p-3">
@@ -111,57 +122,65 @@ const Dashboards = () => {
                         Score
                       </th>
                       <th className="px-3 py-2 md:px-4 md:py-3 border-b border-gray-200 text-left text-xs font-semibold uppercase tracking-wider">
-                        Time Taken
+                        Rank
                       </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {leaderboardData.map((student, index) => (
-                      <tr
-                        key={student.id}
-                        className={`hover:bg-gray-100 transition-colors ${
-                          student.name === user?.name
-                            ? "bg-yellow-100 font-bold"
-                            : index % 2 === 0
-                            ? "bg-white"
-                            : "bg-gray-50"
-                        }`}
-                      >
-                        <td className="px-3 py-2 md:px-4 md:py-3 border-b border-gray-200 text-sm">
-                          <div className="flex items-center">
-                            {index === 0 && (
-                              <FaTrophy className="text-yellow-500 w-4 h-4 md:w-5 md:h-5 mr-1" />
-                            )}
-                            {index === 1 && (
-                              <FaTrophy className="text-gray-400 w-4 h-4 md:w-5 md:h-5 mr-1" />
-                            )}
-                            {index === 2 && (
-                              <FaTrophy className="text-orange-500 w-4 h-4 md:w-5 md:h-5 mr-1" />
-                            )}
-                            {index >= 3 && (
-                              <span className="text-gray-600 font-bold w-4 md:w-5 mr-1 text-center">
-                                {index + 1}
-                              </span>
-                            )}
-                            <div className="ml-2">
-                              <p className="text-gray-900 font-medium whitespace-no-wrap">
-                                {student.name}
-                              </p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-3 py-2 md:px-4 md:py-3 border-b border-gray-200 text-sm">
-                          <p className="text-gray-900 font-bold whitespace-no-wrap">
-                            {student.score}/5
-                          </p>
-                        </td>
-                        <td className="px-3 py-2 md:px-4 md:py-3 border-b border-gray-200 text-sm">
-                          <p className="text-gray-900 whitespace-no-wrap">
-                            {student.timeTaken}
-                          </p>
+                    {loading ? (
+                      <tr>
+                        <td colSpan="3" className="text-center py-4">
+                          Loading leaderboard...
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      sortedLeaderboard.map((student, index) => (
+                        <tr
+                          key={student.student_id}
+                          className={`hover:bg-gray-100 transition-colors ${
+                            student.student__name === user?.name
+                              ? "bg-yellow-100 font-bold"
+                              : index % 2 === 0
+                              ? "bg-white"
+                              : "bg-gray-50"
+                          }`}
+                        >
+                          <td className="px-3 py-2 md:px-4 md:py-3 border-b border-gray-200 text-sm">
+                            <div className="flex items-center">
+                              {index === 0 && (
+                                <FaTrophy className="text-yellow-500 w-4 h-4 md:w-5 md:h-5 mr-1" />
+                              )}
+                              {index === 1 && (
+                                <FaTrophy className="text-gray-400 w-4 h-4 md:w-5 md:h-5 mr-1" />
+                              )}
+                              {index === 2 && (
+                                <FaTrophy className="text-orange-500 w-4 h-4 md:w-5 md:h-5 mr-1" />
+                              )}
+                              {index >= 3 && (
+                                <span className="text-gray-600 font-bold w-4 md:w-5 mr-1 text-center">
+                                  {index + 1}
+                                </span>
+                              )}
+                              <div className="ml-2">
+                                <p className="text-gray-900 font-medium whitespace-no-wrap">
+                                  {student.student__name}
+                                </p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-3 py-2 md:px-4 md:py-3 border-b border-gray-200 text-sm">
+                            <p className="text-gray-900 font-bold whitespace-no-wrap">
+                              {student.total_marks}
+                            </p>
+                          </td>
+                          <td className="px-3 py-2 md:px-4 md:py-3 border-b border-gray-200 text-sm">
+                            <p className="text-gray-900 whitespace-no-wrap">
+                              {student.rank}
+                            </p>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>

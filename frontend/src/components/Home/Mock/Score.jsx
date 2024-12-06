@@ -1,4 +1,4 @@
-import React, { useState,useRef } from "react";
+import React, { useState,useRef, useEffect } from "react";
 import { FaTrophy, FaUserAlt } from "react-icons/fa";
 import { MdTimer } from "react-icons/md";
 import { HiOutlineDocumentText } from "react-icons/hi";
@@ -28,13 +28,61 @@ const Score = () => {
       unattempted: 5,
     },
   ];
-  const leaderboardData = [
-    { rank: 1, name: 'John Doe', score: 95 },
-    { rank: 2, name: 'Jane Smith', score: 92 },
-    { rank: 3, name: 'Alice Johnson', score: 89 },
-    { rank: 4, name: 'Bob Brown', score: 87 },
-    { rank: 5, name: 'Charlie Davis', score: 85 },
-  ];
+ 
+  const S = JSON.parse(localStorage.getItem("user"));
+  const token = S.token;
+  const [analysisData, setAnalysisData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const testName = localStorage.getItem("selectedTestName") || "N/A";
+  const examId = localStorage.getItem("exam_id") || "N/A";
+  const user = JSON.parse(localStorage.getItem("user"));
+  const studentId = user.id;
+  const startTime = localStorage.getItem("start_time") || "N/A";
+  const endTime = localStorage.getItem("end_time") || "N/A";
+  const [leaderboardData, setLeaderboardData] = useState([]);
+
+
+  const queryParams = `student_id=${studentId}&test_name=${testName}&start_time=${startTime}&exam_id=${examId}&end_time=${endTime}`;
+  const apiUrl = `https://mockexam.pythonanywhere.com/get-analysis/?${queryParams}`;
+
+  // Fetch analysis data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch(apiUrl, {
+          method: "GET",
+          headers: {
+            Authorization: `Token ${token}`,
+            "Content-Type": "application/json",
+          },
+        });        if (!response.ok) {
+          throw new Error("Failed to fetch data");
+        }
+        const data = await response.json();
+        console.log("hero",data);
+        setAnalysisData(data);
+        setLeaderboardData(data.leaderboard || []);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchData();
+  }, [apiUrl]);
+
+  const sectionData = Object.keys(analysisData?.data_2?.subject_summary || {}).map((subject) => {
+    const summary = analysisData.data_2.subject_summary[subject];
+    return {
+      name: subject,
+      correct: summary.correct,
+      wrong: summary.incorrect,
+      unattempted: analysisData.data_2.unattempted_questions_count || 0,
+      marks: summary.marks,
+    };
+  });
 
   const reportRef = useRef();
   const handlePDFDownload = () => {
@@ -150,18 +198,18 @@ const Score = () => {
     // Save the PDF
     doc.save("score-report.pdf");
   };
+  const parseDate = (str) => {
+    const formattedStr = str.replace("_", " ").replace(/(\d{2})-(\d{2})-(\d{4}) (\d{2}):(\d{2}):(\d{2})/, "$3-$2-$1T$4:$5:$6");
+    return new Date(formattedStr);
+  };
   
-
-
-
-
-
-
-
-
-
-
-
+  // Convert the start and end times to Date objects
+  const startDate = parseDate(startTime);
+  const endDate = parseDate(endTime);
+  
+  // Calculate the difference in milliseconds and convert to seconds
+  const diffInSeconds = Math.floor((endDate - startDate) / 1000);
+  const averageMarksData = analysisData?.average_marks_by_subject || [];
   const data = {
     section: "General Intelligence and Reasoning",
     questions: [
@@ -206,16 +254,16 @@ const Score = () => {
               <h3 className="text-2xl sm:text-3xl font-semibold text-gray-800 flex items-center justify-center mb-4">
                 <FaUserAlt className="text-indigo-600 text-3xl sm:text-4xl mr-2" />
                 Candidate:{" "}
-                <span className="text-indigo-600 ml-2 font-bold">Lucy</span>
+                <span className="text-indigo-600 ml-2 font-bold">{user.name}</span>
               </h3>
               <p className="text-gray-600 text-base sm:text-lg">
                 Start Time:{" "}
                 <span className="font-medium text-gray-700">
-                  2021-03-23 11:53:46
+                  {startTime}
                 </span>{" "}
                 | Submit Time:{" "}
                 <span className="font-medium text-gray-700">
-                  2021-03-23 11:54:06
+                  {endTime}
                 </span>
               </p>
             </div>
@@ -226,7 +274,7 @@ const Score = () => {
                   Total Score
                 </p>
                 <p className="text-3xl sm:text-4xl font-bold text-indigo-600">
-                  100
+                {analysisData?.total_marks_for_exam || "N/A"}
                 </p>
               </div>
               <div className="relative w-48 sm:w-64 h-48 sm:h-64">
@@ -239,7 +287,8 @@ const Score = () => {
                 ></div>
                 <div className="absolute top-0 left-0 w-full h-full flex flex-col justify-center items-center bg-gradient-to-br from-indigo-600 to-indigo-800 text-white rounded-full shadow-2xl transform hover:scale-110 transition-all">
                   <FaTrophy className="text-white text-5xl sm:text-6xl mb-3" />
-                  <p className="text-4xl sm:text-6xl font-extrabold">100</p>
+                  <p className="text-4xl sm:text-6xl font-extrabold">{analysisData?.total_obtained_marks || "N/A"}
+                  </p>
                   <p className="text-sm sm:text-lg mt-2 font-medium">
                     Candidate's Score
                   </p>
@@ -251,7 +300,7 @@ const Score = () => {
                   Time Taken
                 </p>
                 <p className="text-2xl sm:text-3xl font-bold text-indigo-600">
-                  20 sec
+                 {diffInSeconds} sec
                 </p>
               </div>
             </div>
@@ -298,14 +347,14 @@ const Score = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {sections.map((section) => (
-                      <tr key={section.name} className="border-b">
-                        <td className="p-4 text-left">{section.name}</td>
-                        <td className="p-4 text-center">{section.correct}</td>
-                        <td className="p-4 text-center">{section.wrong}</td>
-                        <td className="p-4 text-center">{section.unattempted}</td>
-                      </tr>
-                    ))}
+                  {sectionData.map((section) => (
+            <tr key={section.name} className="border-b">
+              <td className="p-4 text-left">{section.name}</td>
+              <td className="p-4 text-center">{section.correct}</td>
+              <td className="p-4 text-center">{section.wrong}</td>
+              <td className="p-4 text-center">{section.unattempted}</td>
+            </tr>
+          ))}
                   </tbody>
                 </table>
               </div>
@@ -320,24 +369,29 @@ const Score = () => {
                     Compare your performance with peers across sections.
                   </p>
                   <div className="flex justify-between space-x-4">
-                    {sections.map((section, index) => (
-                      <div
-                        key={index}
-                        className="w-1/3 bg-white rounded-lg p-4 shadow-md hover:shadow-lg transition duration-300"
-                      >
-                        <h5 className="text-lg font-semibold text-indigo-600 mb-2">
-                          {section.name}
-                        </h5>
-                        <div className="text-sm">
-                          <p className="text-gray-700 mb-1">
-                            <strong>Your Score:</strong> {80 + index * 5}%
-                          </p>
-                          <p className="text-gray-700">
-                            <strong>Avg Score:</strong> {75 + index * 5}%
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+                  {sectionData.map((section, index) => {
+            const averageMarks = averageMarksData.find(
+              (avgData) => avgData.subject_name === section.name
+            );
+            const avgScore = averageMarks ? averageMarks.average_marks : 0;
+
+            return (
+              <div
+                key={index}
+                className="w-1/3 bg-white rounded-lg p-4 shadow-md hover:shadow-lg transition duration-300"
+              >
+                <h5 className="text-lg font-semibold text-indigo-600 mb-2">{section.name}</h5>
+                <div className="text-sm">
+                  <p className="text-gray-700 mb-1">
+                    <strong>Your Score:</strong> {section.marks}
+                  </p>
+                  <p className="text-gray-700">
+                    <strong>Avg Score:</strong> {avgScore}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
                   </div>
                 </div>
               </div>
@@ -368,14 +422,16 @@ const Score = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {leaderboardData.map((participant) => (
-                      <tr
-                        key={participant.rank}
-                        className="border-b hover:bg-indigo-50 transition-all duration-300"
-                      >
+                  {leaderboardData.map((participant) => (
+                     <tr
+                     key={participant.rank}
+                     className={`border-b hover:bg-indigo-50 transition-all duration-300 ${
+                       participant.student_id === user.id ? "bg-yellow-100 font-bold" : ""
+                     }`}
+                   >
                         <td className="p-3 font-semibold text-indigo-600">{participant.rank}</td>
-                        <td className="p-3">{participant.name}</td>
-                        <td className="p-3 text-center">{participant.score}</td>
+                        <td className="p-3">{participant.student_name}</td>
+                        <td className="p-3 text-center">{participant.total_marks}</td>
                       </tr>
                     ))}
                   </tbody>
