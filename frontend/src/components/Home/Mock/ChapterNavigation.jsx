@@ -283,6 +283,7 @@ const ChapterNavigation = ({
 
   const S = JSON.parse(localStorage.getItem("user"));
   const token = S.token;
+  const Test = localStorage.getItem("selectedTestName");
 
   console.log("Fetched Data ", S);
 
@@ -338,6 +339,10 @@ const ChapterNavigation = ({
         JSON.parse(localStorage.getItem("submittedData")) || {};
       const payload = Object.values(storedData).flat();
 
+      localStorage.setItem("exam_id", exam_id);
+      localStorage.setItem("start_time", start_time);
+      localStorage.setItem("end_time", end_time);
+
       // Enhance payload with additional metadata
       const enhancedPayload = payload.map((item) => ({
         ...item,
@@ -371,7 +376,7 @@ const ChapterNavigation = ({
         alert("Submission successful!");
 
         // Redirect to score page
-        // window.location.href = "/score";
+        window.location.href = "/score";
       } else {
         const errorDetails = await response.json();
         console.error(

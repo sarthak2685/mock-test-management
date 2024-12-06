@@ -51,6 +51,9 @@ const Login = () => {
         localStorage.removeItem("start_time");
         localStorage.removeItem("submissionResult");
         localStorage.removeItem("testDuration");
+        localStorage.removeItem("end_time");
+        localStorage.removeItem("selectedTestName");
+        localStorage.removeItem("exam_id");
 
         // Navigation logic
         if (type === "owner") {
