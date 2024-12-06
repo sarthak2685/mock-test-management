@@ -329,6 +329,10 @@ const QuestionNavigation = ({
         .replace(", ", "_")
         .replace(/\//g, "-");
 
+      localStorage.setItem("exam_id", exam_id);
+      localStorage.setItem("start_time", start_time);
+      localStorage.setItem("end_time", end_time);
+
       const storedData =
         JSON.parse(localStorage.getItem("submittedData")) || {};
       const payload = Object.values(storedData).flat();
