@@ -5,9 +5,14 @@ import { FaTrophy } from "react-icons/fa";
 import config from "../../config"; // Assuming config contains the API URL
 
 const timeToMinutes = (timeString) => {
+  if (!timeString || typeof timeString !== 'string' || !timeString.includes(" ")) {
+    return 0; // Return 0 if the input is invalid or doesn't follow the expected format
+  }
+  
   const [value, unit] = timeString.split(" ");
   return unit === "mins" ? parseInt(value, 10) : 0; // Convert time to integer minutes
 };
+
 
 const Dashboards = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
