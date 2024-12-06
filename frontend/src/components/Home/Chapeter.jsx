@@ -65,6 +65,40 @@ const Chapters = () => {
     }
   }, [SubjectId]);
 
+  const handleChapterClick = (chapterName) => {
+    // Find the chapter in the chapters state
+    const selectedChapter = chapters.find(
+      (chapter) => chapter.name === chapterName
+    );
+
+    if (selectedChapter) {
+      // Check if the chapter has tests
+      const testDetails = selectedChapter.tests[0]; // Assuming you want the first test details
+      if (testDetails) {
+        const { testName, examDuration } = testDetails;
+
+        // Store selected chapter, test name, and duration in local storage
+        localStorage.setItem("selectedChapter", chapterName);
+        localStorage.setItem("selectedTestName", testName);
+        localStorage.setItem("testDuration", examDuration);
+
+        // Log the values to the console
+        console.log("Chapter Selected:", chapterName);
+        console.log("Test Name:", testName || "No test name provided");
+        console.log("Test Duration:", examDuration || "No duration provided");
+
+        // Navigate to the chapter instruction page
+        navigate("/chapterinstruction");
+      } else {
+        console.error("No test details found for the selected chapter.");
+        setError("No test details available for this chapter.");
+      }
+    } else {
+      console.error("Chapter not found.");
+      setError("Selected chapter does not exist.");
+    }
+  };
+
   if (loading) {
     return (
       <div className="text-center text-gray-600 py-12">Loading chapters...</div>
@@ -74,12 +108,6 @@ const Chapters = () => {
   if (error) {
     return <div className="text-center text-red-600 py-12">{error}</div>;
   }
-  const handleChapterClick = (chapterName) => {
-    // Store the selected chapter in local storage
-    localStorage.setItem("selectedChapter", chapterName);
-    // Optionally, navigate to another page
-    navigate("/chapterinstruction");
-  };
 
   return (
     <div className="relative bg-gray-100 min-h-screen overflow-hidden">
@@ -109,7 +137,14 @@ const Chapters = () => {
                   {chapter.tests.map((test, testIndex) => (
                     <div
                       key={testIndex}
-                      className="text-2xl font-bold text-center text-gray-800"
+                      onClick={() =>
+                        handleChapterClick(
+                          chapter.name,
+                          test.testName,
+                          test.examDuration
+                        )
+                      }
+                      className="text-2xl font-bold text-center text-gray-800 cursor-pointer"
                     >
                       {test.testName}
                     </div>
@@ -137,9 +172,7 @@ const Chapters = () => {
                 </div>
                 <Link
                   to={`/chapterinstruction`}
-                  onClick={() =>
-                    localStorage.setItem("selectedChapter", chapter.name)
-                  } // Store chapter name before navigating
+                  onClick={() => handleChapterClick(chapter.name, null, null)} // Optionally store chapter name if test details are not available
                   className="inline-block bg-[#007bff] text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition duration-300 text-center"
                 >
                   Take Test

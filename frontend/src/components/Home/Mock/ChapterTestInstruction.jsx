@@ -25,12 +25,12 @@ const ChapterTestInstructions = () => {
     localStorage.setItem("selectedLanguage", selectedLanguage);
   };
 
-  const handleOptionalSubjectChange = (e) => {
-    const selectedSubject = e.target.value;
-    setOptionalSubject(selectedSubject);
-    setError2(""); // Clear error when a subject is selected
-    localStorage.setItem("selectedOptionalSubject", selectedSubject);
-  };
+  // const handleOptionalSubjectChange = (e) => {
+  //   const selectedSubject = e.target.value;
+  //   setOptionalSubject(selectedSubject);
+  //   setError2(""); // Clear error when a subject is selected
+  //   localStorage.setItem("selectedOptionalSubject", selectedSubject);
+  // };
 
   const handleNextStep = () => {
     if (step === 1) {
@@ -43,6 +43,25 @@ const ChapterTestInstructions = () => {
       }
       setStep(2);
     } else if (step === 2 && isChecked) {
+      // Format function for date-time (same as in handleSubmit)
+      const formatDateTime = (date) => {
+        return new Intl.DateTimeFormat("en-GB", {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: false,
+        })
+          .format(date)
+          .replace(", ", "_")
+          .replace(/\//g, "-");
+      };
+
+      // Store formatted start time when transitioning to step 2
+      const startTimeFormatted = formatDateTime(new Date());
+      localStorage.setItem("start_time", startTimeFormatted);
       navigate("/chapter-exam");
     }
   };
