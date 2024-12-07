@@ -30,14 +30,16 @@ const Subject = () => {
       try {
         const response = await fetch(`${config.apiUrl}/exam-subjects/`);
         const data = await response.json();
-        const filteredData = data.filter((subject) => subject.for_exam === null);
+        const filteredData = data.filter(
+          (subject) => subject.for_exam === null
+        );
         const enrichedData = filteredData.map((subject) => ({
           ...subject,
-          exam: "Chapter 1-10", 
+          exam: "Chapter 1-10",
         }));
-        console.log("subject",filteredData)
-        setSubjectData(enrichedData); 
-        setCount(enrichedData.length-1);
+        console.log("subject", filteredData);
+        setSubjectData(enrichedData);
+        setCount(enrichedData.length - 1);
       } catch (error) {
         console.error("Error fetching subject data:", error);
       }
@@ -95,7 +97,8 @@ const Subject = () => {
         Explore Our <span className="text-blue-600">Subjects</span>
       </h1>
       <h6 className="text-lg text-gray-500 text-center mb-12">
-        Over <span className="text-blue-500 font-bold">{count}+</span> subjects for comprehensive preparation
+        Over <span className="text-blue-500 font-bold">{count}+</span> subjects
+        for comprehensive preparation
       </h6>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
@@ -106,10 +109,10 @@ const Subject = () => {
               transition-transform transform hover:scale-105 hover:rotate-1 hover:shadow-2xl duration-300 ease-in-out ${
                 !user ? "cursor-pointer" : "cursor-default"
               }`}
-            onClick={() => handleCardClick(subject.name,subject.id)}
+            onClick={() => handleCardClick(subject.name, subject.id)}
           >
-             {(!user || user.type !== "student") && (
-                <div className="absolute top-0 right-0 -mr-3 -mt-3 bg-red-400 text-xs font-bold text-white py-1 px-3 rounded-full shadow-md">
+            {(!user || user.type !== "student") && (
+              <div className="absolute top-0 right-0 -mr-3 -mt-3 bg-red-400 text-xs font-bold text-white py-1 px-3 rounded-full shadow-md">
                 Locked
               </div>
             )}
@@ -121,7 +124,9 @@ const Subject = () => {
                 className="w-20 h-20 object-contain rounded-full transform transition duration-300 ease-in-out hover:scale-110 hover:brightness-110"
               />
             </div>
-            <h3 className="text-2xl font-semibold text-gray-800 mb-2">{subject.name}</h3>
+            <h3 className="text-2xl font-semibold text-gray-800 mb-2">
+              {subject.name}
+            </h3>
             <p className="text-gray-600 mb-4">{subject.exam}</p>
           </div>
         ))}

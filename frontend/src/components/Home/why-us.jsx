@@ -23,12 +23,12 @@ const WhyUs = () => {
               preparation.
             </p>
             <div className="text-center lg:text-left">
-              <Link
-                to="/login"
+              <a
+                href="#subscription"
                 className="bg-[#007bff] hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-md transition duration-300 ease-in-out"
               >
                 Get Started
-              </Link>
+              </a>
             </div>
           </div>
 
