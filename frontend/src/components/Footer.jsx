@@ -65,13 +65,11 @@ const Footer = () => {
               </span>
             </h3>
             <p className="text-[14px] sm:text-[16px] font-[400] text-black mt-4">
-              Lorem ipsum is placeholder text commonly
+              Elevate Your Exam Prep with Mock Period.
               <br />
-              used in the graphic, print, and publishing
+              Ace Your Exams with Real-Time Practice.
               <br />
-              industries for previewing layouts and visual
-              <br />
-              mockups.
+              Experience the real exam feel.
             </p>
           </div>
 
@@ -139,7 +137,9 @@ const Footer = () => {
           >
             {" "}
             {/* Adjust ml-* for desired margin */}© Copyright{" "}
-            {new Date().getFullYear()} <span className="font-semibold text-blue-500">WebCraftrix</span> | All Rights Reserved.
+            {new Date().getFullYear()}{" "}
+            <span className="font-semibold text-blue-500">WebCraftrix</span> |
+            All Rights Reserved.
           </p>
         </div>
       </div>

@@ -444,7 +444,7 @@ const ChapterNavigation = ({
         </div>
       </div>
       {/* Section Title */}
-      <h3 className="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">
+      <h3 className="text-xl font-semibold text-gray-700 mt-4 mb-4 border-b pb-2">
         {sectionName}
       </h3>
       {/* Show Marked Only Toggle */}
