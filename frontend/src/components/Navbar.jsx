@@ -64,7 +64,7 @@ const Navbar = () => {
                     />
                   ) : (
                     <div className="w-10 h-10 rounded-full bg-[#007bff] flex items-center justify-center text-white font-semibold">
-                      {user.user ? user.user.charAt(0).toUpperCase() : ""}
+                      {user.name ? user.name.charAt(0).toUpperCase() : ""}
                     </div>
                   )}
                 </div>
