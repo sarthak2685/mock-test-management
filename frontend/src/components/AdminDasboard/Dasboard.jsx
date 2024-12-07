@@ -76,9 +76,7 @@ const Dashboard = () => {
 
           <div className="p-3 md:p-4">
             {/* Adjusted text size for Admin Dashboard */}
-            <h1 className="text-3xl md:text-3xl font-bold mb-6 text-left">
-              Admin Dashboard
-            </h1>
+            <h1 className="text-2xl md:text-3xl font-bold mb-4 text-left"> Welcome {user ? user.name : "Guest"}</h1>
 
             {/* Stats Cards Row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">

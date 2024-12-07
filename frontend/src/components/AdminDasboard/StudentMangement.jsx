@@ -217,9 +217,11 @@ const handleSubmitStudents = async () => {
   };
 
   const handleExport = () => {
+    const header = "Name,Password,Mobile Number";
     const csvContent =
       "data:text/csv;charset=utf-8," +
-      students.map((student) => `${student.name},${student.username},${student.password},${student.mobile_no}`).join("\n"); // Include mobile_no in CSV
+      header + "\n" +
+      students.map((student) => `${student.name},${student.password_encoded},${student.mobile_no}`).join("\n"); // Include mobile_no in CSV
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);

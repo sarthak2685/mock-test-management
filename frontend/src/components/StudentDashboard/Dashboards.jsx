@@ -107,8 +107,8 @@ const Dashboards = () => {
 
               <div className="bg-white shadow-md rounded-lg p-3">
                 <h2 className="text-base md:text-lg">Next Test Date</h2>
-                <p className="text-xl md:text-2xl font-bold">22 Oct, 2024</p>
-              </div>
+                <p className="text-xl md:text-2xl font-bold text-blue-800 mt-2 animate-typewriter">COMING SOON</p>
+                </div>
             </div>
 
             <div className="bg-white shadow-lg rounded-lg p-3">

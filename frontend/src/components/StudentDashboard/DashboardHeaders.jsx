@@ -28,6 +28,17 @@ const DashboardHeaders = ({ toggleSidebar }) => {
     user: "Guest",
     name: "Guest" // Default name for guest
   };
+  const userName = user.name;
+  const generateAvatarColor = (userName) => {
+    // Generate a color based on the user's name (or any unique property)
+    const hash = userName.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const saturation = Math.abs(hash) % 50 + 50; // Saturation between 50-100% to get vibrant colors
+    const lightness = Math.abs(hash) % 30 + 40; // Lightness between 40-70% for variation but keeping it bright
+    const color = `hsl(0, ${saturation}%, ${lightness}%)`;
+    return color;
+  };
+
+  const avatarColor = generateAvatarColor(user.name);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -86,12 +97,15 @@ const DashboardHeaders = ({ toggleSidebar }) => {
 
         {/* User Info Dropdown */}
         <div className="relative cursor-pointer" ref={userDropdownRef}>
-          <div className="flex items-center space-x-2" onClick={() => toggleDropdown("user")}>
-            <span className="font-semibold text-gray-700">{user.user}</span>
-            <div className="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center">
-              {user.name ? user.name.charAt(0).toUpperCase() : "G"} {/* Use "G" for guest */}
-            </div>
-          </div>
+        <div className="flex items-center space-x-2" onClick={() => toggleDropdown("user")}>
+      <span className="font-semibold text-gray-700">{user.name}</span>
+      <div
+        className="w-10 h-10 rounded-full text-white flex items-center justify-center"
+        style={{ backgroundColor: avatarColor }}
+      >
+        {!user.image && (user.name ? user.name.charAt(0).toUpperCase() : "G")}
+      </div>
+    </div>
 
           {openDropdown === "user" && (
             <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 shadow-md rounded-lg z-50">

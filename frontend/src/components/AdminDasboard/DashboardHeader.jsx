@@ -140,8 +140,8 @@ const DashboardHeader = ({ toggleSidebar }) => {
 
         {/* User Info */}
         <div className="flex items-center space-x-4">
-          <span className="font-semibold text-gray-700">{user.user}</span>
-          <div className="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center">
+          <span className="font-semibold text-gray-700">{user.name}</span>
+          <div className="w-10 h-10 rounded-full bg-slate-500 text-white flex items-center justify-center">
             {user.name?.charAt(0).toUpperCase()}
           </div>
         </div>
