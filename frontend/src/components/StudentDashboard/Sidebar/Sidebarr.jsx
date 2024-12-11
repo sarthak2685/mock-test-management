@@ -1,9 +1,11 @@
 import React from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { FiUsers, FiBarChart } from "react-icons/fi";
-import { HomeIcon, ArrowLeftOnRectangleIcon } from "@heroicons/react/24/solid";
 import { FaTimes } from "react-icons/fa";
+import { HomeIcon, ArrowLeftOnRectangleIcon } from "@heroicons/react/24/solid";
+import { MdOutlineAssignment } from "react-icons/md";
 import { useUser } from '../../../components/UserContext/UserContext';
+import { BiBookAlt } from "react-icons/bi";
+
 
 
 const Sidebarr = ({ isCollapsed, toggleSidebar }) => {
@@ -58,17 +60,29 @@ const Sidebarr = ({ isCollapsed, toggleSidebar }) => {
         </NavLink>
 
         <NavLink
-          to="/student-performance"
+          to="/Exam-Wise-performance"
           className={({ isActive }) =>
             `flex items-center py-2 px-4 mt-4 rounded hover:bg-blue-700 ${
               isActive ? "bg-blue-700" : ""
             }`
           }
         >
-          <FiBarChart className="mr-2" />
-          <span className="block">{isCollapsed ? "" : "Performance"}</span>
+          <MdOutlineAssignment className="mr-2" />
+          <span className="block">{isCollapsed ? "" : "Exam-Wise Performance"}</span>
         </NavLink>
 
+        <NavLink
+          to="/Subject-wise-performance"
+          className={({ isActive }) =>
+            `flex items-center py-2 px-4 mt-4 rounded hover:bg-blue-700 ${
+              isActive ? "bg-blue-700" : ""
+            }`
+          }
+        >
+          <BiBookAlt className="mr-2" />
+          <span className="block">{isCollapsed ? "" : "Subject-wise Performance"}</span>
+        </NavLink>
+       
         {/* Separator Line */}
         <hr className="my-4 border-t border-white opacity-50" />
       </nav>

@@ -339,7 +339,7 @@ const ChapterNavigation = ({
         JSON.parse(localStorage.getItem("submittedData")) || {};
       const payload = Object.values(storedData).flat();
 
-      localStorage.setItem("exam_id", exam_id);
+      // localStorage.setItem("exam_id", exam_id);
       localStorage.setItem("start_time", start_time);
       localStorage.setItem("end_time", end_time);
 
@@ -376,7 +376,7 @@ const ChapterNavigation = ({
         alert("Submission successful!");
 
         // Redirect to score page
-        window.location.href = "/score";
+        window.location.href = "/scorecard";
       } else {
         const errorDetails = await response.json();
         console.error(

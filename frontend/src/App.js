@@ -33,6 +33,10 @@ import Instructions from "./components/Home/Mock/Instructions.jsx";
 import MockChapter from "./components/Home/Mock/MockChapter.jsx";
 import ChapterTestInstructions from "./components/Home/Mock/ChapterTestInstruction.jsx";
 import SubscriptionForm from "./components/Home/SubscriptionForm.jsx";
+import ChapterScore from "./components/Home/Mock/ChapterScore.jsx";
+import ChapterPerformance from "./components/StudentDashboard/SubjectPerformance.jsx";
+
+
 
 function App() {
   const location = useLocation();
@@ -69,9 +73,9 @@ function App() {
           />
           <Route path="/mock-demo" element={<MockDemo />} />
           <Route path="/student-dashboard" element={<Dashboards />} />
-          <Route path="/student-performance" element={<Performances />} />
+          <Route path="/Exam-Wise-Performance" element={<Performances />} />
           <Route
-            path="/student-performances/:id"
+            path="/student-performances/:category/:testName"
             element={<StudentPerformances />}
           />
           <Route path="/profile" element={<Profile />} />
@@ -90,6 +94,10 @@ function App() {
             path="/subscriptionform"
             element={<SubscriptionForm />}
           />
+          <Route path="/scorecard" element={<ChapterScore />} />
+          <Route path="/subject-Wise-Performance" element={<ChapterPerformance />} />
+
+
         </Routes>
         
 
