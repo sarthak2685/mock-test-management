@@ -145,7 +145,7 @@ const Navbar = () => {
                 <div className="mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-10">
                   <Link
                     to="/student-dashboard"
-                    className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 text-center"
+                    className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 "
                     onClick={() => {
                       setProfileMenuOpen(false);
                       setMenuOpen(false);
