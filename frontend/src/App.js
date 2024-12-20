@@ -35,16 +35,15 @@ import ChapterTestInstructions from "./components/Home/Mock/ChapterTestInstructi
 import SubscriptionForm from "./components/Home/SubscriptionForm.jsx";
 import ChapterScore from "./components/Home/Mock/ChapterScore.jsx";
 import ChapterPerformance from "./components/StudentDashboard/SubjectPerformance.jsx";
+import ChapterWise from "./components/StudentDashboard/ChapterWise.jsx";
 
 
 
 function App() {
   const location = useLocation();
 
-  // Get the user role from local storage
-  const userRole = localStorage.getItem("userRole"); // Assuming "userRole" is set after login
+  const userRole = localStorage.getItem("userRole"); 
 
-  // Determine visibility of Navbar and Footer based on role and route
   const isNavbarFooterVisible =
     userRole !== "owner" &&
     userRole !== "admin" &&
@@ -77,6 +76,10 @@ function App() {
           <Route
             path="/student-performances/:category/:testName"
             element={<StudentPerformances />}
+          />
+          <Route
+            path="/student-performances-chapter/:subjectName/:mockName/:chapterName"
+            element={<ChapterWise />}
           />
           <Route path="/profile" element={<Profile />} />
           <Route path="/help" element={<Help />} />

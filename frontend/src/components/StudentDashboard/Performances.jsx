@@ -33,10 +33,11 @@ const Performances = ({ user }) => {
       }
 
       const data = await response.json();
+      const domain_Score = data.analysis;
 
       // Process exam categories (e.g., SSC CHSL, SSC MTS, etc.)
-      const processedData = Object.keys(data).map((category) => {
-        const tests = data[category]?.tests || {};
+      const processedData = Object.keys(domain_Score).map((category) => {
+        const tests = domain_Score[category]?.tests || {};
         const testArray = Object.keys(tests).map((testName) => ({
           name: testName,
           rank: tests[testName]?.rank || "N/A",

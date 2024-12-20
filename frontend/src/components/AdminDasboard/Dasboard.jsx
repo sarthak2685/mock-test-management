@@ -2,21 +2,46 @@ import React, { useState, useEffect } from "react";
 import DashboardHeader from "./DashboardHeader";
 import Sidebar from "./Sidebar/SideBars"; // Importing the updated Sidebar
 import { FaTrophy } from "react-icons/fa"; // Icons for leaderboard
+import config from "../../config";
 
 const Dashboard = () => {
   const [isCollapsed, setIsCollapsed] = useState(false); // Sidebar collapse state
-  const [user, setUser] = useState(null); // State to hold user data
+  const [error, setError] = useState(null);
+  const user = JSON.parse(localStorage.getItem("user"));
+  const token = user.token;
+  const [loading, setLoading] = useState(true);
+  const [userData, setUserData] = useState([]);
 
-  useEffect(() => {
-    // Retrieve user data from localStorage
-    const storedUser = localStorage.getItem('user');
-    console.log("Stored User Data:", storedUser); // Log stored data
+  const institueName = user.institute_name;
 
-    if (storedUser) {
-      const parsedUser = JSON.parse(storedUser); // Parse the stored user data
-      setUser(parsedUser); // Set the user state
+
+  const fetchPerformanceData = async () => {
+    try {
+      const response = await fetch(`${config.apiUrl}/institute-statistics/?institute_name=${institueName}`, {
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      setUserData(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  // Fetch data on component mount
+  useEffect(() => {
+    fetchPerformanceData();
   }, []);
+
 
   // Example leaderboard data with marks and time taken
   const leaderboardData = [
@@ -62,7 +87,7 @@ const Dashboard = () => {
         <Sidebar
           isCollapsed={isCollapsed}
           toggleSidebar={toggleSidebar}
-          className="hidden md:block" // Hide on mobile, show on medium screens and up
+          className="hidden md:block" 
         />
 
         {/* Main Dashboard Content */}
@@ -76,14 +101,14 @@ const Dashboard = () => {
 
           <div className="p-3 md:p-4">
             {/* Adjusted text size for Admin Dashboard */}
-            <h1 className="text-2xl md:text-3xl font-bold mb-4 text-left"> Welcome {user ? user.name : "Guest"}</h1>
+            <h1 className="text-2xl md:text-3xl font-bold mb-4 text-left"> Welcome {user ? user.institute_name : "Guest"}</h1>
 
             {/* Stats Cards Row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
               {/* Card for Total Students */}
               <div className="bg-white shadow-md rounded-lg p-3">
                 <h2 className="text-base md:text-lg">Total Students</h2>
-                <p className="text-xl md:text-2xl font-bold">20</p>
+                <p className="text-xl md:text-2xl font-bold">{userData.total_students}</p>
               </div>
 
               {/* Card for Active Tests */}
