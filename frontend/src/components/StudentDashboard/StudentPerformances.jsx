@@ -46,7 +46,7 @@ const StudentPerformances = ({ user }) => {
   // Fetch performance data for the specific test only if performanceData is not already loaded
   useEffect(() => {
     const fetchPerformanceData = async () => {
-      if (!performanceData) { // Check if the data is already loaded
+      if (!performanceData) { 
         setLoading(true);
         try {
           const response = await fetch(`${config.apiUrl}/student_performance_single/?student=${loggedInUser.id}`, {
@@ -59,13 +59,18 @@ const StudentPerformances = ({ user }) => {
           console.log(data);
 
           // Find the specific exam and test data
-          if (data[category]) {
-            const selectedTest = data[category]?.tests[testName];
+          if (data.analysis && data.analysis[category]) {
+            const selectedTest = data.analysis[category]?.tests?.[testName];
+            
             if (selectedTest) {
-              setPerformanceData(selectedTest);
-            }  else {
-              console.error("Test not found for exam:", category, "and test:", testName);
+              setPerformanceData(selectedTest); // Set the specific test data
+            } else {
+              console.error(`Test "${testName}" not found in category "${category}".`);
+              console.log("Available tests:", Object.keys(data.analysis[category]?.tests || {}));
             }
+          } else {
+            console.error(`Category "${category}" not found.`);
+            console.log("Available categories:", Object.keys(data.analysis || {}));
           }
         } catch (error) {
           console.error("Error fetching performance data:", error);
@@ -92,7 +97,7 @@ const StudentPerformances = ({ user }) => {
             : 0, // Total attempted questions
           performanceData
             ? Object.values(performanceData.subjects).reduce(
-                (acc, curr) => acc + (curr.total_marks - curr.questions_attempted),
+                (acc, curr) => acc + (curr.total_marks - curr.questions_unattempted),
                 0
               )
             : 0, // Total unattempted questions

@@ -33,7 +33,8 @@ const SubjectPerformance = ({ user }) => {
         throw new Error(`Error: ${response.status} ${response.statusText}`);
       }
       const data = await response.json();
-      setMockTests(data.data.all_exam_performance || []); 
+      const domain_Score = data.anaysis;     
+       setMockTests(domain_Score || []); 
     } catch (err) {
       setError(err.message);
     } finally {
@@ -70,10 +71,10 @@ const SubjectPerformance = ({ user }) => {
   console.log("User Info: ", userInfo);
 
   // Handler to navigate to the test details page
-  const handleTestClick = (test) => {
+  const handleTestClick = (subjectName,chapterName,mockName) => {
     // Navigate to the chart page for the selected test
-    navigate(`/student-performances/${test.exam_id || test.test_name}`, { state: { test, user: userInfo } });
-  };
+    navigate(`/student-performances-chapter/${subjectName}/${chapterName}/${mockName}`, { state: { subjectName, chapterName, user: userInfo } });
+};
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -97,21 +98,43 @@ const SubjectPerformance = ({ user }) => {
 
             {/* Mock Tests List */}
             <div className="bg-white shadow-md rounded-lg p-4">
-              <h3 className="text-2xl font-semibold mb-4">Mock Tests</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {mockTests.map((test) => (
-                  <div
-                    key={test.id}
-                    className="bg-gray-100 rounded-lg p-4 shadow hover:bg-gray-200 transition cursor-pointer"
-                    onClick={() => handleTestClick(test)}
-                  >
-                    <h4 className="text-lg font-bold">{test.test_name}</h4>
-                    <p>Domain Name: <span className="font-bold">{test.exam_name || "N/A"}</span></p>
-                    <p>Rank: <span className="font-bold">{test.rank?.[0]?.rank || "N/A"}</span></p>
-                  </div>
-                ))}
+  <h3 className="text-2xl font-semibold mb-4">Mock Tests</h3>
+  {/* Iterate over exam categories */}
+  {mockTests && Object.entries(mockTests).map(([subjectName, mockData], index) => (
+  <div key={index} className="mb-6">
+    {/* Subject Name */}
+    <h4 className="text-xl font-bold mb-4">{subjectName}</h4>
+
+    {/* Loop through mock tests if they exist */}
+    {mockData && Object.entries(mockData).map(([mockName, mockDetails]) => (
+      <div key={mockName} className="mb-4">
+        {/* Loop through chapters if they exist */}
+        {mockDetails.chapters && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Object.entries(mockDetails.chapters).map(([chapterName, chapterDetails]) => (
+              <div
+                key={chapterName}
+                className="relative bg-gradient-to-b from-white to-gray-100 border border-gray-200 rounded-lg p-6 shadow-lg hover:shadow-xl hover:scale-105 transition-all cursor-pointer w-44"
+                onClick={() => handleTestClick(subjectName, mockName, chapterName)} // Include mockName here
+              >
+                {/* Rank (if it exists) */}
+                <div className="absolute -top-3 -right-3 bg-blue-500 text-white text-xs font-semibold px-3 py-1 rounded-full shadow">
+                  {chapterDetails.rank ? `Rank: ${chapterDetails.rank}` : "Unranked"}
+                </div>
+                {/* Chapter Name */}
+                <h4 className="text-lg font-semibold text-gray-800">{chapterName}</h4>
               </div>
-            </div>
+            ))}
+          </div>
+        )}
+      </div>
+    ))}
+  </div>
+))}
+
+
+   
+</div>
           </div>
         </div>
       </div>
