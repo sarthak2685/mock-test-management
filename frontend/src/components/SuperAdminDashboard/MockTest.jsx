@@ -4,9 +4,13 @@ import Sidebar from "../SuperAdminDashboard/Sidebar";
 import { FaTrashAlt, FaEye } from "react-icons/fa";
 import Select from "react-select";
 import { Link, useNavigate } from "react-router-dom";
-import { InlineMath } from "react-katex"; // For inline math rendering
-import "katex/dist/katex.min.css"; // KaTeX styles
+// import { InlineMath } from "react-katex"; // For inline math rendering
+// import "katex/dist/katex.min.css"; // KaTeX styles
 import config from "../../config";
+import MathQuill, { addStyles, EditableMathField } from "react-mathquill";
+
+// Add MathQuill styles
+addStyles();
 
 const institutes = ["Institute A", "Institute B", "Institute C"];
 const subjects = ["Mathematics", "Science", "History", "ALL"];
@@ -677,19 +681,59 @@ const MockTestManagement = ({ user }) => {
         return;
       }
 
-      const options = currentQuestion.options.map((option) =>
-        typeof option === "string" ? option : option?.text || ""
+      // Function to convert image files to Base64
+      const fileToBase64 = (file) => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      };
+
+      // Handle options (both text and image)
+      const options = await Promise.all(
+        currentQuestion.options.map(async (option) => {
+          if (typeof option === "string") {
+            return option; // If it's just a string, return it directly.
+          }
+
+          if (option?.image instanceof File) {
+            // Convert image to Base64 if it's a File object
+            return await fileToBase64(option.image);
+          }
+
+          // If it's already Base64 or text, return it.
+          return option?.image || option?.text || null;
+        })
       );
 
+      // Ensure option text length is capped at 100 characters
+      const truncatedOptions = options.map((option) => {
+        if (typeof option === "string" && option.length > 100) {
+          return option.slice(0, 100);
+        }
+        return option;
+      });
+
+      // Handle the correct answer, which can be text or an image (Base64 or File)
       let correctAnswer = null;
+      let correctAnswer2 = null;
 
       if (currentQuestion.correctAnswer?.text) {
         correctAnswer = currentQuestion.correctAnswer.text;
+      } else if (currentQuestion.correctAnswer?.image instanceof File) {
+        // Convert correct answer image to Base64
+        correctAnswer2 = await fileToBase64(
+          currentQuestion.correctAnswer.image
+        );
       } else if (currentQuestion.correctAnswer?.image) {
-        correctAnswer = currentQuestion.correctAnswer.image;
+        // If the image is already Base64, just use it
+        correctAnswer2 = currentQuestion.correctAnswer.image;
       }
 
-      if (correctAnswer && correctAnswer.length > 100) {
+      // Ensure correct answer text length is capped at 100 characters
+      if (typeof correctAnswer === "string" && correctAnswer.length > 100) {
         correctAnswer = correctAnswer.slice(0, 100);
       }
 
@@ -707,7 +751,7 @@ const MockTestManagement = ({ user }) => {
       formData.append("exam_duration", newTest.duration);
       formData.append("for_exam", newTest.domain);
 
-      // Append institutes as array of UUIDs (not stringified)
+      // Append institutes as array of UUIDs
       selectedOptions.forEach((option) =>
         formData.append("institutes", option.value)
       );
@@ -726,9 +770,14 @@ const MockTestManagement = ({ user }) => {
       formData.append("negative_marks", newTest.negativeMark);
       formData.append("question", currentQuestion.questionText || null);
 
-      // Append question image file if available
-      if (currentQuestion.image instanceof File) {
-        formData.append("question_1", currentQuestion.image);
+      // Append question image file as Base64 if available
+      if (currentQuestion.image) {
+        if (currentQuestion.image instanceof File) {
+          const base64Image = await fileToBase64(currentQuestion.image);
+          formData.append("question_1", base64Image);
+        } else if (typeof currentQuestion.image === "string") {
+          formData.append("question_1", currentQuestion.image);
+        }
       }
 
       // Append subtopic if subject is ALL
@@ -736,19 +785,35 @@ const MockTestManagement = ({ user }) => {
         formData.append("subtopic", currentQuestion.subtopic);
       }
 
-      formData.append("option_1", options[0] || null);
-      formData.append("option_2", options[1] || null);
-      formData.append("option_3", options[2] || null);
-      formData.append("option_4", options[3] || null);
+      // Append both option text and image (if any)
+      await Promise.all(
+        currentQuestion.options.map(async (option, index) => {
+          const optionTextKey = `option_${index + 1}`;
+          const optionImageKey = `file_${index + 1}`;
 
-      // Append option image files if available
-      for (let i = 0; i < 4; i++) {
-        if (currentQuestion.options[i]?.image instanceof File) {
-          formData.append(`file_${i + 1}`, currentQuestion.options[i].image);
-        }
+          if (typeof option === "string") {
+            formData.append(optionTextKey, option); // Directly append the option text
+          } else {
+            formData.append(optionTextKey, option?.text || null); // Append the text if available
+          }
+
+          // Handle option image (Base64 or URL)
+          if (option?.image) {
+            if (option.image instanceof File) {
+              const base64Image = await fileToBase64(option.image);
+              formData.append(optionImageKey, base64Image);
+            } else if (typeof option.image === "string") {
+              formData.append(optionImageKey, option.image); // Append image as URL or Base64
+            }
+          }
+        })
+      );
+
+      // Append correct_answer and correct_answer2 fields
+      formData.append("correct_answer", correctAnswer); // It will be null if no text answer
+      if (correctAnswer2) {
+        formData.append("correct_answer2", correctAnswer2); // Image (Base64 or URL)
       }
-
-      formData.append("correct_answer", correctAnswer);
 
       // Send the request using fetch
       const response = await fetch(

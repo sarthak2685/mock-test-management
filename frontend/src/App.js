@@ -33,10 +33,10 @@ import Instructions from "./components/Home/Mock/Instructions.jsx";
 import MockChapter from "./components/Home/Mock/MockChapter.jsx";
 import ChapterTestInstructions from "./components/Home/Mock/ChapterTestInstruction.jsx";
 import SubscriptionForm from "./components/Home/SubscriptionForm.jsx";
+import TestTime from "./components/SuperAdminDashboard/TestTime.jsx";
 import ChapterScore from "./components/Home/Mock/ChapterScore.jsx";
 import ChapterPerformance from "./components/StudentDashboard/SubjectPerformance.jsx";
 import ChapterWise from "./components/StudentDashboard/ChapterWise.jsx";
-
 
 
 function App() {
@@ -47,7 +47,9 @@ function App() {
   const isNavbarFooterVisible =
     userRole !== "owner" &&
     userRole !== "admin" &&
-    ["/", "/login", "/contact", "/subscriptionform"].includes(location.pathname);
+    ["/", "/login", "/contact", "/subscriptionform"].includes(
+      location.pathname
+    );
 
   return (
     <UserProvider>
@@ -66,6 +68,7 @@ function App() {
           <Route path="/performance" element={<ChartComponent />} />
           <Route path="/admin-management" element={<AdminManagement />} />
           <Route path="/admins-list" element={<AdminList />} />
+          <Route path="/test-time" element={<TestTime />} />
           <Route
             path="/student-performance/:id"
             element={<StudentPerformance />}
@@ -102,7 +105,6 @@ function App() {
 
 
         </Routes>
-        
 
         {isNavbarFooterVisible && <Footer />}
       </div>
