@@ -4,7 +4,7 @@ import DashboardHeader from "./DashboardHeaders";
 import Sidebar from "./Sidebar/Sidebarr";
 import config from "../../config";
 
-const Performances = ({ user }) => {
+const SubjectPerformance = ({ user }) => {
   const [isCollapsed, setIsCollapsed] = useState(false); // Sidebar collapse state
   const navigate = useNavigate(); // Hook for navigation
   const [mockTests, setMockTests] = useState([]); // State for mock tests
@@ -21,32 +21,20 @@ const Performances = ({ user }) => {
 
   const fetchPerformanceData = async () => {
     try {
-      const response = await fetch(`${config.apiUrl}/student_performance_single/?student=${id}`, {
-        headers: {
-          Authorization: `Token ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
+      const response = await fetch(`${config.apiUrl}/student_performance_single_chapter/?student=${id}`,
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
       if (!response.ok) {
         throw new Error(`Error: ${response.status} ${response.statusText}`);
       }
-
       const data = await response.json();
-      const domain_Score = data.analysis;
-
-      // Process exam categories (e.g., SSC CHSL, SSC MTS, etc.)
-      const processedData = Object.keys(domain_Score).map((category) => {
-        const tests = domain_Score[category]?.tests || {};
-        const testArray = Object.keys(tests).map((testName) => ({
-          name: testName,
-          rank: tests[testName]?.rank || "N/A",
-          subjects: tests[testName]?.subjects || {},
-        }));
-        return { category, tests: testArray };
-      });
-
-      setMockTests(processedData);
+      const domain_Score = data.anaysis;     
+       setMockTests(domain_Score || []); 
     } catch (err) {
       setError(err.message);
     } finally {
@@ -83,11 +71,10 @@ const Performances = ({ user }) => {
   console.log("User Info: ", userInfo);
 
   // Handler to navigate to the test details page
-  const handleTestClick = (test, category) => {
-    navigate(`/student-performances/${category}/${test.name}`, {
-      state: { test, category, user: userInfo },
-    });
-  };
+  const handleTestClick = (subjectName,chapterName,mockName) => {
+    // Navigate to the chart page for the selected test
+    navigate(`/student-performances-chapter/${subjectName}/${chapterName}/${mockName}`, { state: { subjectName, chapterName, user: userInfo } });
+};
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -113,29 +100,41 @@ const Performances = ({ user }) => {
             <div className="bg-white shadow-md rounded-lg p-4">
   <h3 className="text-2xl font-semibold mb-4">Mock Tests</h3>
   {/* Iterate over exam categories */}
-  {mockTests.map((examCategory, index) => (
+  {mockTests && Object.entries(mockTests).map(([subjectName, mockData], index) => (
   <div key={index} className="mb-6">
-    <h4 className="text-xl font-bold mb-4">{examCategory.category}</h4>
-    <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4">
-      {examCategory.tests.map((test, idx) => (
-        <div
-          key={`${examCategory.category}-${idx}`}
-          className="relative bg-gradient-to-b from-white to-gray-100 border border-gray-200 rounded-lg p-6 shadow-lg hover:shadow-xl hover:scale-105 transition-all cursor-pointer w-44"
-          onClick={() => handleTestClick(test, examCategory.category)}
-        >
-          <div className="absolute -top-3 -right-3 bg-blue-500 text-white text-xs font-semibold px-3 py-1 rounded-full shadow">
-            {test.rank !== "N/A" ? `Rank: ${test.rank}` : "Unranked"}
+    {/* Subject Name */}
+    <h4 className="text-xl font-bold mb-4">{subjectName}</h4>
+
+    {/* Loop through mock tests if they exist */}
+    {mockData && Object.entries(mockData).map(([mockName, mockDetails]) => (
+      <div key={mockName} className="mb-4">
+        {/* Loop through chapters if they exist */}
+        {mockDetails.chapters && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Object.entries(mockDetails.chapters).map(([chapterName, chapterDetails]) => (
+              <div
+                key={chapterName}
+                className="relative bg-gradient-to-b from-white to-gray-100 border border-gray-200 rounded-lg p-6 shadow-lg hover:shadow-xl hover:scale-105 transition-all cursor-pointer w-44"
+                onClick={() => handleTestClick(subjectName, mockName, chapterName)} // Include mockName here
+              >
+                {/* Rank (if it exists) */}
+                <div className="absolute -top-3 -right-3 bg-blue-500 text-white text-xs font-semibold px-3 py-1 rounded-full shadow">
+                  {chapterDetails.rank ? `Rank: ${chapterDetails.rank}` : "Unranked"}
+                </div>
+                {/* Chapter Name */}
+                <h4 className="text-lg font-semibold text-gray-800">{chapterName}</h4>
+              </div>
+            ))}
           </div>
-          <h4 className="text-lg font-semibold text-gray-800">{test.name}</h4>
-          
-        </div>
-      ))}
-    </div>
+        )}
+      </div>
+    ))}
   </div>
 ))}
+
+
    
 </div>
-
           </div>
         </div>
       </div>
@@ -167,4 +166,4 @@ const Performances = ({ user }) => {
   );
 };
 
-export default Performances;
+export default SubjectPerformance;

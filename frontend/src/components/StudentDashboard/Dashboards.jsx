@@ -36,15 +36,16 @@ const Dashboards = () => {
     const fetchLeaderboardData = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`${config.apiUrl}/student_performance_single/?student_id=${id}`, {
+        const response = await fetch(`${config.apiUrl}/student_performance_single/?student=${id}`, {
           headers: {
             Authorization: `Token ${token}`,
             "Content-Type": "application/json",
           },
         });
         const data = await response.json();
-        const leaderboard = data.data.last_exam_leaderboard || [];
-        const userRank = data.data.student_rank_in_last_exam;
+        const leaderboard = data.leader_board.leaderboard || [];
+        const userRank = data.leader_board.leaderboard ;
+        console.log(leaderboard)
         setLeaderboardData(leaderboard);
         setCurrentUserRank(userRank);
       } catch (error) {
@@ -168,14 +169,14 @@ const Dashboards = () => {
                               )}
                               <div className="ml-2">
                                 <p className="text-gray-900 font-medium whitespace-no-wrap">
-                                  {student.student__name}
+                                  {student.student_name}
                                 </p>
                               </div>
                             </div>
                           </td>
                           <td className="px-3 py-2 md:px-4 md:py-3 border-b border-gray-200 text-sm">
                             <p className="text-gray-900 font-bold whitespace-no-wrap">
-                              {student.total_marks}
+                              {student.total_obtained}
                             </p>
                           </td>
                           <td className="px-3 py-2 md:px-4 md:py-3 border-b border-gray-200 text-sm">

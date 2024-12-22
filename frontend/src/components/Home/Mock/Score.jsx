@@ -282,7 +282,7 @@ const Score = () => {
                   Total Score
                 </p>
                 <p className="text-2xl md:text-3xl lg:text-4xl font-bold text-indigo-600">
-                  {analysisData?.total_marks_for_exam || "N/A"}
+                  {analysisData?.total_marks_for_exam || "0"}
                 </p>
               </div>
               <div className="relative w-36 h-36 md:w-48 md:h-48 lg:w-64 lg:h-64">

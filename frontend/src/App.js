@@ -34,14 +34,16 @@ import MockChapter from "./components/Home/Mock/MockChapter.jsx";
 import ChapterTestInstructions from "./components/Home/Mock/ChapterTestInstruction.jsx";
 import SubscriptionForm from "./components/Home/SubscriptionForm.jsx";
 import TestTime from "./components/SuperAdminDashboard/TestTime.jsx";
+import ChapterScore from "./components/Home/Mock/ChapterScore.jsx";
+import ChapterPerformance from "./components/StudentDashboard/SubjectPerformance.jsx";
+import ChapterWise from "./components/StudentDashboard/ChapterWise.jsx";
+
 
 function App() {
   const location = useLocation();
 
-  // Get the user role from local storage
-  const userRole = localStorage.getItem("userRole"); // Assuming "userRole" is set after login
+  const userRole = localStorage.getItem("userRole"); 
 
-  // Determine visibility of Navbar and Footer based on role and route
   const isNavbarFooterVisible =
     userRole !== "owner" &&
     userRole !== "admin" &&
@@ -73,10 +75,14 @@ function App() {
           />
           <Route path="/mock-demo" element={<MockDemo />} />
           <Route path="/student-dashboard" element={<Dashboards />} />
-          <Route path="/student-performance" element={<Performances />} />
+          <Route path="/Exam-Wise-Performance" element={<Performances />} />
           <Route
-            path="/student-performances/:id"
+            path="/student-performances/:category/:testName"
             element={<StudentPerformances />}
+          />
+          <Route
+            path="/student-performances-chapter/:subjectName/:mockName/:chapterName"
+            element={<ChapterWise />}
           />
           <Route path="/profile" element={<Profile />} />
           <Route path="/help" element={<Help />} />
@@ -90,7 +96,14 @@ function App() {
             path="/chapterinstruction"
             element={<ChapterTestInstructions />}
           />
-          <Route path="/subscriptionform" element={<SubscriptionForm />} />
+           <Route
+            path="/subscriptionform"
+            element={<SubscriptionForm />}
+          />
+          <Route path="/scorecard" element={<ChapterScore />} />
+          <Route path="/subject-Wise-Performance" element={<ChapterPerformance />} />
+
+
         </Routes>
 
         {isNavbarFooterVisible && <Footer />}
