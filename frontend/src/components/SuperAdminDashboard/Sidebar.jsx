@@ -4,6 +4,7 @@ import { FiUsers, FiBarChart } from "react-icons/fi";
 import { HomeIcon, ArrowLeftOnRectangleIcon } from "@heroicons/react/24/solid";
 import { FaTimes } from "react-icons/fa"; // Importing Font Awesome close icon
 import { HiUserGroup } from "react-icons/hi"; // Importing HiUserGroup icon for "Admins List"
+import { HiClock } from "react-icons/hi"; // Importing a time-related icon
 
 const Sidebar = ({ isCollapsed, toggleSidebar }) => {
   const navigate = useNavigate();
@@ -81,6 +82,19 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
         >
           <FiBarChart className="mr-2" />
           <span className="block">{isCollapsed ? "" : "Create Test"}</span>
+        </NavLink>
+
+        {/* Test Time Section with HiClock icon */}
+        <NavLink
+          to="/test-time"
+          className={({ isActive }) =>
+            `flex items-center py-2 px-4 mt-4 rounded hover:bg-blue-700 ${
+              isActive ? "bg-blue-700" : ""
+            }`
+          }
+        >
+          <HiClock className="mr-2" /> {/* Changed to HiClock icon */}
+          <span className="block">{isCollapsed ? "" : "Test Time"}</span>
         </NavLink>
 
         {/* Separator Line */}

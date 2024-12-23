@@ -45,7 +45,15 @@ const Login = () => {
         localStorage.setItem("user", JSON.stringify(userData));
 
         // Clear the Data from localStorage
-
+        // localStorage.removeItem("submittedData");
+        // localStorage.removeItem("selectedExamDuration");
+        // localStorage.removeItem("timerDuration");
+        // localStorage.removeItem("start_time");
+        // localStorage.removeItem("submissionResult");
+        // localStorage.removeItem("testDuration");
+        // localStorage.removeItem("end_time");
+        // localStorage.removeItem("selectedTestName");
+        // localStorage.removeItem("exam_id");
 
         // Navigation logic
         if (type === "owner") {

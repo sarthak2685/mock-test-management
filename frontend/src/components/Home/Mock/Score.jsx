@@ -4,14 +4,13 @@ import { MdTimer } from "react-icons/md";
 import { HiOutlineDocumentText } from "react-icons/hi";
 import { AiOutlineFileDone, AiOutlineTrophy } from "react-icons/ai";
 import { jsPDF } from "jspdf";
-import { FaCloudDownloadAlt } from 'react-icons/fa';
-import { RiCloseLine } from 'react-icons/ri'; 
+import { FaCloudDownloadAlt } from "react-icons/fa";
+import { RiCloseLine } from "react-icons/ri";
 import config from "../../../config";
 import { useNavigate } from "react-router-dom";
 
 const Score = () => {
   const [activeTab, setActiveTab] = useState("testResult");
-
 
   const S = JSON.parse(localStorage.getItem("user"));
   const token = S.token;
@@ -41,7 +40,8 @@ const Score = () => {
             Authorization: `Token ${token}`,
             "Content-Type": "application/json",
           },
-        }); if (!response.ok) {
+        });
+        if (!response.ok) {
           throw new Error("Failed to fetch data");
         }
         const data = await response.json();
@@ -57,7 +57,9 @@ const Score = () => {
     fetchData();
   }, [apiUrl]);
 
-  const sectionData = Object.keys(analysisData?.data_2?.subject_summary || {}).map((subject) => {
+  const sectionData = Object.keys(
+    analysisData?.data_2?.subject_summary || {}
+  ).map((subject) => {
     const summary = analysisData.data_2.subject_summary[subject];
     return {
       name: subject,
@@ -68,7 +70,7 @@ const Score = () => {
     };
   });
 
-  const handleChange =()=>{
+  const handleChange = () => {
     localStorage.removeItem("submittedData");
     localStorage.removeItem("selectedExamDuration");
     localStorage.removeItem("timerDuration");
@@ -78,8 +80,8 @@ const Score = () => {
     localStorage.removeItem("end_time");
     localStorage.removeItem("selectedTestName");
     localStorage.removeItem("exam_id");
-    navigate('/');
-  }
+    navigate("/");
+  };
 
   const reportRef = useRef();
   const handlePDFDownload = () => {
@@ -126,7 +128,9 @@ const Score = () => {
         (option, idx) => `${String.fromCharCode(65 + idx)}) ${option}`
       );
       const correctAnswerText = `Correct Answer: ${question.correctAnswer}`;
-      const markedAnswerText = `Marked Answer: ${question.markedAnswer || "Not Answered"}`;
+      const markedAnswerText = `Marked Answer: ${
+        question.markedAnswer || "Not Answered"
+      }`;
 
       // Calculate the height of the question and options dynamically
       const wrappedHeight = wrappedQuestion.length * 8;
@@ -137,7 +141,7 @@ const Score = () => {
       doc.setDrawColor(...borderColor);
       doc.setLineWidth(0.5);
       doc.setFillColor(...cardFillColor);
-      doc.roundedRect(15, y, cardWidth, totalHeight, 5, 5, 'FD');
+      doc.roundedRect(15, y, cardWidth, totalHeight, 5, 5, "FD");
 
       // Question Title
       doc.setFontSize(14);
@@ -161,7 +165,8 @@ const Score = () => {
       });
 
       // Correct and Marked Answers side by side
-      const answerYOffset = optionYOffset + Math.ceil(options.length / 2) * 8 + 3;
+      const answerYOffset =
+        optionYOffset + Math.ceil(options.length / 2) * 8 + 3;
 
       // Correct Answer
       doc.setFontSize(12);
@@ -170,13 +175,14 @@ const Score = () => {
       doc.text(correctAnswerText, 25, answerYOffset);
 
       // Marked Answer (Green if correct, red if incorrect)
-      const markedAnswerColor = question.markedAnswer === question.correctAnswer ? markedAnswerCorrectColor : markedAnswerIncorrectColor;
+      const markedAnswerColor =
+        question.markedAnswer === question.correctAnswer
+          ? markedAnswerCorrectColor
+          : markedAnswerIncorrectColor;
       doc.setTextColor(...markedAnswerColor);
       doc.text(markedAnswerText, 105, answerYOffset);
 
       y += totalHeight + 8;
-
-
 
       // Page break if necessary (check remaining space on page)
       if (y + totalHeight > 270) {
@@ -190,13 +196,22 @@ const Score = () => {
     doc.setFont("helvetica", "normal");
     doc.setTextColor(150, 150, 150); // Light grey for page numbers
     const totalPages = doc.internal.getNumberOfPages();
-    doc.text(`Page ${doc.internal.getCurrentPageInfo().pageNumber} of ${totalPages}`, 180, 290);
+    doc.text(
+      `Page ${doc.internal.getCurrentPageInfo().pageNumber} of ${totalPages}`,
+      180,
+      290
+    );
 
     // Save the PDF
     doc.save("score-report.pdf");
   };
   const parseDate = (str) => {
-    const formattedStr = str.replace("_", " ").replace(/(\d{2})-(\d{2})-(\d{4}) (\d{2}):(\d{2}):(\d{2})/, "$3-$2-$1T$4:$5:$6");
+    const formattedStr = str
+      .replace("_", " ")
+      .replace(
+        /(\d{2})-(\d{2})-(\d{4}) (\d{2}):(\d{2}):(\d{2})/,
+        "$3-$2-$1T$4:$5:$6"
+      );
     return new Date(formattedStr);
   };
 
@@ -237,10 +252,8 @@ const Score = () => {
         correctAnswer: "Mother",
         markedAnswer: "",
       },
-    ]
+    ],
   };
-
-
 
   const renderContent = () => {
     switch (activeTab) {
@@ -251,12 +264,14 @@ const Score = () => {
               <h3 className="text-lg md:text-2xl lg:text-3xl font-semibold text-gray-800 flex items-center justify-center mb-2 md:mb-3 lg:mb-4">
                 <FaUserAlt className="text-indigo-600 text-2xl md:text-3xl lg:text-4xl mr-2" />
                 Candidate:{" "}
-                <span className="text-indigo-600 ml-2 font-bold">{user.name}</span>
+                <span className="text-indigo-600 ml-2 font-bold">
+                  {user.name}
+                </span>
               </h3>
               <p className="text-gray-600 text-sm md:text-base lg:text-lg">
                 Start Time:{" "}
-                <span className="font-medium text-gray-700">{startTime}</span> | Submit
-                Time:{" "}
+                <span className="font-medium text-gray-700">{startTime}</span> |
+                Submit Time:{" "}
                 <span className="font-medium text-gray-700">{endTime}</span>
               </p>
             </div>
@@ -302,7 +317,6 @@ const Score = () => {
         );
 
       case "scoreReport":
-
         return (
           <div
             ref={reportRef}
@@ -312,27 +326,25 @@ const Score = () => {
               <h3 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-800">
                 Score Report
               </h3>
-                    <div className="relative group flex items-center">
-            <button
-              onClick={handlePDFDownload}
-              className="text-indigo-600 hover:text-indigo-400 text-4xl transition duration-300"
-            >
-              <FaCloudDownloadAlt /> {/* Cloud Download Icon */}
-            </button>
+              <div className="relative group flex items-center">
+                <button
+                  onClick={handlePDFDownload}
+                  className="text-indigo-600 hover:text-indigo-400 text-4xl transition duration-300"
+                >
+                  <FaCloudDownloadAlt /> {/* Cloud Download Icon */}
+                </button>
 
-            {/* Tooltip Popup */}
-            <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-56 text-sm text-white bg-gradient-to-r from-indigo-500 to-blue-500 rounded-lg shadow-lg p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <div className="flex items-center space-x-2">
-                <span>Click to download your result!</span>
+                {/* Tooltip Popup */}
+                <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-56 text-sm text-white bg-gradient-to-r from-indigo-500 to-blue-500 rounded-lg shadow-lg p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="flex items-center space-x-2">
+                    <span>Click to download your result!</span>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-
-
-            </div>
             <p className="text-gray-600 mb-4 md:mb-8 text-sm md:text-base">
-              Gain insights into your performance with a subject-wise breakdown and
-              detailed analysis.
+              Gain insights into your performance with a subject-wise breakdown
+              and detailed analysis.
             </p>
 
             {/* Performance Table */}
@@ -345,7 +357,9 @@ const Score = () => {
                 <table className="w-full text-gray-700 text-xs sm:text-sm md:text-base border-collapse border border-gray-200">
                   <thead>
                     <tr className="bg-indigo-200 text-indigo-700">
-                      <th className="p-2 md:p-4 text-left border-b border-gray-300">Section</th>
+                      <th className="p-2 md:p-4 text-left border-b border-gray-300">
+                        Section
+                      </th>
                       <th className="p-2 md:p-4 text-center border-b border-gray-300">
                         Correct
                       </th>
@@ -361,9 +375,15 @@ const Score = () => {
                     {sectionData.map((section) => (
                       <tr key={section.name} className="border-b">
                         <td className="p-2 md:p-4 text-left">{section.name}</td>
-                        <td className="p-2 md:p-4 text-center">{section.correct}</td>
-                        <td className="p-2 md:p-4 text-center">{section.wrong}</td>
-                        <td className="p-2 md:p-4 text-center">{section.unattempted}</td>
+                        <td className="p-2 md:p-4 text-center">
+                          {section.correct}
+                        </td>
+                        <td className="p-2 md:p-4 text-center">
+                          {section.wrong}
+                        </td>
+                        <td className="p-2 md:p-4 text-center">
+                          {section.unattempted}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
@@ -385,7 +405,9 @@ const Score = () => {
                     const averageMarks = averageMarksData.find(
                       (avgData) => avgData.subject_name === section.name
                     );
-                    const avgScore = averageMarks ? averageMarks.average_marks : 0;
+                    const avgScore = averageMarks
+                      ? averageMarks.average_marks
+                      : 0;
 
                     return (
                       <div
@@ -412,65 +434,80 @@ const Score = () => {
           </div>
         );
 
-
-
-
       case "leaderboard":
-
-      return (
-        <div className="bg-white p-8 sm:p-12 rounded-3xl shadow-2xl transition-all duration-500 transform hover:scale-105">
-          <h3 className="text-2xl sm:text-3xl font-semibold text-gray-800">
-            Leaderboard
-          </h3>
-          <p className="text-gray-600 mt-4">
-            See how you rank among other participants. Top performers are highlighted.
-          </p>
-    
-          {/* Leaderboard Table */}
-          <div className="mt-8 overflow-x-auto">
-            <table className="min-w-full table-auto text-sm sm:text-base text-gray-700">
-              <thead>
-                <tr className="bg-indigo-100 text-indigo-700">
-                  <th className="p-3 text-left">Rank</th>
-                  <th className="p-3 text-left">Name</th>
-                  <th className="p-3 text-center">Score</th>
-                </tr>
-              </thead>
-              <tbody>
-                {leaderboardData.map((participant) => {
-                  const trophyColor = participant.rank === 1 ? 'gold' :
-                                      participant.rank === 2 ? 'silver' :
-                                      participant.rank === 3 ? 'bronze' : 'gray';
-    
-                  return (
-                    <tr
-                      key={participant.rank}
-                      className={`border-b hover:bg-indigo-50 transition-all duration-300 ${participant.student_id === user.id ? "bg-yellow-100 font-bold" : ""}`}
-                    >
-                      <td className="p-3 font-semibold text-indigo-600 text-left">
-                        {participant.rank === 1 ? <AiOutlineTrophy className="text-red-500" /> :
-                         participant.rank === 2 ? <AiOutlineTrophy className="text-gray-300" /> :
-                         participant.rank === 3 ? <AiOutlineTrophy className="text-brown-400" /> :
-                         participant.rank}
-                      </td>
-                      <td className="p-3 text-left ">{participant.student_name}</td>
-                      <td className="p-3 text-center">{participant.total_marks}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-    
-          {/* Visual Enhancement */}
-          <div className="mt-8 flex justify-center items-center">
-            <AiOutlineTrophy className="text-6xl text-indigo-600" />
-            <p className="text-xl sm:text-2xl ml-4 text-indigo-600 font-semibold">
-              Congratulations to the top performers!
+        return (
+          <div className="bg-white p-8 sm:p-12 rounded-3xl shadow-2xl transition-all duration-500 transform hover:scale-105">
+            <h3 className="text-2xl sm:text-3xl font-semibold text-gray-800">
+              Leaderboard
+            </h3>
+            <p className="text-gray-600 mt-4">
+              See how you rank among other participants. Top performers are
+              highlighted.
             </p>
+
+            {/* Leaderboard Table */}
+            <div className="mt-8 overflow-x-auto">
+              <table className="min-w-full table-auto text-sm sm:text-base text-gray-700">
+                <thead>
+                  <tr className="bg-indigo-100 text-indigo-700">
+                    <th className="p-3 text-left">Rank</th>
+                    <th className="p-3 text-left">Name</th>
+                    <th className="p-3 text-center">Score</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {leaderboardData.map((participant) => {
+                    const trophyColor =
+                      participant.rank === 1
+                        ? "gold"
+                        : participant.rank === 2
+                        ? "silver"
+                        : participant.rank === 3
+                        ? "bronze"
+                        : "gray";
+
+                    return (
+                      <tr
+                        key={participant.rank}
+                        className={`border-b hover:bg-indigo-50 transition-all duration-300 ${
+                          participant.student_id === user.id
+                            ? "bg-yellow-100 font-bold"
+                            : ""
+                        }`}
+                      >
+                        <td className="p-3 font-semibold text-indigo-600 text-left">
+                          {participant.rank === 1 ? (
+                            <AiOutlineTrophy className="text-red-500" />
+                          ) : participant.rank === 2 ? (
+                            <AiOutlineTrophy className="text-gray-300" />
+                          ) : participant.rank === 3 ? (
+                            <AiOutlineTrophy className="text-brown-400" />
+                          ) : (
+                            participant.rank
+                          )}
+                        </td>
+                        <td className="p-3 text-left ">
+                          {participant.student_name}
+                        </td>
+                        <td className="p-3 text-center">
+                          {participant.total_marks}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Visual Enhancement */}
+            <div className="mt-8 flex justify-center items-center">
+              <AiOutlineTrophy className="text-6xl text-indigo-600" />
+              <p className="text-xl sm:text-2xl ml-4 text-indigo-600 font-semibold">
+                Congratulations to the top performers!
+              </p>
+            </div>
           </div>
-        </div>
-      )
+        );
     }
   };
 
@@ -481,51 +518,55 @@ const Score = () => {
         className="absolute top-4 right-4 text-2xl sm:text-3xl text-gray-600 cursor-pointer hover:text-indigo-600 transition-all duration-300"
         onClick={handleChange} // Redirects to the homepage
       />
-      
+
       <div className="w-full max-w-7xl mx-auto text-center font-sans text-gray-800 p-8 sm:p-12">
         <h2 className="text-4xl sm:text-5xl font-extrabold text-indigo-700 mb-8 sm:mb-12 -mt-12 tracking-wider">
           Test Performance
         </h2>
-        
+
         {/* Tab Navigation */}
         <div className="flex justify-center space-x-6 sm:space-x-12 mb-8 flex-wrap">
           <span
             onClick={() => setActiveTab("testResult")}
-            className={`px-6 sm:px-8 py-4 cursor-pointer text-lg sm:text-xl font-medium flex items-center transition-all duration-500 transform hover:scale-105 rounded-lg hover:bg-indigo-50 ${activeTab === "testResult"
-              ? "text-indigo-600 border-b-4 border-indigo-600 bg-white shadow-xl"
-              : "text-gray-600 hover:text-indigo-600"
-              }`}
+            className={`px-6 sm:px-8 py-4 cursor-pointer text-lg sm:text-xl font-medium flex items-center transition-all duration-500 transform hover:scale-105 rounded-lg hover:bg-indigo-50 ${
+              activeTab === "testResult"
+                ? "text-indigo-600 border-b-4 border-indigo-600 bg-white shadow-xl"
+                : "text-gray-600 hover:text-indigo-600"
+            }`}
           >
-            <AiOutlineFileDone className="mr-2 text-xl sm:text-2xl" /> Test Result
+            <AiOutlineFileDone className="mr-2 text-xl sm:text-2xl" /> Test
+            Result
           </span>
-          
+
           <span
             onClick={() => setActiveTab("scoreReport")}
-            className={`px-6 sm:px-8 py-4 cursor-pointer text-lg sm:text-xl font-medium flex items-center transition-all duration-500 transform hover:scale-105 rounded-lg hover:bg-indigo-50 ${activeTab === "scoreReport"
-              ? "text-indigo-600 border-b-4 border-indigo-600 bg-white shadow-xl"
-              : "text-gray-600 hover:text-indigo-600"
-              }`}
+            className={`px-6 sm:px-8 py-4 cursor-pointer text-lg sm:text-xl font-medium flex items-center transition-all duration-500 transform hover:scale-105 rounded-lg hover:bg-indigo-50 ${
+              activeTab === "scoreReport"
+                ? "text-indigo-600 border-b-4 border-indigo-600 bg-white shadow-xl"
+                : "text-gray-600 hover:text-indigo-600"
+            }`}
           >
-            <HiOutlineDocumentText className="mr-2 text-xl sm:text-2xl" /> Score Report
+            <HiOutlineDocumentText className="mr-2 text-xl sm:text-2xl" /> Score
+            Report
           </span>
-          
+
           <span
             onClick={() => setActiveTab("leaderboard")}
-            className={`px-6 sm:px-8 py-4 cursor-pointer text-lg sm:text-xl font-medium flex items-center transition-all duration-500 transform hover:scale-105 rounded-lg hover:bg-indigo-50 ${activeTab === "leaderboard"
-              ? "text-indigo-600 border-b-4 border-indigo-600 bg-white shadow-xl"
-              : "text-gray-600 hover:text-indigo-600"
-              }`}
+            className={`px-6 sm:px-8 py-4 cursor-pointer text-lg sm:text-xl font-medium flex items-center transition-all duration-500 transform hover:scale-105 rounded-lg hover:bg-indigo-50 ${
+              activeTab === "leaderboard"
+                ? "text-indigo-600 border-b-4 border-indigo-600 bg-white shadow-xl"
+                : "text-gray-600 hover:text-indigo-600"
+            }`}
           >
             <AiOutlineTrophy className="mr-2 text-xl sm:text-2xl" /> Leaderboard
           </span>
         </div>
-  
+
         {/* Render Content Based on Active Tab */}
         {renderContent()}
       </div>
     </div>
   );
-  
 };
 
 export default Score;
