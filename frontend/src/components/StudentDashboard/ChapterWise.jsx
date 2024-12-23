@@ -53,7 +53,7 @@ function ChapterWise() {
         setLoading(true);
         try {
           const response = await fetch(
-            `${config.apiUrl}/student_performance_single_chapter/?student=${id}`,
+            `${config.apiUrl}/student_performance_single_chapter/?student_id=${id}`,
             {
               headers: {
                 Authorization: `Token ${token}`,

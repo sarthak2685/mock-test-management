@@ -49,7 +49,7 @@ const StudentPerformances = ({ user }) => {
       if (!performanceData) { 
         setLoading(true);
         try {
-          const response = await fetch(`${config.apiUrl}/student_performance_single/?student=${loggedInUser.id}`, {
+          const response = await fetch(`${config.apiUrl}/student_performance_single/?student_id=${loggedInUser.id}`, {
             headers: {
               Authorization: `Token ${token}`,
               "Content-Type": "application/json",

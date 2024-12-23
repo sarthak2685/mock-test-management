@@ -21,7 +21,7 @@ const SubjectPerformance = ({ user }) => {
 
   const fetchPerformanceData = async () => {
     try {
-      const response = await fetch(`${config.apiUrl}/student_performance_single_chapter/?student=${id}`,
+      const response = await fetch(`${config.apiUrl}/student_performance_single_chapter/?student_id=${id}`,
         {
           headers: {
             Authorization: `Token ${token}`,
