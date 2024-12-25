@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import config from "../../../config";
 
 const Instructions = () => {
   const [isChecked, setIsChecked] = useState(false);
@@ -13,6 +14,7 @@ const Instructions = () => {
   const [error1, setError1] = useState("");
   const [error2, setError2] = useState("");
   const navigate = useNavigate();
+  const [serialNo, setSerialNo] = useState(null);
 
   const handleCheckboxChange = () => {
     setIsChecked(!isChecked);
@@ -24,6 +26,22 @@ const Instructions = () => {
     setError1(""); // Clear error when a language is selected
     localStorage.setItem("selectedLanguage", selectedLanguage);
   };
+  const fetchSerial = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${config.apiUrl}/get_slno/}`, {
+        headers: {
+          'Authorization': `Token ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = await response.json();
+      console.log("serial no",data)
+      
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
   const handleOptionalSubjectChange = (e) => {
     const selectedSubject = e.target.value;
@@ -32,7 +50,7 @@ const Instructions = () => {
     localStorage.setItem("selectedOptionalSubject", selectedSubject);
   };
 
-  const handleNextStep = () => {
+  const handleNextStep = async() => {
     if (step === 1) {
       if (!language) {
         setError1("Please select a language before proceeding.");
@@ -62,6 +80,7 @@ const Instructions = () => {
       // Store formatted start time when transitioning to step 2
       const startTimeFormatted = formatDateTime(new Date());
       localStorage.setItem("start_time", startTimeFormatted);
+      await fetchSerial();
       navigate("/mock-demo");
     }
   };
