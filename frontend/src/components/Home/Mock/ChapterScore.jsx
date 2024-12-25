@@ -27,6 +27,7 @@ const ChapterScore = () => {
   const [leaderboardData, setLeaderboardData] = useState([]);
   const navigate = useNavigate();
   const [sectionData, setSectionsData] = useState([]);
+  const [examMarks, setExamMarks] = useState([]);
 
   const queryParams = `student_id=${studentId}&test_name=${testName}&start_time=${startTime}&end_time=${endTime}`;
   const apiUrl = `${config.apiUrl}/get-chapter-analysis/?${queryParams}`;
@@ -47,6 +48,7 @@ const ChapterScore = () => {
         }
         const data = await response.json();
         console.log("hero", data.data);
+        setExamMarks(data);
         setAnalysisData(data.data);
         setSectionsData(data.average_marks)
         setLeaderboardData(data.leaderboard || []);
@@ -266,7 +268,7 @@ const ChapterScore = () => {
                       (key) => key.startsWith("Chapter")
                     );
                     return (
-                      analysisData?.[subject]?.[chapter]?.total_marks || "N/A"
+                      examMarks.marks || "N/A"
                     );
                   })()}                </p>
               </div>

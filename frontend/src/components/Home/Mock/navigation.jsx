@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { RiInformation2Line } from "react-icons/ri";
 import Timer from "../Mock/Timer"; // Assuming Timer is a separate component
+import config from "../../../config";
 
 const InstructionsModal = ({ isVisible, onClose }) => {
   const [optionalSubject, setOptionalSubject] = useState(
@@ -289,6 +290,8 @@ const QuestionNavigation = ({
   const SubjectId = localStorage.getItem("selectedSubjectId");
   const Test = localStorage.getItem("selectedTestName");
 
+  
+
   // const [totalMinutes, setTotalMinutes] = useState(() => {
   //   const savedMinutes = localStorage.getItem("totalMinutes");
   //   console.log("timeee", savedMinutes);
@@ -299,6 +302,15 @@ const QuestionNavigation = ({
   const savedMinutes = localStorage.getItem("selectedExamDuration");
 
   console.log("Tim3333e", savedMinutes);
+  const parseDate = (str) => {
+    const formattedStr = str
+      .replace("_", " ")
+      .replace(
+        /(\d{2})-(\d{2})-(\d{4}) (\d{2}):(\d{2}):(\d{2})/,
+        "$3-$2-$1T$4:$5:$6"
+      );
+    return new Date(formattedStr);
+  };
 
   const handleSubmit = async () => {
     try {
@@ -343,9 +355,16 @@ const QuestionNavigation = ({
         // start_time: start_time,
         // end_time: end_time,
       }));
-
+        // Convert the start and end times to Date objects
+      const startDate = parseDate(start_time);
+      const endDate = parseDate(end_time);
+        
+      // Calculate the difference in milliseconds and convert to seconds
+      const diffInSeconds = Math.floor((endDate - startDate) / 1000);
       // Build query parameters
-      const queryParams = `student_id=${student_id}&test_name=${test_name}&start_time=${start_time}&exam_id=${exam_id}&end_time=${end_time}`;
+      // student_id=${student_id}&test_name=${test_name}&exam_id=${exam_id}
+
+      const queryParams = `start_time=${start_time}&end_time=${end_time}`;
 
       // Submit the data to the server in one request
       const response = await fetch(
