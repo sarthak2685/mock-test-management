@@ -154,11 +154,41 @@ const ChapterMobile = ({
   //     });
   //   };
 
+  const baseUrl = "http://mockexam.pythonanywhere.com";
+  const defaultFileValue = "/media/uploads/questions/option_4_uFtm5qj.png";
+
   return (
     <div className="flex flex-col bg-gray-100 min-h-screen relative">
+      {/* Sticky Header */}
+      <div className="sticky top-0 bg-white shadow-md z-10 p-4 grid grid-cols-3 items-center">
+        <div className="grid grid-cols-2 col-span-2 items-center space-x-4 justify-between">
+          <UserProfile className="col-span-1" user={user} />
+          {mockTestData.length > 0 && (
+            <Timer
+              className="col-span-1 items-center"
+              totalMinutes={
+                localStorage.getItem("timerDuration", timerDuration) || 0
+              }
+            />
+          )}
+        </div>
+        <div className="flex col-span-1 items-center justify-end space-x-4">
+          <button
+            onClick={() => setShowNavigation(!showNavigation)}
+            className="text-blue-500"
+            aria-label="Toggle Navigation"
+          >
+            {showNavigation ? (
+              <FaTimes className="w-6 h-6" />
+            ) : (
+              <FaBars className="w-6 h-6" />
+            )}
+          </button>
+        </div>
+      </div>
+
       {/* Main Content */}
-      <div className="flex-1 transition-all duration-300">
-        {/* Section Navigation Modal */}
+      <div className="flex-1 p-4 mt-4">
         {showNavigation && (
           <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center z-30">
             <div className="bg-white rounded-lg p-6 w-11/12 max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl max-h-3/4 overflow-y-auto shadow-lg">
@@ -173,7 +203,6 @@ const ChapterMobile = ({
                 </button>
               </h3>
 
-              {/* Display test name instead of dropdown */}
               <div className="w-full max-w-xs mx-auto mb-4 text-center text-gray-700 bg-white border border-gray-300 rounded-lg px-4 py-2">
                 {mockTestData[currentSectionIndex]?.test_name || "Unknown Test"}
               </div>
@@ -199,121 +228,127 @@ const ChapterMobile = ({
             </div>
           </div>
         )}
-        <div className="sticky top-0 bg-white shadow-md p-4 grid grid-cols-3 items-center ">
-          <div className="grid grid-cols-2 col-span-2 items-center space-x-4 justify-between ">
-            <UserProfile className="col-span-1" user={user} />
-            {mockTestData.length > 0 && (
-              <Timer
-                className="col-span-1 items-center"
-                totalMinutes={
-                  localStorage.getItem("timerDuration", timerDuration) || 0
-                }
-              />
-            )}
-          </div>
-          <div className="flex col-span-1 items-center justify-end space-x-4">
-            <button
-              onClick={() => setShowNavigation(!showNavigation)}
-              className="text-blue-500"
-              aria-label="Toggle Navigation"
-            >
-              {showNavigation ? (
-                <FaTimes className="w-6 h-6" />
-              ) : (
-                <FaBars className="w-6 h-6" />
-              )}
-            </button>
-          </div>
-        </div>
 
-        {/* Main Question Content */}
-        <div className="p-4 flex-1">
-          {currentQuestion ? (
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="flex justify-between">
-                <span className="text-xl justify-start font-semibold text-blue-600 mb-2">
-                  Question {currentQuestionIndex + 1}
-                </span>
-                <div className="flex items-center justify-end space-x-1">
-                  <div className="flex items-center justify-center p-2 bg-green-200 text-green-700 rounded-lg">
-                    <h2 className="text-xs sm:font-semibold">
-                      +{currentQuestion.marks} marks
-                    </h2>
-                  </div>
-                  <div className="flex items-center justify-center p-2 bg-red-200 text-red-700 rounded-lg">
-                    <h2 className="text-xs sm:font-semibold">
-                      {currentQuestion.negativeMarks} marks
-                    </h2>
-                  </div>
+        {currentQuestion ? (
+          <div className="bg-white rounded-lg shadow p-6">
+            {/* Question Heading */}
+            <h2 className="flex justify-between">
+              <span className="text-xl justify-start font-semibold text-blue-600 mb-2">
+                Question {currentQuestionIndex + 1}
+              </span>
+              <div className="flex items-center justify-end space-x-1">
+                <div className="flex items-center justify-center p-2 bg-green-200 text-green-700 rounded-lg">
+                  <h2 className="text-xs sm:font-semibold">
+                    +{currentQuestion.marks} marks
+                  </h2>
                 </div>
-              </h2>
-              <p className="my-4 text-gray-700 leading-relaxed">
-                {currentQuestion.question}
-              </p>
+                <div className="flex items-center justify-center p-2 bg-red-200 text-red-700 rounded-lg">
+                  <h2 className="text-xs sm:font-semibold">
+                    {currentQuestion.negativeMarks} marks
+                  </h2>
+                </div>
+              </div>
+            </h2>
 
-              <div className="space-y-3 grid grid-cols-1 my-10">
-                {currentQuestion.options.map((option, index) => (
+            {/* Main Question Content */}
+            <p className="my-4 text-gray-700 leading-relaxed">
+              {currentQuestion.question || "No question available"}
+            </p>
+
+            {/* Additional Content */}
+            {currentQuestion.question_1 &&
+            currentQuestion.question_1 !== defaultFileValue ? (
+              currentQuestion.question_1.startsWith("/media/uploads/") ? (
+                <img
+                  src={`${baseUrl}${currentQuestion.question_1}`}
+                  alt="Additional question"
+                  className="max-w-full max-h-24 object-contain mt-4"
+                />
+              ) : (
+                <p>{currentQuestion.question_1}</p>
+              )
+            ) : null}
+
+            {/* Options or Files */}
+            <div className="options-container my-10">
+              {(() => {
+                const validFiles =
+                  currentQuestion?.files?.filter(
+                    (file) => file && file !== defaultFileValue
+                  ) || [];
+                const displayItems =
+                  validFiles.length > 0 ? validFiles : currentQuestion.options;
+
+                return displayItems.map((item, index) => (
                   <label
                     key={index}
-                    className={`border border-gray-300 rounded-lg p-4 flex items-center justify-center text-center cursor-pointer ${
-                      selectedOption === option
-                        ? "bg-blue-100 border-blue-500"
-                        : "hover:bg-blue-100"
-                    }`}
+                    className={`option border border-gray-300 rounded-lg p-4 flex items-center justify-center text-center cursor-pointer transition duration-200 transform ${
+                      selectedOption === item
+                        ? "bg-blue-50 border-blue-500 shadow-md"
+                        : "hover:bg-gray-50 hover:shadow-sm"
+                    } mb-4`}
                   >
                     <input
                       type="radio"
                       name="option"
-                      value={option}
-                      checked={selectedOption === option}
-                      onChange={() => handleOptionChange(option)}
+                      value={item}
+                      checked={selectedOption === item}
+                      onChange={() => handleOptionChange(item)}
                       className="hidden"
                     />
-                    <span className="text-gray-600">{option}</span>
+                    {item.startsWith("/media/uploads/") ? (
+                      <img
+                        src={`${baseUrl}${item}`}
+                        alt={`Option ${index + 1}`}
+                        className="max-w-full max-h-24 object-contain"
+                      />
+                    ) : (
+                      <span className="text-gray-800 font-medium">{item}</span>
+                    )}
                   </label>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <p>Loading questions...</p>
-          )}
-        </div>
-
-        {/* Bottom Navigation */}
-        {!submitted && (
-          <div className="bg-white shadow-md p-4 flex flex-col justify-center items-center gap-2 border-t border-gray-200">
-            <div className="flex flex-row justify-between gap-2 w-full">
-              <button
-                onClick={handlePrevious}
-                className="bg-gray-300 hover:bg-gray-400 text-gray-700 font-medium rounded-md px-4 py-2 w-full md:w-auto"
-              >
-                Previous
-              </button>
-              <button
-                onClick={handleNext}
-                className="bg-gray-300 hover:bg-gray-400 text-gray-700 font-medium rounded-md px-4 py-2 w-full md:w-auto"
-              >
-                Next
-              </button>
-            </div>
-            <div className="flex flex-row justify-between gap-2 w-full">
-              <button
-                onClick={handleMarkForReview}
-                className="bg-red-500 hover:bg-red-600 text-white font-medium rounded-md px-4 py-2 w-full md:w-auto"
-              >
-                Mark for Review
-              </button>
-
-              <button
-                onClick={handleSubmitNext}
-                className="bg-green-500 hover:bg-green-600 text-white font-medium rounded-md px-4 py-2 w-full md:w-auto"
-              >
-                Save & Next
-              </button>
+                ));
+              })()}
             </div>
           </div>
+        ) : (
+          <p>Loading questions...</p>
         )}
       </div>
+
+      {/* Bottom Navigation */}
+      {!submitted && (
+        <div className="bg-white shadow-md p-4 flex flex-col justify-center items-center gap-2 border-t border-gray-200">
+          <div className="flex flex-row justify-between gap-2 w-full">
+            <button
+              onClick={handlePrevious}
+              className="bg-gray-300 hover:bg-gray-400 text-gray-700 font-medium rounded-md px-4 py-2 w-full md:w-auto"
+            >
+              Previous
+            </button>
+            <button
+              onClick={handleNext}
+              className="bg-gray-300 hover:bg-gray-400 text-gray-700 font-medium rounded-md px-4 py-2 w-full md:w-auto"
+            >
+              Next
+            </button>
+          </div>
+          <div className="flex flex-row justify-between gap-2 w-full">
+            <button
+              onClick={handleMarkForReview}
+              className="bg-red-500 hover:bg-red-600 text-white font-medium rounded-md px-4 py-2 w-full md:w-auto"
+            >
+              Mark for Review
+            </button>
+
+            <button
+              onClick={handleSubmitNext}
+              className="bg-green-500 hover:bg-green-600 text-white font-medium rounded-md px-4 py-2 w-full md:w-auto"
+            >
+              Save & Next
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
