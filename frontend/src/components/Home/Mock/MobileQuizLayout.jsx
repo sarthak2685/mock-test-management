@@ -188,11 +188,9 @@ const MobileQuizLayout = ({
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                   className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2 flex justify-between items-center text-gray-700"
                 >
-                  {/* Show the current section or default to 'Select Section' */}
                   {subjects.length > 0
                     ? subjects[currentSectionIndex]
                     : "Select Section"}
-                  {/* Chevron icon */}
                   <FaChevronDown
                     className={`transition-transform ${
                       dropdownOpen ? "rotate-180" : ""
@@ -202,14 +200,13 @@ const MobileQuizLayout = ({
 
                 {dropdownOpen && (
                   <div className="absolute z-40 w-full bg-white border border-gray-300 rounded-lg mt-1 shadow-lg max-h-60 overflow-y-auto">
-                    {/* Render subjects */}
                     {subjects.length > 0 ? (
                       subjects.map((subject, index) => (
                         <div
                           key={index}
                           onClick={() => {
-                            setCurrentSectionIndex(index); // Update current section index
-                            setDropdownOpen(false); // Close dropdown after selection
+                            setCurrentSectionIndex(index);
+                            setDropdownOpen(false);
                           }}
                           className={`px-4 py-2 cursor-pointer hover:bg-blue-500 hover:text-white ${
                             index === currentSectionIndex ? "bg-blue-100" : ""
@@ -248,8 +245,8 @@ const MobileQuizLayout = ({
             </div>
           </div>
         )}
-        <div className="sticky top-0 bg-white shadow-md p-4 grid grid-cols-3 items-center ">
-          <div className="grid grid-cols-2 col-span-2 items-center space-x-4 justify-between ">
+        <div className="sticky top-0 bg-white shadow-md p-4 grid grid-cols-3 items-center z-20">
+          <div className="grid grid-cols-2 col-span-2 items-center space-x-4 justify-between">
             <UserProfile className="col-span-1" user={user} />
             {mockTestData.length > 0 && (
               <Timer
@@ -275,10 +272,10 @@ const MobileQuizLayout = ({
           </div>
         </div>
 
-        {/* Main Question Content */}
         <div className="p-4 flex-1">
           {currentQuestion ? (
-            <div className="bg-white rounded-lg shadow p-6">
+            <div className="bg-white rounded-lg shadow p-6 mt-4">
+              {/* Ensure Spacing from Header */}
               <h2 className="flex justify-between">
                 <span className="text-xl justify-start font-semibold text-blue-600 mb-2">
                   Question {currentQuestionIndex + 1}
@@ -296,31 +293,74 @@ const MobileQuizLayout = ({
                   </div>
                 </div>
               </h2>
+
+              {/* Main Question Content */}
               <p className="my-4 text-gray-700 leading-relaxed">
-                {currentQuestion.question}
+                {currentQuestion.question || "No question available"}
               </p>
 
-              <div className="space-y-3 grid grid-cols-1 my-10">
-                {currentQuestion.options.map((option, index) => (
-                  <label
-                    key={index}
-                    className={`border border-gray-300 rounded-lg p-4 flex items-center justify-center text-center cursor-pointer ${
-                      selectedOption === option
-                        ? "bg-blue-100 border-blue-500"
-                        : "hover:bg-blue-100"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="option"
-                      value={option}
-                      checked={selectedOption === option}
-                      onChange={() => handleOptionChange(option)}
-                      className="hidden"
-                    />
-                    <span className="text-gray-600">{option}</span>
-                  </label>
-                ))}
+              {/* Display Additional Question Content */}
+              {currentQuestion.question2 &&
+              currentQuestion.question2 !==
+                "/media/uploads/questions/option_4_uFtm5qj.png" ? (
+                currentQuestion.question2.startsWith("/media/uploads/") ? (
+                  <img
+                    src={`http://mockexam.pythonanywhere.com${currentQuestion.question2}`}
+                    alt="Additional question"
+                    className="max-w-full max-h-24 object-contain mt-4"
+                  />
+                ) : (
+                  <span>{currentQuestion.question2}</span>
+                )
+              ) : null}
+
+              {/* Display Question Files or Options */}
+              <div className="space-y-3 grid grid-cols-1 mt-6">
+                {(() => {
+                  const baseUrl = "http://mockexam.pythonanywhere.com";
+                  const validFiles = currentQuestion.files?.filter(
+                    (file) =>
+                      file &&
+                      file !== "/media/uploads/questions/option_4_uFtm5qj.png"
+                  );
+                  const displayItems =
+                    validFiles?.length > 0
+                      ? validFiles
+                      : currentQuestion.options;
+
+                  return displayItems?.map((item, index) =>
+                    item ? (
+                      <label
+                        key={index}
+                        className={`border border-gray-300 rounded-lg p-4 flex items-center justify-center text-center cursor-pointer transition duration-200 transform ${
+                          selectedOption === item
+                            ? "bg-blue-50 border-blue-500 shadow-md"
+                            : "hover:bg-gray-50 hover:shadow-sm"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="option"
+                          value={item}
+                          checked={selectedOption === item}
+                          onChange={() => handleOptionChange(item)}
+                          className="hidden"
+                        />
+                        {item.startsWith("/media/uploads/") ? (
+                          <img
+                            src={`${baseUrl}${item}`}
+                            alt={`Option ${index + 1}`}
+                            className="max-w-full max-h-24 object-contain"
+                          />
+                        ) : (
+                          <span className="text-gray-800 font-medium">
+                            {item}
+                          </span>
+                        )}
+                      </label>
+                    ) : null
+                  );
+                })()}
               </div>
             </div>
           ) : (
