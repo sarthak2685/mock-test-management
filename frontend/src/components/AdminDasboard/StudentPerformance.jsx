@@ -15,6 +15,7 @@ import {
 } from "chart.js";
 import Sidebar from "./Sidebar/SideBars";
 import DashboardHeader from "./DashboardHeader";
+import config from "../../config";
 
 // Register the necessary components
 ChartJS.register(
@@ -29,10 +30,17 @@ ChartJS.register(
   ArcElement
 );
 
-const StudentPerformance = ({ user }) => {
+const StudentPerformance = () => {
   const [isCollapsed, setIsCollapsed] = useState(true); // Sidebar collapse state
-
-  // Detect window size and update sidebar state accordingly
+  const { studentId } = useParams();
+  const [error, setError] = useState(null);
+  const user = JSON.parse(localStorage.getItem("user"));
+  const token = user.token;
+  const [loading, setLoading] = useState(true);
+  const [test, setTest] = useState([]);
+  const [weeklyPerformance, setWeeklyPerformance] = useState([])
+  const institueName = user.institute_name;
+  const [student, setStudent] = useState([])
   const handleResize = () => {
     if (window.innerWidth >= 768) {
       setIsCollapsed(false); // Show sidebar on desktop
@@ -51,50 +59,151 @@ const StudentPerformance = ({ user }) => {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
+  const [lineData, setLineData] = useState({
+    labels: [],
+    datasets: [
+      {
+        label: "Success Rate (%)",
+        data: [],
+        fill: false,
+        borderColor: "rgba(75,192,192,1)",
+        backgroundColor: "rgba(75,192,192,0.2)",
+        tension: 0.4,
+      },
+    ],
+  });
+
+  const currentDate = new Date();
+  const monthNames = [
+      "January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+  ];
+  const currentMonthName = monthNames[currentDate.getMonth()];
+
+
+  const fetchPerformanceData = async () => {
+    try {
+      const response = await fetch(`${config.apiUrl}/institute-statistics/?institute_name=${institueName}`, {
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      setTest(data);
+      const matchedStudent = data.students.find(
+        (student) => student.student_id === studentId
+      );
+
+      if (matchedStudent) {
+        setStudent(matchedStudent);
+      } else {
+        setError("Student not found.");
+      }
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPerformanceData();
+  }, []);
+
+  const fetchWeeklyPerformance = async () => {
+    try {
+      const response = await fetch(
+        `${config.apiUrl}/weekly-performance/?student_id=${studentId}`,
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      console.log("Weekly Performance Data:", data);
+
+      // Extract weekly performance and month
+      const weeks = data.weekly_performance || [];
+      const month = data.month || "Current Month";
+
+      if (weeks.length === 0) {
+        console.warn("No weekly performance data available.");
+        setLineData({
+          labels: ["No Data"],
+          datasets: [
+            {
+              label: "Success Rate (%)",
+              data: [0],
+              fill: false,
+              borderColor: "rgba(75,192,192,1)",
+              backgroundColor: "rgba(75,192,192,0.2)",
+              tension: 0.4,
+            },
+          ],
+        });
+        return;
+      }
+
+      // Map weeks to Week 1, Week 2, etc., and extract success rates
+      const labels = weeks.map((_, index) => `Week ${index + 1}`);
+      const successRates = weeks.map((week) => week.success_rate);
+
+      setLineData({
+        labels, // Week numbers as labels
+        datasets: [
+          {
+            label: "Success Rate (%)",
+            data: successRates, // Success rates as data points
+            fill: false,
+            borderColor: "rgba(75,192,192,1)",
+            backgroundColor: "rgba(75,192,192,0.2)",
+            tension: 0.4,
+          },
+        ],
+      });
+
+      setWeeklyPerformance(data);
+    } catch (err) {
+      console.error("Error fetching weekly performance:", err.message);
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+
+
+  useEffect(() => {
+    fetchWeeklyPerformance();
+  }, []);
+
 
   const toggleSidebar = () => {
     setIsCollapsed((prev) => !prev); // Toggle sidebar collapse state
   };
 
-  // Dummy students data
-  const students = [
-    {
-      id: 1,
-      name: "Alice",
-      attemptedTests: 4,
-      monthlyPerformance: [60, 70, 80, 90, 85],
-      subjectPerformance: [85, 75, 80], // English, Math, GK/GS
-    },
-    {
-      id: 2,
-      name: "Bob",
-      attemptedTests: 3,
-      monthlyPerformance: [55, 65, 70, 75, 60],
-      subjectPerformance: [70, 60, 75], // English, Math, GK/GS
-    },
-  ];
 
-  // Get the student ID from the URL parameters
-  const { id } = useParams();
-
-  // Find the student with the given ID
-  const student = students.find((student) => student.id === parseInt(id));
 
   // Check if student is available
   if (!student) {
     return <div>Student data not found.</div>; // Handle undefined student
   }
 
-  // Destructure the necessary fields from student
-  const {
-    name: studentName = "Unknown Student",
-    attemptedTests = 0,
-    monthlyPerformance = [],
-    subjectPerformance = [],
-  } = student;
 
-  // Calculate totalMockTests based on your logic
-  const totalMockTests = 5; // Adjust based on your logic; currently set to 5
 
   // Data for pie chart (mock tests attempted vs not attempted)
   const pieData = {
@@ -102,7 +211,7 @@ const StudentPerformance = ({ user }) => {
     datasets: [
       {
         label: "Mock Tests",
-        data: [attemptedTests, totalMockTests - attemptedTests],
+        data: [student.total_tests_given, test.total_mock_tests - student.total_tests_given],
         backgroundColor: ["#36A2EB", "#FF6384"],
         hoverBackgroundColor: ["#36A2EB", "#FF6384"],
       },
@@ -110,31 +219,8 @@ const StudentPerformance = ({ user }) => {
   };
 
   // Data for line chart (monthly success rate performance)
-  const lineData = {
-    labels: ["Week 1", "Week 2", "Week 3", "Week 4"],
-    datasets: [
-      {
-        label: "Success Rate (%)",
-        data: monthlyPerformance,
-        fill: false,
-        borderColor: "rgba(75,192,192,1)",
-        backgroundColor: "rgba(75,192,192,0.2)",
-        tension: 0.4,
-      },
-    ],
-  };
 
-  // Data for bar chart (subject-wise performance in the month)
-  const barData = {
-    labels: ["English", "Math", "GK/GS"],
-    datasets: [
-      {
-        label: "Score (%)",
-        data: subjectPerformance,
-        backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56"],
-      },
-    ],
-  };
+
 
   // Chart options for line and bar charts
   const lineOptions = {
@@ -165,12 +251,11 @@ const StudentPerformance = ({ user }) => {
           isCollapsed={isCollapsed}
           toggleSidebar={toggleSidebar}
           className={`${isCollapsed ? "hidden" : "block"} md:block`}
-        />   
+        />
         {/* Main Performance Content */}
         <div
-          className={`flex-grow transition-all duration-300 ease-in-out ${
-            isCollapsed ? "ml-0" : "ml-64"
-          }`}
+          className={`flex-grow transition-all duration-300 ease-in-out ${isCollapsed ? "ml-0" : "ml-64"
+            }`}
         >
           {/* Header */}
           <DashboardHeader
@@ -184,7 +269,7 @@ const StudentPerformance = ({ user }) => {
               Performance Overview
             </h2>
             <h3 className="text-2xl font-semibold mb-3 text-center">
-              Details for {studentName}
+              Details for {student.student_name}
             </h3>
 
             {/* Container for Pie Chart */}
@@ -200,22 +285,17 @@ const StudentPerformance = ({ user }) => {
             {/* Container for Line Chart */}
             <div className="bg-white p-2 sm:p-4 shadow-lg rounded-lg mb-4">
               <h3 className="text-xs sm:text-sm font-semibold mb-1 text-center">
-                Monthly Success Rate Trend
+                Monthly Success Rate Trend for {currentMonthName}
               </h3>
               <div className="h-32 sm:h-40 lg:h-72 w-full sm:w-[80%] lg:w-[60%] mx-auto">
-                <Line data={lineData} options={lineOptions} />
+                {lineData.labels.length > 0 ? (
+                  <Line data={lineData} options={lineOptions} />
+                ) : (
+                  <p className="text-center text-gray-500">No data available</p>
+                )}
               </div>
             </div>
 
-            {/* Container for Bar Chart */}
-            <div className="bg-white p-2 sm:p-4 shadow-lg rounded-lg mb-4">
-              <h3 className="text-xs sm:text-sm font-semibold mb-1 text-center">
-                Subject-Wise Performance
-              </h3>
-              <div className="h-32 sm:h-40 lg:h-72 w-full sm:w-[80%] lg:w-[60%] mx-auto">
-                <Bar data={barData} options={barOptions} />
-              </div>
-            </div>
           </div>
         </div>
       </div>

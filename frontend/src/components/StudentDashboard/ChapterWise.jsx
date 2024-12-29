@@ -35,7 +35,7 @@ function ChapterWise() {
   const token = loggedInUser?.token;
   const userInfo = JSON.parse(localStorage.getItem("user"));
   const id = userInfo.id;
-
+  const institute = userInfo.institute_name;
   const navigate = useNavigate();
 
   console.log("hero", subjectName, chapterName);
@@ -53,7 +53,7 @@ function ChapterWise() {
         setLoading(true);
         try {
           const response = await fetch(
-            `${config.apiUrl}/student_performance_single_chapter/?student_id=${id}`,
+            `${config.apiUrl}/student_performance_single_chapter/?student_id=${id}&institute_name=${institute}`,
             {
               headers: {
                 Authorization: `Token ${token}`,
@@ -63,7 +63,7 @@ function ChapterWise() {
           );
           const data = await response.json();
 
-          const subjectData = data.anaysis[subjectName];
+          const subjectData = data.analysis[subjectName];
           const chapterData = subjectData?.[mockName]?.chapters[chapterName];
           console.log("kkk",chapterData);
           if (chapterData) {
@@ -90,7 +90,7 @@ function ChapterWise() {
         data: performanceData
           ? [
               performanceData.question_stats.attempted,
-              performanceData.question_stats.unattempted,
+              (performanceData.question_stats.total_questions-performanceData.question_stats.attempted),
             ]
           : [0, 0],
         backgroundColor: ["#36A2EB", "#FF6384"],
@@ -169,6 +169,7 @@ function ChapterWise() {
               <h3 className="text-xs sm:text-sm font-semibold mb-1 text-center">
                 Attempted vs Unattempted
               </h3>
+              <h3 className="text-xs sm:text-sm  mb-1 text-center">(Total questions: {performanceData?.question_stats.total_questions})</h3>
               <div className="h-32 sm:h-40 lg:h-72 w-full sm:w-[80%] lg:w-[60%] mx-auto">
                 <Pie data={pieData} options={{ maintainAspectRatio: false }} />
               </div>

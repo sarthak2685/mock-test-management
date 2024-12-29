@@ -14,7 +14,8 @@ const MockDemo = () => {
     role: "Student",
     profileImage: "", // Empty string or null means it will show initials
   };
-
+  const S = JSON.parse(localStorage.getItem("user"));
+  const institueName = S.institute_name;
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
@@ -74,7 +75,7 @@ const MockDemo = () => {
     const fetchMockTests = async () => {
       try {
         const response = await fetch(
-          `${config.apiUrl}/get-single-exam-details/?exam_id=${SubjectId}`
+          `${config.apiUrl}/get-single-exam-details/?exam_id=${SubjectId}&institute_name=${institueName}`
         );
 
         if (!response.ok) {

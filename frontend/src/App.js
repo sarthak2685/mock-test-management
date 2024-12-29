@@ -70,7 +70,7 @@ function App() {
           <Route path="/admins-list" element={<AdminList />} />
           <Route path="/test-time" element={<TestTime />} />
           <Route
-            path="/student-performance/:id"
+            path="/student-performance/:studentId"
             element={<StudentPerformance />}
           />
           <Route path="/mock-demo" element={<MockDemo />} />
