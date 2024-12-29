@@ -24,6 +24,8 @@ const MockChapter = () => {
 
   const S = JSON.parse(localStorage.getItem("user"));
   const token = S.token;
+  const institueName = S.institute_name;
+
 
   // const sectionIcons = [
   //   <FaBrain />,
@@ -104,7 +106,7 @@ const MockChapter = () => {
     const fetchMockTests = async () => {
       try {
         const response = await fetch(
-          `${config.apiUrl}/get-single-exam-details-based-on-subjects/?subject_id=${SubjectId}`,
+          `${config.apiUrl}/get-single-exam-details-based-on-subjects/?subject_id=${SubjectId}&institute_name=${institueName}`,
           {
             headers: {
               Authorization: `Token ${token}`,

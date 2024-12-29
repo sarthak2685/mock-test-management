@@ -8,12 +8,14 @@ const MockTest = () => {
 
   const [mockTestData, setMockTestData] = useState([]);
   const SubjectId = localStorage.getItem("selectedSubjectId");
-
+  const S = JSON.parse(localStorage.getItem("user"));
+  const institueName = S.institute_name;
+  const token = S.token;
   useEffect(() => {
     const fetchMockTests = async () => {
       try {
         const response = await fetch(
-          `${config.apiUrl}/get-single-exam-details/?exam_id=${SubjectId}`
+          `${config.apiUrl}/get-single-exam-details/?exam_id=${SubjectId}&institute_name=${institueName}`
         );
         if (!response.ok) {
           throw new Error("Failed to fetch mock test data");

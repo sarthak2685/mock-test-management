@@ -119,7 +119,7 @@ const Performance = () => {
                       <td className="px-4 py-2 whitespace-nowrap text-right">
                         <Link
                           to={{
-                            pathname: `/student-performance/${student.id}`,
+                            pathname: `/student-performance/${student.student_id}`,
                             state: student, // Passing the student object
                           }}
                           className="text-blue-600 hover:text-blue-900"

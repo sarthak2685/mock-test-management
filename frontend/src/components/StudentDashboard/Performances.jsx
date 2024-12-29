@@ -18,10 +18,10 @@ const Performances = ({ user }) => {
   const id = userInfo.id;
   const S = JSON.parse(localStorage.getItem("user"));
   const token = S.token;
-
+  const institute = userInfo.institute_name;
   const fetchPerformanceData = async () => {
     try {
-      const response = await fetch(`${config.apiUrl}/student_performance_single/?student_id=${id}`, {
+      const response = await fetch(`${config.apiUrl}/student_performance_single/?student_id=${id}&institute_name=${institute}`, {
         headers: {
           Authorization: `Token ${token}`,
           "Content-Type": "application/json",
@@ -116,7 +116,7 @@ const Performances = ({ user }) => {
   {mockTests.map((examCategory, index) => (
   <div key={index} className="mb-6">
     <h4 className="text-xl font-bold mb-4">{examCategory.category}</h4>
-    <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
       {examCategory.tests.map((test, idx) => (
         <div
           key={`${examCategory.category}-${idx}`}

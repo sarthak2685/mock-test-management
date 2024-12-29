@@ -18,10 +18,11 @@ const SubjectPerformance = ({ user }) => {
   const id = userInfo.id;
   const S = JSON.parse(localStorage.getItem("user"));
   const token = S.token;
+  const institute = userInfo.institute_name;
 
   const fetchPerformanceData = async () => {
     try {
-      const response = await fetch(`${config.apiUrl}/student_performance_single_chapter/?student_id=${id}`,
+      const response = await fetch(`${config.apiUrl}/student_performance_single_chapter/?student_id=${id}&institute_name=${institute}`,
         {
           headers: {
             Authorization: `Token ${token}`,
@@ -33,7 +34,7 @@ const SubjectPerformance = ({ user }) => {
         throw new Error(`Error: ${response.status} ${response.statusText}`);
       }
       const data = await response.json();
-      const domain_Score = data.anaysis;     
+      const domain_Score = data.analysis;     
        setMockTests(domain_Score || []); 
     } catch (err) {
       setError(err.message);
@@ -119,7 +120,7 @@ const SubjectPerformance = ({ user }) => {
               >
                 {/* Rank (if it exists) */}
                 <div className="absolute -top-3 -right-3 bg-blue-500 text-white text-xs font-semibold px-3 py-1 rounded-full shadow">
-                  {chapterDetails.rank ? `Rank: ${chapterDetails.rank}` : "Unranked"}
+                  {mockData.rank ? `Rank: ${mockData.rank}` : "Unranked"}
                 </div>
                 {/* Chapter Name */}
                 <h4 className="text-lg font-semibold text-gray-800">{chapterName}</h4>

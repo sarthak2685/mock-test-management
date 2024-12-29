@@ -11,6 +11,7 @@ const Dashboard = () => {
   const token = user.token;
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState([]);
+  const [leaderboard, setLeaderboard] = useState([])
 
   const institueName = user.institute_name;
 
@@ -30,6 +31,7 @@ const Dashboard = () => {
 
       const data = await response.json();
       setUserData(data);
+      setLeaderboard(data.leaderboard.leaderboard || []);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -43,15 +45,7 @@ const Dashboard = () => {
   }, []);
 
 
-  // Example leaderboard data with marks and time taken
-  const leaderboardData = [
-    { id: 1, name: "Self-confident Swan", score: "5/5", timeTaken: "12 mins" },
-    { id: 2, name: "Ambitious Swan", score: "5/5", timeTaken: "13 mins" },
-    { id: 3, name: "Impartial Duck", score: "4/5", timeTaken: "12 mins" },
-    { id: 4, name: "Straightforward Dove", score: "4/5", timeTaken: "15 mins" },
-    { id: 5, name: "Frank Dove", score: "3/5", timeTaken: "13 mins" },
-    { id: 6, name: "Modest Pigeon", score: "3/5", timeTaken: "15 mins" },
-  ];
+
 
   const toggleSidebar = () => {
     setIsCollapsed((prev) => !prev); // Toggle collapse state
@@ -137,12 +131,12 @@ const Dashboard = () => {
                         Score
                       </th>
                       <th className="px-3 py-2 md:px-4 md:py-3 border-b border-gray-200 text-left text-xs font-semibold uppercase tracking-wider">
-                        Time Taken
+                        Rank
                       </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {leaderboardData.map((student, index) => (
+                    {leaderboard.map((student, index) => (
                       <tr
                         key={student.id}
                         className={`hover:bg-gray-100 transition-colors ${
@@ -172,19 +166,19 @@ const Dashboard = () => {
                             {/* Participant name */}
                             <div className="ml-2">
                               <p className="text-gray-900 font-medium whitespace-no-wrap">
-                                {student.name}
+                                {student.student_name}
                               </p>
                             </div>
                           </div>
                         </td>
                         <td className="px-3 py-2 md:px-4 md:py-3 border-b border-gray-200 text-sm">
                           <p className="text-gray-900 font-bold whitespace-no-wrap">
-                            {student.score}
+                            {student.total_obtained}
                           </p>
                         </td>
                         <td className="px-3 py-2 md:px-4 md:py-3 border-b border-gray-200 text-sm">
-                          <p className="text-gray-700 whitespace-no-wrap">
-                            {student.timeTaken}
+                          <p className="text-gray-700 font-semibold whitespace-no-wrap">
+                            {student.rank}
                           </p>
                         </td>
                       </tr>
