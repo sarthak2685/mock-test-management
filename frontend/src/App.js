@@ -33,6 +33,10 @@ import Instructions from "./components/Home/Mock/Instructions.jsx";
 import MockChapter from "./components/Home/Mock/MockChapter.jsx";
 import ChapterTestInstructions from "./components/Home/Mock/ChapterTestInstruction.jsx";
 import SubscriptionForm from "./components/Home/SubscriptionForm.jsx";
+import ExamDesktop from "./components/Home/FreeMock/ExamDesktop.jsx";
+import ExamMobile from "./components/Home/FreeMock/ExamMobile.jsx";
+import Analysis from "./components/Home/FreeMock/Analysis.jsx";
+import GuestInstruction from "./components/Home/FreeMock/GuestInstruction.jsx";
 
 function App() {
   const location = useLocation();
@@ -90,6 +94,14 @@ function App() {
             path="/subscriptionform"
             element={<SubscriptionForm />}
           />
+
+<Route path="/examdesktop" element={<ExamDesktop />} />
+<Route path="/analysis" element={<Analysis />} />
+<Route path="/guestinstruction" element={<GuestInstruction />} />
+
+
+
+
         </Routes>
         
 
