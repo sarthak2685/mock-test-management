@@ -2,9 +2,10 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import { useUser } from "./UserContext/UserContext";
+import { FaBars } from "react-icons/fa";
 
 const Navbar = () => {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
@@ -17,17 +18,13 @@ const Navbar = () => {
     }
   }, []);
 
-  // Function to trigger the logout process
   const handleLogout = () => {
     logout();
     navigate("/login");
-    //reload
     window.location.reload();
   };
 
-  // Toggle the mobile menu visibility
-  const toggleMobileMenu = () => setMobileMenuOpen((prev) => !prev);
-
+  const toggleMenu = () => setMenuOpen((prev) => !prev);
   const toggleProfileMenu = () => setProfileMenuOpen((prev) => !prev);
 
   return (
@@ -64,7 +61,7 @@ const Navbar = () => {
                     />
                   ) : (
                     <div className="w-10 h-10 rounded-full bg-[#007bff] flex items-center justify-center text-white font-semibold">
-                      {user.user ? user.user.charAt(0).toUpperCase() : ""}
+                      {user.name ? user.name.charAt(0).toUpperCase() : ""}
                     </div>
                   )}
                 </div>
@@ -103,43 +100,32 @@ const Navbar = () => {
           <div className="flex md:hidden items-center">
             <button
               type="button"
-              className="text-gray-400 hover:text-white focus:outline-none"
-              onClick={toggleMobileMenu}
+              className="text-gray-400 hover:text-[#007bff] focus:outline-none"
+              onClick={toggleMenu}
             >
-              <span className="sr-only">Open main menu</span>
-              <svg
-                className="h-6 w-6"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4 6h16M4 12h16m-7 6h7"
-                />
-              </svg>
+              <FaBars className="text-2xl" />
             </button>
           </div>
         </div>
       </div>
 
-      {mobileMenuOpen && (
-        <div className="md:hidden px-2 pt-2 pb-3 space-y-1 sm:px-3 max-w-40 mx-auto">
+      <div
+        className={`md:hidden bg-white shadow-md border-b border-gray-200 ${
+          menuOpen ? "block" : "hidden"
+        }`}
+      >
+        <div className="flex flex-col items-center px-2 py-2 space-y-2">
           <Link
             to="/contact"
-            className="hover:bg-[#007bff] block px-3 py-2 rounded-md text-base font-medium"
-            onClick={() => setMobileMenuOpen(false)}
+            className="block rounded-md text-base font-medium hover:bg-[#007bff] text-center"
+            onClick={() => setMenuOpen(false)}
           >
             Contact
           </Link>
-
-          {user && user.role === "student" ? (
+          {user && user.type === "student" ? (
             <div className="relative">
               <div
-                className="flex items-center space-x-2 px-3 py-2 rounded-md text-base font-medium cursor-pointer"
+                className="flex items-center rounded-md text-base font-medium cursor-pointer"
                 onClick={toggleProfileMenu}
               >
                 {user.avatar ? (
@@ -150,20 +136,19 @@ const Navbar = () => {
                   />
                 ) : (
                   <div className="w-8 h-8 rounded-full bg-[#007bff] flex items-center justify-center text-white font-semibold">
-                    {user.user ? user.user.charAt(0).toUpperCase() : ""}
+                    {user.name ? user.name.charAt(0).toUpperCase() : ""}
                   </div>
                 )}
-                <span>{user.user}</span>
+                <span className="ml-2">{user.name}</span>
               </div>
-
               {profileMenuOpen && (
-                <div className="mt-2 w-full max-w-[150px] bg-white border border-gray-200 rounded-md shadow-lg z-10">
+                <div className="mt-2 w-40 bg-white border border-gray-200 rounded-md shadow-lg z-10">
                   <Link
                     to="/student-dashboard"
-                    className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
+                    className="block px-4 py-2 text-sm text-gray-800 hover:bg-gray-100 "
                     onClick={() => {
                       setProfileMenuOpen(false);
-                      setMobileMenuOpen(false);
+                      setMenuOpen(false);
                     }}
                   >
                     Dashboard
@@ -171,7 +156,7 @@ const Navbar = () => {
                   <button
                     onClick={() => {
                       handleLogout();
-                      setMobileMenuOpen(false);
+                      setMenuOpen(false);
                     }}
                     className="block w-full text-left px-4 py-2 text-sm text-gray-800 hover:bg-gray-100"
                   >
@@ -183,14 +168,14 @@ const Navbar = () => {
           ) : (
             <Link
               to="/login"
-              className="bg-[#007bff] hover:bg-blue-700 block px-3 py-2 rounded-md text-base font-medium text-white"
-              onClick={() => setMobileMenuOpen(false)}
+              className="block px-3 py-2 rounded-md text-base font-medium bg-[#007bff] text-white hover:bg-blue-700 text-center"
+              onClick={() => setMenuOpen(false)}
             >
               Login
             </Link>
           )}
         </div>
-      )}
+      </div>
     </nav>
   );
 };

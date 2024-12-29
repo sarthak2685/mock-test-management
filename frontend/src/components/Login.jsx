@@ -34,10 +34,10 @@ const Login = () => {
 
       if (response.data.data && response.data.data.type) {
         // Extract fields from the response
-        const { type, user, token, id, name } = response.data.data;
+        const { type, user, token, id, name, institute_name } = response.data.data;
 
         // Consolidate into a single object
-        const userData = { type, user, token, id, name };
+        const userData = { type, user, token, id, name, institute_name };
 
         console.log("Data being saved to localStorage: ", userData);
 
@@ -45,15 +45,15 @@ const Login = () => {
         localStorage.setItem("user", JSON.stringify(userData));
 
         // Clear the Data from localStorage
-        localStorage.removeItem("submittedData");
-        localStorage.removeItem("selectedExamDuration");
-        localStorage.removeItem("timerDuration");
-        localStorage.removeItem("start_time");
-        localStorage.removeItem("submissionResult");
-        localStorage.removeItem("testDuration");
-        localStorage.removeItem("end_time");
-        localStorage.removeItem("selectedTestName");
-        localStorage.removeItem("exam_id");
+        // localStorage.removeItem("submittedData");
+        // localStorage.removeItem("selectedExamDuration");
+        // localStorage.removeItem("timerDuration");
+        // localStorage.removeItem("start_time");
+        // localStorage.removeItem("submissionResult");
+        // localStorage.removeItem("testDuration");
+        // localStorage.removeItem("end_time");
+        // localStorage.removeItem("selectedTestName");
+        // localStorage.removeItem("exam_id");
 
         // Navigation logic
         if (type === "owner") {

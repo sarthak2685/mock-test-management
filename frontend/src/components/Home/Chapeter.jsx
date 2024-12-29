@@ -9,6 +9,7 @@ const Chapters = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const S = JSON.parse(localStorage.getItem("user"));
+  const institueName = S.institute_name;
   const token = S.token;
   const navigate = useNavigate();
 
@@ -16,7 +17,7 @@ const Chapters = () => {
     const fetchChapters = async () => {
       try {
         const response = await fetch(
-          `${config.apiUrl}/get-single-exam-details-based-on-subjects/?subject_id=${SubjectId}`,
+          `${config.apiUrl}/get-single-exam-details-based-on-subjects/?subject_id=${SubjectId}&institue_name=${institueName}`,
           {
             headers: {
               Authorization: `Token ${token}`,

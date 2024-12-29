@@ -2,31 +2,50 @@ import React, { useState, useEffect } from "react";
 import DashboardHeader from "./DashboardHeader";
 import Sidebar from "./Sidebar/SideBars"; // Importing the updated Sidebar
 import { FaTrophy } from "react-icons/fa"; // Icons for leaderboard
+import config from "../../config";
 
 const Dashboard = () => {
   const [isCollapsed, setIsCollapsed] = useState(false); // Sidebar collapse state
-  const [user, setUser] = useState(null); // State to hold user data
+  const [error, setError] = useState(null);
+  const user = JSON.parse(localStorage.getItem("user"));
+  const token = user.token;
+  const [loading, setLoading] = useState(true);
+  const [userData, setUserData] = useState([]);
+  const [leaderboard, setLeaderboard] = useState([])
 
-  useEffect(() => {
-    // Retrieve user data from localStorage
-    const storedUser = localStorage.getItem('user');
-    console.log("Stored User Data:", storedUser); // Log stored data
+  const institueName = user.institute_name;
 
-    if (storedUser) {
-      const parsedUser = JSON.parse(storedUser); // Parse the stored user data
-      setUser(parsedUser); // Set the user state
+
+  const fetchPerformanceData = async () => {
+    try {
+      const response = await fetch(`${config.apiUrl}/institute-statistics/?institute_name=${institueName}`, {
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      setUserData(data);
+      setLeaderboard(data.leaderboard.leaderboard || []);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
+  };
+
+  // Fetch data on component mount
+  useEffect(() => {
+    fetchPerformanceData();
   }, []);
 
-  // Example leaderboard data with marks and time taken
-  const leaderboardData = [
-    { id: 1, name: "Self-confident Swan", score: "5/5", timeTaken: "12 mins" },
-    { id: 2, name: "Ambitious Swan", score: "5/5", timeTaken: "13 mins" },
-    { id: 3, name: "Impartial Duck", score: "4/5", timeTaken: "12 mins" },
-    { id: 4, name: "Straightforward Dove", score: "4/5", timeTaken: "15 mins" },
-    { id: 5, name: "Frank Dove", score: "3/5", timeTaken: "13 mins" },
-    { id: 6, name: "Modest Pigeon", score: "3/5", timeTaken: "15 mins" },
-  ];
+
+
 
   const toggleSidebar = () => {
     setIsCollapsed((prev) => !prev); // Toggle collapse state
@@ -62,7 +81,7 @@ const Dashboard = () => {
         <Sidebar
           isCollapsed={isCollapsed}
           toggleSidebar={toggleSidebar}
-          className="hidden md:block" // Hide on mobile, show on medium screens and up
+          className="hidden md:block" 
         />
 
         {/* Main Dashboard Content */}
@@ -76,16 +95,14 @@ const Dashboard = () => {
 
           <div className="p-3 md:p-4">
             {/* Adjusted text size for Admin Dashboard */}
-            <h1 className="text-3xl md:text-3xl font-bold mb-6 text-left">
-              Admin Dashboard
-            </h1>
+            <h1 className="text-2xl md:text-3xl font-bold mb-4 text-left"> Welcome {user ? user.institute_name : "Guest"}</h1>
 
             {/* Stats Cards Row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
               {/* Card for Total Students */}
               <div className="bg-white shadow-md rounded-lg p-3">
                 <h2 className="text-base md:text-lg">Total Students</h2>
-                <p className="text-xl md:text-2xl font-bold">20</p>
+                <p className="text-xl md:text-2xl font-bold">{userData.total_students}</p>
               </div>
 
               {/* Card for Active Tests */}
@@ -114,12 +131,12 @@ const Dashboard = () => {
                         Score
                       </th>
                       <th className="px-3 py-2 md:px-4 md:py-3 border-b border-gray-200 text-left text-xs font-semibold uppercase tracking-wider">
-                        Time Taken
+                        Rank
                       </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {leaderboardData.map((student, index) => (
+                    {leaderboard.map((student, index) => (
                       <tr
                         key={student.id}
                         className={`hover:bg-gray-100 transition-colors ${
@@ -149,19 +166,19 @@ const Dashboard = () => {
                             {/* Participant name */}
                             <div className="ml-2">
                               <p className="text-gray-900 font-medium whitespace-no-wrap">
-                                {student.name}
+                                {student.student_name}
                               </p>
                             </div>
                           </div>
                         </td>
                         <td className="px-3 py-2 md:px-4 md:py-3 border-b border-gray-200 text-sm">
                           <p className="text-gray-900 font-bold whitespace-no-wrap">
-                            {student.score}
+                            {student.total_obtained}
                           </p>
                         </td>
                         <td className="px-3 py-2 md:px-4 md:py-3 border-b border-gray-200 text-sm">
-                          <p className="text-gray-700 whitespace-no-wrap">
-                            {student.timeTaken}
+                          <p className="text-gray-700 font-semibold whitespace-no-wrap">
+                            {student.rank}
                           </p>
                         </td>
                       </tr>

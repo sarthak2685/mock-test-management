@@ -14,7 +14,8 @@ const MockDemo = () => {
     role: "Student",
     profileImage: "", // Empty string or null means it will show initials
   };
-
+  const S = JSON.parse(localStorage.getItem("user"));
+  const institueName = S.institute_name;
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
@@ -74,7 +75,7 @@ const MockDemo = () => {
     const fetchMockTests = async () => {
       try {
         const response = await fetch(
-          `${config.apiUrl}/get-single-exam-details/?exam_id=${SubjectId}`
+          `${config.apiUrl}/get-single-exam-details/?exam_id=${SubjectId}&institute_name=${institueName}`
         );
 
         if (!response.ok) {
@@ -107,27 +108,26 @@ const MockDemo = () => {
                 .map(([subjectName, subjectDetails]) => ({
                   subject: subjectName,
                   no_of_questions: subjectDetails.no_of_questions,
-                  questions: subjectDetails.questions.map(
-                    (question, index) => ({
-                      id: question.id,
-                      question: question.question,
-                      marks: question.positive_marks,
-                      negativeMarks: question.negative_marks,
-                      subject: question.subject || subjectName,
-                      options: [
-                        question.option_1,
-                        question.option_2,
-                        question.option_3,
-                        question.option_4,
-                      ], // Dynamically map the options
-                      files: [
-                        question.file_1,
-                        question.file_2,
-                        question.file_3,
-                        question.file_4,
-                      ], // Dynamically map the files
-                    })
-                  ),
+                  questions: subjectDetails.questions.map((question) => ({
+                    id: question.id,
+                    question: question.question,
+                    question2: question.question2, // Include question2
+                    marks: question.positive_marks,
+                    negativeMarks: question.negative_marks,
+                    subject: question.subject || subjectName,
+                    options: [
+                      question.option_1,
+                      question.option_2,
+                      question.option_3,
+                      question.option_4,
+                    ], // Dynamically map the options
+                    files: [
+                      question.file_1,
+                      question.file_2,
+                      question.file_3,
+                      question.file_4,
+                    ], // Dynamically map the files
+                  })),
                 }));
 
               console.log("Grouped Test Data:", groupedTests);
@@ -283,6 +283,8 @@ const MockDemo = () => {
       // Fetch the user's answer for the current question
       const userAnswer =
         answeredQuestions[currentSectionIndex]?.[currentQuestionIndex] || {}; // Fetch based on both section and question index
+      console.log("User Answer:", userAnswer);
+
       const user = JSON.parse(localStorage.getItem("user"));
 
       if (!user) {
@@ -308,6 +310,21 @@ const MockDemo = () => {
         storedData[sectionName].questions = [];
       }
 
+      // Determine selected_answer and selected_answer_2 based on userAnswer
+      const selectedAnswer =
+        typeof userAnswer === "string" &&
+        !userAnswer.startsWith("/media/uploads/")
+          ? userAnswer
+          : null; // Assign text answer if it's not an image
+      const selectedAnswer2 =
+        typeof userAnswer === "string" &&
+        userAnswer.startsWith("/media/uploads/")
+          ? userAnswer
+          : null; // Assign image answer if it's a URL
+
+      console.log("Selected Answer:", selectedAnswer);
+      console.log("Selected Answer 2:", selectedAnswer2);
+
       // Update the selected answer for the current question
       storedData[sectionName].questions = [
         ...storedData[sectionName].questions.filter(
@@ -315,8 +332,8 @@ const MockDemo = () => {
         ), // Remove the old entry with the same question ID (if exists)
         {
           question: currentQuestion.id,
-          selected_answer: userAnswer || "No Answer Provided", // If userAnswer is an object, use text
-          selected_answer_2: userAnswer.image || null,
+          selected_answer: selectedAnswer, // Assign text if present
+          selected_answer_2: selectedAnswer2, // Assign image if present
           student: student_id,
         },
       ];
@@ -495,26 +512,78 @@ const MockDemo = () => {
 
               {/* Log current question */}
               <p className="text-lg font-medium mb-8">
-                {
-                  // Find the question for the selected subject and current question index
-                  mockTestData.find(
-                    (section) => section.subject === selectedSubject
-                  )?.questions[currentQuestionIndex]?.question || "Loading..." // Display the question or "Loading..." if not available
-                }
+                {mockTestData.find(
+                  (section) => section.subject === selectedSubject
+                )?.questions[currentQuestionIndex]
+                  ? (() => {
+                      const currentQuestion = mockTestData.find(
+                        (section) => section.subject === selectedSubject
+                      )?.questions[currentQuestionIndex];
+
+                      const baseUrl = "http://mockexam.pythonanywhere.com";
+
+                      return (
+                        <>
+                          {/* Main question */}
+                          <span>
+                            {currentQuestion?.question ||
+                              "No question available"}
+                          </span>
+                          <br />
+
+                          {/* Display question2 if it is valid (not the default image) */}
+                          {currentQuestion?.question2 &&
+                          currentQuestion?.question2 !==
+                            "/media/uploads/questions/option_4_uFtm5qj.png" ? (
+                            currentQuestion.question2.startsWith(
+                              "/media/uploads/"
+                            ) ? (
+                              <img
+                                src={`${baseUrl}${currentQuestion.question2}`}
+                                alt="Additional question"
+                                className="max-w-full max-h-24 object-contain mt-4"
+                              />
+                            ) : (
+                              <span>{currentQuestion.question2}</span>
+                            )
+                          ) : null}
+                        </>
+                      );
+                    })()
+                  : "Loading..."}
               </p>
 
               {/* Log options */}
               <div className="grid grid-cols-2 gap-6 mb-10">
-                {
-                  // Get the options for the current question directly from mockTestData
-                  mockTestData
-                    .find((section) => section.subject === selectedSubject)
-                    ?.questions[currentQuestionIndex]?.options?.map(
-                      (option, index) => (
+                {mockTestData.find(
+                  (section) => section.subject === selectedSubject
+                )?.questions[currentQuestionIndex] ? (
+                  (() => {
+                    const currentQuestion = mockTestData.find(
+                      (section) => section.subject === selectedSubject
+                    )?.questions[currentQuestionIndex];
+
+                    const baseUrl = "http://mockexam.pythonanywhere.com";
+
+                    // Check if valid files exist, excluding the default value
+                    const validFiles = currentQuestion?.files?.filter(
+                      (file) =>
+                        file &&
+                        file !== "/media/uploads/questions/option_4_uFtm5qj.png"
+                    );
+
+                    // Use options if files are invalid or empty
+                    const displayItems =
+                      validFiles?.length > 0
+                        ? validFiles
+                        : currentQuestion?.options;
+
+                    return displayItems?.map((item, index) =>
+                      item ? (
                         <label
                           key={index}
                           className={`border border-gray-300 rounded-lg p-4 flex items-center justify-center text-center cursor-pointer transition duration-200 transform ${
-                            selectedOption === option
+                            selectedOption === item
                               ? "bg-blue-50 border-blue-500 shadow-md"
                               : "hover:bg-gray-50 hover:shadow-sm"
                           }`}
@@ -522,18 +591,30 @@ const MockDemo = () => {
                           <input
                             type="radio"
                             name="option"
-                            value={option}
-                            checked={selectedOption === option}
-                            onChange={() => handleOptionChange(option)}
+                            value={item}
+                            checked={selectedOption === item}
+                            onChange={() => handleOptionChange(item)}
                             className="hidden"
                           />
-                          <span className="text-gray-800 font-medium">
-                            {option}
-                          </span>
+                          {/* Show image if item is a valid file, otherwise show text */}
+                          {item.startsWith("/media/uploads/") ? (
+                            <img
+                              src={`${baseUrl}${item}`}
+                              alt={`Option ${index + 1}`}
+                              className="max-w-full max-h-24 object-contain"
+                            />
+                          ) : (
+                            <span className="text-gray-800 font-medium">
+                              {item}
+                            </span>
+                          )}
                         </label>
-                      )
-                    )
-                }
+                      ) : null
+                    );
+                  })()
+                ) : (
+                  <p>Loading...</p>
+                )}
               </div>
 
               {/* Question Navigation and Actions */}

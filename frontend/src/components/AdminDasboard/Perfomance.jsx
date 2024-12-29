@@ -2,51 +2,64 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import DashboardHeader from "./DashboardHeader";
 import Sidebar from "./Sidebar/SideBars";
+import config from "../../config";
 
-const Performance = ({ user }) => {
+const Performance = () => {
   const [isCollapsed, setIsCollapsed] = useState(false); // Sidebar collapse state
 
   const toggleSidebar = () => {
     setIsCollapsed((prev) => !prev); // Toggle sidebar collapse state
   };
+  const [error, setError] = useState(null);
+  const user = JSON.parse(localStorage.getItem("user"));
+  const token = user.token;
+  const [loading, setLoading] = useState(true);
+  const institueName = user.institute_name;
 
-  const students = [
-    {
-      id: 1,
-      name: "Alice",
-      attemptedTests: 4,
-      monthlyPerformance: [60, 70, 80, 90, 85],
-      subjectPerformance: [85, 75, 80], // English, Math, GK/GS
-    },
-    {
-      id: 2,
-      name: "Bob",
-      attemptedTests: 3,
-      monthlyPerformance: [55, 65, 70, 75, 60],
-      subjectPerformance: [70, 60, 75], // English, Math, GK/GS
-    },
-  ];
+  const [students, setStudents] = useState([]);
 
-  // Effect to handle sidebar visibility on window resize
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth < 768) {
-        setIsCollapsed(true); // Collapse sidebar on mobile view
+        setIsCollapsed(true); 
       } else {
-        setIsCollapsed(false); // Expand sidebar on desktop view
+        setIsCollapsed(false); 
       }
     };
 
-    // Set initial state based on the current window size
     handleResize();
 
-    // Add event listener for resize
     window.addEventListener("resize", handleResize);
 
-    // Clean up the event listener on unmount
     return () => {
       window.removeEventListener("resize", handleResize);
     };
+  }, []);
+
+  const fetchPerformanceData = async () => {
+    try {
+      const response = await fetch(`${config.apiUrl}/institute-statistics/?institute_name=${institueName}`, {
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      setStudents(data.students || []);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPerformanceData();
   }, []);
 
   return (
@@ -95,22 +108,18 @@ const Performance = ({ user }) => {
                   {students.map((student) => (
                     <tr key={student.id}>
                       <td className="px-4 py-2 whitespace-nowrap text-base text-center">
-                        {student.name}
+                        {student.student_name}
                       </td>
                       <td className="px-4 py-2 whitespace-nowrap text-base text-center">
-                        {student.attemptedTests}
+                        {student.total_tests_given}
                       </td>
                       <td className="px-4 py-2 whitespace-nowrap text-base text-center">
-                        {(
-                          student.monthlyPerformance.reduce((a, b) => a + b) /
-                            student.monthlyPerformance.length || 0
-                        ).toFixed(2)}
-                        %
+                        {student.success_percentage}%
                       </td>
                       <td className="px-4 py-2 whitespace-nowrap text-right">
                         <Link
                           to={{
-                            pathname: `/student-performance/${student.id}`,
+                            pathname: `/student-performance/${student.student_id}`,
                             state: student, // Passing the student object
                           }}
                           className="text-blue-600 hover:text-blue-900"

@@ -24,6 +24,8 @@ const MockChapter = () => {
 
   const S = JSON.parse(localStorage.getItem("user"));
   const token = S.token;
+  const institueName = S.institute_name;
+
 
   // const sectionIcons = [
   //   <FaBrain />,
@@ -104,7 +106,7 @@ const MockChapter = () => {
     const fetchMockTests = async () => {
       try {
         const response = await fetch(
-          `${config.apiUrl}/get-single-exam-details-based-on-subjects/?subject_id=${SubjectId}`,
+          `${config.apiUrl}/get-single-exam-details-based-on-subjects/?subject_id=${SubjectId}&institute_name=${institueName}`,
           {
             headers: {
               Authorization: `Token ${token}`,
@@ -139,7 +141,7 @@ const MockChapter = () => {
               // Iterate through each test or question in the chapter
               chapter.forEach((testDetails) => {
                 if (testDetails.test_name && testDetails.duration) {
-                  // If it's a test metadata entry, update the current test name and duration
+                  // Update the current test name and duration
                   currentTestName = testDetails.test_name;
                   currentTestDuration = parseInt(testDetails.duration, 10);
                   currentTestDuration =
@@ -170,14 +172,22 @@ const MockChapter = () => {
                   // Add the question to the test
                   test.questions.push({
                     id: testDetails.id,
-                    question: testDetails.question,
+                    question: testDetails.question || null, // Primary question
+                    question_1: testDetails.question_1 || null, // Additional question
                     options: [
                       testDetails.option_1,
                       testDetails.option_2,
                       testDetails.option_3,
                       testDetails.option_4,
                     ],
-                    correctAnswer: testDetails.correct_answer,
+                    files: [
+                      testDetails.file_1,
+                      testDetails.file_2,
+                      testDetails.file_3,
+                      testDetails.file_4,
+                    ].filter(Boolean), // Include files only if they exist
+                    correctAnswer:
+                      testDetails.correct_answer || testDetails.correct_ans2, // Include fallback for correct_ans2
                     marks: testDetails.marks,
                     negativeMarks: testDetails.negative_marks,
                     subjects_details: testDetails.subjects_details,
@@ -289,6 +299,9 @@ const MockChapter = () => {
       // Fetch the user's answer for the current question
       const userAnswer =
         answeredQuestions[currentSectionIndex]?.[currentQuestionIndex] || {}; // Fetch based on both section and question index
+
+      console.log("User Answer:", userAnswer);
+
       const user = JSON.parse(localStorage.getItem("user"));
 
       if (!user) {
@@ -304,15 +317,40 @@ const MockChapter = () => {
         storedData[sectionName] = { questions: [] }; // Initialize section with empty questions array
       }
 
+      // If the section already has answers, accumulate them; otherwise, initialize the section with an empty object
+      if (!storedData[sectionName].questions) {
+        storedData[sectionName].questions = {};
+      }
+
+      // Ensure questions is always an array
+      if (!Array.isArray(storedData[sectionName].questions)) {
+        storedData[sectionName].questions = [];
+      }
+
+      // Determine selected_answer and selected_answer_2 based on userAnswer
+      const selectedAnswer =
+        typeof userAnswer === "string" &&
+        !userAnswer.startsWith("/media/uploads/")
+          ? userAnswer
+          : null; // Assign text answer if it's not an image
+      const selectedAnswer2 =
+        typeof userAnswer === "string" &&
+        userAnswer.startsWith("/media/uploads/")
+          ? userAnswer
+          : null; // Assign image answer if it's a URL
+
+      console.log("Selected Answer:", selectedAnswer);
+      console.log("Selected Answer 2:", selectedAnswer2);
+
       // Update the selected answer for the current question
       storedData[sectionName].questions = [
         ...storedData[sectionName].questions.filter(
           (q) => q.question !== currentQuestion.id
-        ), // Remove old entry with the same question ID (if exists)
+        ), // Remove the old entry with the same question ID (if exists)
         {
           question: currentQuestion.id,
-          selected_answer: userAnswer || "No Answer Provided", // Use text from userAnswer
-          selected_answer_2: userAnswer.image || null, // Use image if available
+          selected_answer: selectedAnswer, // Assign text if present
+          selected_answer_2: selectedAnswer2, // Assign image if present
           student: student_id,
         },
       ];
@@ -325,16 +363,16 @@ const MockChapter = () => {
       // Move to the next question or section
       if (currentQuestionIndex < currentSection.questions.length - 1) {
         // Move to the next question in the current section
-        setCurrentQuestionIndex((prevIndex) => prevIndex + 1);
+        setCurrentQuestionIndex(currentQuestionIndex + 1);
       } else if (currentSectionIndex < mockTestData.length - 1) {
         // Move to the next section and reset question index
-        setCurrentSectionIndex((prevIndex) => prevIndex + 1);
+        setCurrentSectionIndex(currentSectionIndex + 1);
         setCurrentQuestionIndex(0);
 
         // Update the selected subject for the new section
         // const nextSubject =
         //   mockTestData[currentSectionIndex + 1]?.test_name || "Unknown Subject";
-        // setSelectedSubject(nextSubject);
+        // setSelectedSubject(nextSubject); // Update the selected subject dynamically
       } else {
         // End of all sections and questions
         console.log("All sections and questions completed.");
@@ -451,33 +489,109 @@ const MockChapter = () => {
               <p className="text-lg font-medium mb-8">
                 {mockTestData[currentSectionIndex]?.questions[
                   currentQuestionIndex
-                ]?.question || "Loading..."}
+                ]
+                  ? (() => {
+                      const currentQuestion =
+                        mockTestData[currentSectionIndex]?.questions[
+                          currentQuestionIndex
+                        ];
+                      const baseUrl = "http://mockexam.pythonanywhere.com";
+                      const defaultFileValue =
+                        "/media/uploads/questions/option_4_uFtm5qj.png";
+
+                      return (
+                        <>
+                          {/* Main question */}
+                          <span>
+                            {currentQuestion?.question ||
+                              "No question available"}
+                          </span>
+                          <br />
+
+                          {/* Additional question (question_1), skipping the default value */}
+                          {currentQuestion?.question_1 &&
+                          currentQuestion.question_1 !== defaultFileValue ? (
+                            currentQuestion.question_1.startsWith(
+                              "/media/uploads/"
+                            ) ? (
+                              <img
+                                src={`${baseUrl}${currentQuestion.question_1}`}
+                                alt="Additional question"
+                                className="max-w-full max-h-24 object-contain mt-4"
+                              />
+                            ) : (
+                              <span>{currentQuestion.question_1}</span>
+                            )
+                          ) : null}
+                        </>
+                      );
+                    })()
+                  : "Loading..."}
               </p>
 
               {/* Log options */}
               <div className="grid grid-cols-2 gap-6 mb-10">
                 {mockTestData[currentSectionIndex]?.questions[
                   currentQuestionIndex
-                ]?.options?.map((option, index) => (
-                  <label
-                    key={index}
-                    className={`border border-gray-300 rounded-lg p-4 flex items-center justify-center text-center cursor-pointer transition duration-200 transform ${
-                      selectedOption === option
-                        ? "bg-blue-50 border-blue-500 shadow-md"
-                        : "hover:bg-gray-50 hover:shadow-sm"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="option"
-                      value={option}
-                      checked={selectedOption === option}
-                      onChange={() => handleOptionChange(option)}
-                      className="hidden"
-                    />
-                    <span className="text-gray-800 font-medium">{option}</span>
-                  </label>
-                ))}
+                ] ? (
+                  (() => {
+                    const currentQuestion =
+                      mockTestData[currentSectionIndex]?.questions[
+                        currentQuestionIndex
+                      ];
+                    const baseUrl = "http://mockexam.pythonanywhere.com";
+                    const defaultFileValue =
+                      "/media/uploads/questions/option_4_uFtm5qj.png";
+
+                    // Filter files to exclude default values
+                    const validFiles = currentQuestion?.files?.filter(
+                      (file) => file && file !== defaultFileValue
+                    );
+
+                    // Determine whether to show files or options
+                    const displayItems =
+                      validFiles?.length > 0
+                        ? validFiles
+                        : currentQuestion?.options;
+
+                    // Render the selected items
+                    return displayItems?.map((item, index) =>
+                      item ? (
+                        <label
+                          key={index}
+                          className={`border border-gray-300 rounded-lg p-4 flex items-center justify-center text-center cursor-pointer transition duration-200 transform ${
+                            selectedOption === item
+                              ? "bg-blue-50 border-blue-500 shadow-md"
+                              : "hover:bg-gray-50 hover:shadow-sm"
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="option"
+                            value={item}
+                            checked={selectedOption === item}
+                            onChange={() => handleOptionChange(item)}
+                            className="hidden"
+                          />
+                          {/* Display image if item is a file, otherwise display text */}
+                          {item.startsWith("/media/uploads/") ? (
+                            <img
+                              src={`${baseUrl}${item}`}
+                              alt={`Option ${index + 1}`}
+                              className="max-w-full max-h-24 object-contain"
+                            />
+                          ) : (
+                            <span className="text-gray-800 font-medium">
+                              {item}
+                            </span>
+                          )}
+                        </label>
+                      ) : null
+                    );
+                  })()
+                ) : (
+                  <p>Loading...</p>
+                )}
               </div>
 
               {/* Question Navigation and Actions */}

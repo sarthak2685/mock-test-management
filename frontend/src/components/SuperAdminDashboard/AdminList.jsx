@@ -223,6 +223,9 @@ const AdminList = () => {
                 <table className="min-w-full leading-normal border border-gray-300 rounded-lg overflow-hidden">
                   <thead className="bg-gradient-to-r from-[#007bff] to-[#0056b3] text-white">
                     <tr>
+                    <th className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-left text-xs font-semibold uppercase tracking-wider">
+                         Name
+                      </th>
                       <th className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-left text-xs font-semibold uppercase tracking-wider">
                         Institute Name
                       </th>
@@ -244,9 +247,14 @@ const AdminList = () => {
                           key={admin.id}
                           className="hover:bg-gray-100 transition-colors bg-white"
                         >
-                          <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
+                            <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
                             <p className="text-gray-900 font-medium whitespace-no-wrap">
                               {admin.name}
+                            </p>
+                          </td>
+                          <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
+                            <p className="text-gray-900 font-medium whitespace-no-wrap">
+                              {admin.institute_name}
                             </p>
                           </td>
                           <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">

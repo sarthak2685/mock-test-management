@@ -26,51 +26,50 @@ ChartJS.register(
   ArcElement
 );
 
-const StudentPerformances = ({ user }) => {
+function ChapterWise() {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [performanceData, setPerformanceData] = useState(null); // To hold performance data
   const [loading, setLoading] = useState(true);
-  const { category, testName } = useParams(); // Get exam name and test name from the URL
+  const { subjectName, chapterName, user,mockName } = useParams(); // Extract state from location
   const [loggedInUser, setLoggedInUser] = useState(JSON.parse(localStorage.getItem("user"))); // useState for loggedInUser
   const token = loggedInUser?.token;
-  const institute = loggedInUser?.institute_name;
+  const userInfo = JSON.parse(localStorage.getItem("user"));
+  const id = userInfo.id;
+  const institute = userInfo.institute_name;
   const navigate = useNavigate();
+
+  console.log("hero", subjectName, chapterName);
 
   // If no exam or test is provided, navigate away
   useEffect(() => {
-    if (!category || !testName || !loggedInUser) {
+    if (!subjectName || !chapterName || !loggedInUser) {
       navigate("/Exam-Wise-performance");
     }
-  }, [category, testName, loggedInUser, navigate]);
+  }, [subjectName, chapterName, loggedInUser, navigate]);
 
-  // Fetch performance data for the specific test only if performanceData is not already loaded
   useEffect(() => {
     const fetchPerformanceData = async () => {
-      if (!performanceData) { 
+      if (!performanceData) {
         setLoading(true);
         try {
-          const response = await fetch(`${config.apiUrl}/student_performance_single/?student_id=${loggedInUser.id}&institute_name=${institute}`, {
-            headers: {
-              Authorization: `Token ${token}`,
-              "Content-Type": "application/json",
-            },
-          });
-          const data = await response.json();
-          console.log(data);
-
-          // Find the specific exam and test data
-          if (data.analysis && data.analysis[category]) {
-            const selectedTest = data.analysis[category]?.tests?.[testName];
-            
-            if (selectedTest) {
-              setPerformanceData(selectedTest); // Set the specific test data
-            } else {
-              console.error(`Test "${testName}" not found in category "${category}".`);
-              console.log("Available tests:", Object.keys(data.analysis[category]?.tests || {}));
+          const response = await fetch(
+            `${config.apiUrl}/student_performance_single_chapter/?student_id=${id}&institute_name=${institute}`,
+            {
+              headers: {
+                Authorization: `Token ${token}`,
+                "Content-Type": "application/json",
+              },
             }
+          );
+          const data = await response.json();
+
+          const subjectData = data.analysis[subjectName];
+          const chapterData = subjectData?.[mockName]?.chapters[chapterName];
+          console.log("kkk",chapterData);
+          if (chapterData) {
+            setPerformanceData(chapterData);
           } else {
-            console.error(`Category "${category}" not found.`);
-            console.log("Available categories:", Object.keys(data.analysis || {}));
+            console.error(`Chapter "${chapterName}" not found for subject "${subjectName}".`);
           }
         } catch (error) {
           console.error("Error fetching performance data:", error);
@@ -81,16 +80,19 @@ const StudentPerformances = ({ user }) => {
     };
 
     fetchPerformanceData();
-  }, [category, testName, loggedInUser, token, performanceData]); // Add performanceData as a dependency
+  }, [subjectName, chapterName, loggedInUser, token, performanceData]);
 
-
-  // Prepare Pie chart data for attempted vs unattempted questions
   const pieData = {
     labels: ["Attempted", "Unattempted"],
     datasets: [
       {
         label: "Question Status",
-        data: [ performanceData?.question_stats.attempted ,performanceData?.question_stats.total_questions   - performanceData?.question_stats.attempted],
+        data: performanceData
+          ? [
+              performanceData.question_stats.attempted,
+              (performanceData.question_stats.total_questions-performanceData.question_stats.attempted),
+            ]
+          : [0, 0],
         backgroundColor: ["#36A2EB", "#FF6384"],
         hoverBackgroundColor: ["#36A2EB", "#FF6384"],
       },
@@ -99,30 +101,12 @@ const StudentPerformances = ({ user }) => {
 
   // Prepare Bar chart data for marks obtained in the test
   const marksData = {
-    labels: [testName], // Use test name as label for now
+    labels: [chapterName], // Use chapter name as label
     datasets: [
       {
         label: "Marks Obtained",
-        data: [
-          performanceData
-            ? Object.values(performanceData.subjects).reduce((acc, curr) => acc + curr.obtained_marks, 0)
-            : 0,
-        ],
+        data: performanceData ? [performanceData.obtained_marks] : [0],
         backgroundColor: "#36A2EB",
-      },
-    ],
-  };
-
-  // Prepare the Bar chart data for subject-wise performance
-  const subjectData = {
-    labels: performanceData ? Object.keys(performanceData.subjects) : [],
-    datasets: [
-      {
-        label: "Marks by Subject",
-        data: performanceData
-          ? Object.values(performanceData.subjects).map((item) => item.obtained_marks)
-          : [],
-        backgroundColor: "#FF6384",
       },
     ],
   };
@@ -133,7 +117,6 @@ const StudentPerformances = ({ user }) => {
     scales: {
       y: {
         beginAtZero: true,
-        max: 100,
       },
     },
   };
@@ -152,7 +135,7 @@ const StudentPerformances = ({ user }) => {
   }, []);
 
   const toggleSidebar = () => {
-    setIsCollapsed((prev) => !prev); 
+    setIsCollapsed((prev) => !prev); // Toggle sidebar collapse state
   };
 
   return (
@@ -162,21 +145,31 @@ const StudentPerformances = ({ user }) => {
         <Sidebar isCollapsed={isCollapsed} toggleSidebar={toggleSidebar} />
 
         {/* Main Performance Content */}
-        <div className={`flex-grow transition-all duration-300 ease-in-out ${isCollapsed ? "ml-0" : "ml-64"}`}>
+        <div
+          className={`flex-grow transition-all duration-300 ease-in-out ${
+            isCollapsed ? "ml-0" : "ml-64"
+          }`}
+        >
           {/* Header */}
-          <DashboardHeader user={user || { name: "Guest" }} toggleSidebar={toggleSidebar} />
+          <DashboardHeader
+            user={user || { name: "Guest" }}
+            toggleSidebar={toggleSidebar}
+          />
 
           <div className="p-2 sm:p-4 max-w-screen-lg mx-auto">
-            <h2 className="text-3xl sm:text-3xl font-bold mb-2 text-center">Performance Overview</h2>
+            <h2 className="text-3xl sm:text-3xl font-bold mb-2 text-center">
+              Performance Overview
+            </h2>
             <h3 className="text-2xl font-semibold mb-3 text-center">
-              {loggedInUser.name}'s Performance for {testName}
+              {loggedInUser.name}'s Performance for {subjectName}({chapterName})
             </h3>
 
             {/* Pie Chart for Attempted vs Unattempted Questions */}
             <div className="bg-white p-2 sm:p-4 shadow-lg rounded-lg mb-4">
-              <h3 className="text-xs sm:text-sm font-semibold mb-1 text-center">Attempted vs Unattempted</h3>
+              <h3 className="text-xs sm:text-sm font-semibold mb-1 text-center">
+                Attempted vs Unattempted
+              </h3>
               <h3 className="text-xs sm:text-sm  mb-1 text-center">(Total questions: {performanceData?.question_stats.total_questions})</h3>
-
               <div className="h-32 sm:h-40 lg:h-72 w-full sm:w-[80%] lg:w-[60%] mx-auto">
                 <Pie data={pieData} options={{ maintainAspectRatio: false }} />
               </div>
@@ -184,17 +177,11 @@ const StudentPerformances = ({ user }) => {
 
             {/* Bar Chart for Marks Obtained */}
             <div className="bg-white p-2 sm:p-4 shadow-lg rounded-lg mb-4">
-              <h3 className="text-xs sm:text-sm font-semibold mb-1 text-center">Marks Obtained</h3>
+              <h3 className="text-xs sm:text-sm font-semibold mb-1 text-center">
+                Marks Obtained
+              </h3>
               <div className="h-32 sm:h-40 lg:h-72 w-full sm:w-[80%] lg:w-[60%] mx-auto">
                 <Bar data={marksData} options={chartOptions} />
-              </div>
-            </div>
-
-            {/* Bar Chart for Subject-Wise Performance */}
-            <div className="bg-white p-2 sm:p-4 shadow-lg rounded-lg mb-4">
-              <h3 className="text-xs sm:text-sm font-semibold mb-1 text-center">Subject-Wise Performance</h3>
-              <div className="h-32 sm:h-40 lg:h-72 w-full sm:w-[80%] lg:w-[60%] mx-auto">
-                <Bar data={subjectData} options={chartOptions} />
               </div>
             </div>
           </div>
@@ -202,6 +189,6 @@ const StudentPerformances = ({ user }) => {
       </div>
     </div>
   );
-};
+}
 
-export default StudentPerformances;
+export default ChapterWise;

@@ -37,18 +37,23 @@ import ExamDesktop from "./components/Home/FreeMock/ExamDesktop.jsx";
 import ExamMobile from "./components/Home/FreeMock/ExamMobile.jsx";
 import Analysis from "./components/Home/FreeMock/Analysis.jsx";
 import GuestInstruction from "./components/Home/FreeMock/GuestInstruction.jsx";
+import TestTime from "./components/SuperAdminDashboard/TestTime.jsx";
+import ChapterScore from "./components/Home/Mock/ChapterScore.jsx";
+import ChapterPerformance from "./components/StudentDashboard/SubjectPerformance.jsx";
+import ChapterWise from "./components/StudentDashboard/ChapterWise.jsx";
+
 
 function App() {
   const location = useLocation();
 
-  // Get the user role from local storage
-  const userRole = localStorage.getItem("userRole"); // Assuming "userRole" is set after login
+  const userRole = localStorage.getItem("userRole"); 
 
-  // Determine visibility of Navbar and Footer based on role and route
   const isNavbarFooterVisible =
     userRole !== "owner" &&
     userRole !== "admin" &&
-    ["/", "/login", "/contact", "/subscriptionform"].includes(location.pathname);
+    ["/", "/login", "/contact", "/subscriptionform"].includes(
+      location.pathname
+    );
 
   return (
     <UserProvider>
@@ -67,16 +72,21 @@ function App() {
           <Route path="/performance" element={<ChartComponent />} />
           <Route path="/admin-management" element={<AdminManagement />} />
           <Route path="/admins-list" element={<AdminList />} />
+          <Route path="/test-time" element={<TestTime />} />
           <Route
-            path="/student-performance/:id"
+            path="/student-performance/:studentId"
             element={<StudentPerformance />}
           />
           <Route path="/mock-demo" element={<MockDemo />} />
           <Route path="/student-dashboard" element={<Dashboards />} />
-          <Route path="/student-performance" element={<Performances />} />
+          <Route path="/Exam-Wise-Performance" element={<Performances />} />
           <Route
-            path="/student-performances/:id"
+            path="/student-performances/:category/:testName"
             element={<StudentPerformances />}
+          />
+          <Route
+            path="/student-performances-chapter/:subjectName/:mockName/:chapterName"
+            element={<ChapterWise />}
           />
           <Route path="/profile" element={<Profile />} />
           <Route path="/help" element={<Help />} />
@@ -100,10 +110,11 @@ function App() {
 <Route path="/guestinstruction" element={<GuestInstruction />} />
 
 
+          <Route path="/scorecard" element={<ChapterScore />} />
+          <Route path="/subject-Wise-Performance" element={<ChapterPerformance />} />
 
 
         </Routes>
-        
 
         {isNavbarFooterVisible && <Footer />}
       </div>
