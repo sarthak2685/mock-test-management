@@ -1195,23 +1195,21 @@ const MockTestManagement = ({ user }) => {
                   <div className="flex flex-col sm:flex-row gap-1 sm:gap-4 mb-1 sm:mb-2">
                     {/* Question Text Area */}
                     <div className="relative w-full">
-                      <textarea
-                        placeholder="Question Text"
-                        value={
+                      <EditableMathField
+                        latex={
                           newTest.questions[currentQuestionIndex]
                             ?.questionText || ""
                         }
-                        onChange={(e) => {
+                        onChange={(mathField) => {
                           const updatedQuestions = [...newTest.questions];
                           updatedQuestions[currentQuestionIndex].questionText =
-                            e.target.value;
+                            mathField.latex();
                           setNewTest((prevState) => ({
                             ...prevState,
                             questions: updatedQuestions,
                           }));
                         }}
                         className="border p-1 sm:p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 text-xs sm:text-base"
-                        rows="4"
                       />
                     </div>
 

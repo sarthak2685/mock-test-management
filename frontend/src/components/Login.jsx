@@ -34,7 +34,8 @@ const Login = () => {
 
       if (response.data.data && response.data.data.type) {
         // Extract fields from the response
-        const { type, user, token, id, name, institute_name } = response.data.data;
+        const { type, user, token, id, name, institute_name } =
+          response.data.data;
 
         // Consolidate into a single object
         const userData = { type, user, token, id, name, institute_name };
@@ -69,7 +70,7 @@ const Login = () => {
           setError("Unknown role. Please contact support.");
         }
       } else {
-        setError("Invalid login credentials");
+        setError("Account Expired Please Renew");
       }
     } catch (error) {
       setError("Login failed. Please check your credentials.");
