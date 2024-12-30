@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { RiInformation2Line } from "react-icons/ri";
 import Timer from "../Mock/Timer"; // Assuming Timer is a separate component
+import config from "../../../config";
 
 const InstructionsModal = ({ isVisible, onClose }) => {
   const [optionalSubject, setOptionalSubject] = useState(
@@ -358,7 +359,7 @@ const ChapterNavigation = ({
 
       // Submit the data to the server in one request
       const response = await fetch(
-        `https://mockexam.pythonanywhere.com/submit-answers/?${queryParams}`,
+        `${config.apiUrl}/submit-answers/?${queryParams}`,
         {
           method: "POST",
           headers: {

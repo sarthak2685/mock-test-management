@@ -1,6 +1,6 @@
 const config = {
-    // apiUrl: 'https://api.crm.swalook.in',
-    apiUrl: 'https://mockexam.pythonanywhere.com',
+    apiUrl: 'http://cod.crpch.in',
+    // apiUrl: 'https://mockexam.pythonanywhere.com',
   };
   
   export default config;
