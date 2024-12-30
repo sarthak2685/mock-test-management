@@ -1,20 +1,22 @@
 import React, { useState, useEffect, useRef } from "react";
 import DashboardHeader from "../SuperAdminDashboard/Header";
 import Sidebar from "../SuperAdminDashboard/Sidebar";
+import Select from "react-select";
+import config from "../../config";
 
 const TestTime = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [user, setUser] = useState(null);
-
-  // States for dropdowns and inputs
-  const [domain, setDomain] = useState("");
-  const [subject, setSubject] = useState("");
-  const [chapter, setChapter] = useState("");
+  const [institutes, setInstitutes] = useState([]);
+  const [selectedOptions, setSelectedOptions] = useState([]);
   const [testName, setTestName] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
+  const [testOptions, setTestOptions] = useState([]);
 
-  // Refs for the datetime inputs
+  const S = JSON.parse(localStorage.getItem("user"));
+  const token = S.token;
+
   const startTimeRef = useRef(null);
   const endTimeRef = useRef(null);
 
@@ -24,6 +26,87 @@ const TestTime = () => {
       const parsedUser = JSON.parse(storedUser);
       setUser(parsedUser);
     }
+  }, []);
+
+  const fetchInstitutes = async () => {
+    try {
+      const response = await fetch(`${config.apiUrl}/vendor-admin-crud/`, {
+        method: "GET",
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      if (Array.isArray(result.data)) {
+        const formattedInstitutes = result.data.map((institute) => ({
+          value: institute.id,
+          label: institute.institute_name,
+        }));
+        setInstitutes(formattedInstitutes);
+      } else {
+        console.error("Expected an array but received:", result.data);
+      }
+    } catch (error) {
+      console.error("Error fetching institutes:", error);
+    }
+  };
+
+  const fetchTests = async () => {
+    try {
+      const selectedInstituteNames = selectedOptions
+        .map((option) => option.label)
+        .join(",");
+
+      const queryParams = new URLSearchParams({
+        student_id: "3738837e-c8bd-458d-9152-634378b01060",
+        institute_name: selectedInstituteNames,
+      });
+
+      const response = await fetch(
+        `${config.apiUrl}/tests_point/?${queryParams.toString()}`,
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch student test data");
+      }
+
+      const data = await response.json();
+
+      const uniqueTestNames = [
+        ...new Set(data.test_names.map((test) => test.test_name)),
+      ];
+
+      const testOptionsFormatted = uniqueTestNames.map((name) => ({
+        id: name,
+        name,
+      }));
+
+      setTestOptions(testOptionsFormatted);
+    } catch (error) {
+      console.error("Error fetching student test data:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedOptions.length > 0) {
+      fetchTests();
+    }
+  }, [selectedOptions, token]);
+
+  useEffect(() => {
+    fetchInstitutes();
   }, []);
 
   const toggleSidebar = () => {
@@ -41,13 +124,58 @@ const TestTime = () => {
     };
   }, []);
 
-  // Focus handlers to open datepicker immediately
+  const handleInstituteChange = (selected) => {
+    if (selected) {
+      if (selected.some((option) => option.value === "selectAll")) {
+        setSelectedOptions(institutes);
+      } else if (selected.some((option) => option.value === "deselectAll")) {
+        setSelectedOptions([]);
+      } else {
+        setSelectedOptions(selected);
+      }
+    }
+  };
+
   const handleStartTimeClick = () => {
     startTimeRef.current.focus();
   };
 
   const handleEndTimeClick = () => {
     endTimeRef.current.focus();
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    const payload = {
+      institutes: selectedOptions.map((option) => option.value),
+      test_name: testName,
+      start_time: startTime,
+      end_time: endTime,
+    };
+
+    try {
+      const response = await fetch(`${config.apiUrl}/test_time/`, {
+        method: "POST",
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to save test: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      console.log("Test saved successfully:", result);
+
+      alert("Test saved successfully!");
+    } catch (error) {
+      console.error("Error saving test:", error);
+      alert("Failed to save test. Please try again.");
+    }
   };
 
   return (
@@ -66,79 +194,69 @@ const TestTime = () => {
         >
           <DashboardHeader user={user} toggleSidebar={toggleSidebar} />
 
-          {/* Main Content */}
           <div className="p-2 md:p-6">
             <h1 className="text-xl md:text-3xl font-bold mb-4 text-left">
               TestTime Setup
             </h1>
 
-            <div className="bg-white shadow-lg rounded-lg p-3">
-              <form>
-                {/* Row 1: Domain, Subject, Chapter */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 p-4">
+            <div className="bg-white shadow-lg rounded-lg p-6">
+              <form onSubmit={handleSubmit}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 p-4">
                   <div className="flex flex-col">
                     <label
-                      htmlFor="domain"
-                      className="text-lg sm:text-xl md:text-xl font-semibold text-gray-700 mb-2"
+                      htmlFor="institute"
+                      className="text-lg sm:text-xl md:text-xl font-semibold text-gray-700"
                     >
-                      Domain
+                      Institute
                     </label>
-                    <select
-                      id="domain"
-                      name="domain"
-                      value={domain}
-                      onChange={(e) => setDomain(e.target.value)}
-                      className="mt-1 p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-700"
-                    >
-                      <option value="">Select Domain</option>
-                      <option value="domain1">Domain 1</option>
-                      <option value="domain2">Domain 2</option>
-                    </select>
+                    <Select
+                      isMulti
+                      options={[
+                        { value: "selectAll", label: "Select All" },
+                        { value: "deselectAll", label: "Deselect All" },
+                        ...institutes,
+                      ]}
+                      onChange={handleInstituteChange}
+                      className="basic-multi-select mt-4"
+                      classNamePrefix="select"
+                      placeholder="Select Institute(s)"
+                      value={selectedOptions}
+                      styles={{
+                        control: (base) => ({
+                          ...base,
+                          borderColor: "lightgray",
+                          boxShadow: "none",
+                          "&:hover": {
+                            borderColor: "blue",
+                          },
+                          padding: "0.35rem",
+                          borderRadius: "0.375rem",
+                        }),
+                        option: (base, { data }) => ({
+                          ...base,
+                          display:
+                            data.value === "selectAll" ||
+                            data.value === "deselectAll"
+                              ? "inline-block"
+                              : "block",
+                          width:
+                            data.value === "selectAll" ||
+                            data.value === "deselectAll"
+                              ? "48%"
+                              : "100%",
+                          textAlign: "center",
+                          padding: "0.5rem",
+                        }),
+                        menu: (base) => ({
+                          ...base,
+                          display: "flex",
+                          flexDirection: "column",
+                          padding: "0.5rem",
+                        }),
+                      }}
+                    />
                   </div>
 
-                  <div className="flex flex-col">
-                    <label
-                      htmlFor="subject"
-                      className="text-lg sm:text-xl md:text-xl font-semibold text-gray-700 mb-2"
-                    >
-                      Subject
-                    </label>
-                    <select
-                      id="subject"
-                      name="subject"
-                      value={subject}
-                      onChange={(e) => setSubject(e.target.value)}
-                      className="mt-1 p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-700"
-                    >
-                      <option value="">Select Subject</option>
-                      <option value="subject1">Subject 1</option>
-                      <option value="subject2">Subject 2</option>
-                    </select>
-                  </div>
-
-                  <div className="flex flex-col">
-                    <label
-                      htmlFor="chapter"
-                      className="text-lg sm:text-xl md:text-xl font-semibold text-gray-700 mb-2"
-                    >
-                      Chapter
-                    </label>
-                    <select
-                      id="chapter"
-                      name="chapter"
-                      value={chapter}
-                      onChange={(e) => setChapter(e.target.value)}
-                      className="mt-1 p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-700"
-                    >
-                      <option value="">Select Chapter</option>
-                      <option value="chapter1">Chapter 1</option>
-                      <option value="chapter2">Chapter 2</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Row 2: Test Name, Start Time, End Time */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 p-4">
                   <div className="flex flex-col">
                     <label
                       htmlFor="testName"
@@ -154,12 +272,16 @@ const TestTime = () => {
                       className="mt-1 p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-700"
                     >
                       <option value="">Select Test Name</option>
-                      <option value="test1">Test 1</option>
-                      <option value="test2">Test 2</option>
-                      <option value="test3">Test 3</option>
+                      {testOptions.map((test) => (
+                        <option key={test.id} value={test.name}>
+                          {test.name}
+                        </option>
+                      ))}
                     </select>
                   </div>
+                </div>
 
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 p-4">
                   <div className="flex flex-col">
                     <label
                       htmlFor="startTime"
@@ -174,7 +296,7 @@ const TestTime = () => {
                       type="datetime-local"
                       value={startTime}
                       onChange={(e) => setStartTime(e.target.value)}
-                      onClick={handleStartTimeClick} // Focus handler
+                      onClick={handleStartTimeClick}
                       className="mt-1 p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-700"
                     />
                   </div>
@@ -193,13 +315,12 @@ const TestTime = () => {
                       type="datetime-local"
                       value={endTime}
                       onChange={(e) => setEndTime(e.target.value)}
-                      onClick={handleEndTimeClick} // Focus handler
+                      onClick={handleEndTimeClick}
                       className="mt-1 p-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-700"
                     />
                   </div>
                 </div>
 
-                {/* Save Button */}
                 <div className="mt-4 mb-4 mr-4 flex justify-end">
                   <button
                     type="submit"

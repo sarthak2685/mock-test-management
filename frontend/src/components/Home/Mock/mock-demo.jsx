@@ -7,6 +7,7 @@ import config from "../../../config";
 // import { FaBrain, FaBook, FaCalculator, FaLanguage } from "react-icons/fa"; // Icons for sections
 import Timer from "../Mock/Timer";
 import UserProfile from "../Mock/UserProfile";
+import { StaticMathField } from "react-mathquill";
 
 const MockDemo = () => {
   const user = {
@@ -524,10 +525,10 @@ const MockDemo = () => {
                       return (
                         <>
                           {/* Main question */}
-                          <span>
+                          <StaticMathField>
                             {currentQuestion?.question ||
                               "No question available"}
-                          </span>
+                          </StaticMathField>
                           <br />
 
                           {/* Display question2 if it is valid (not the default image) */}
@@ -543,7 +544,9 @@ const MockDemo = () => {
                                 className="max-w-full max-h-24 object-contain mt-4"
                               />
                             ) : (
-                              <span>{currentQuestion.question2}</span>
+                              <StaticMathField>
+                                {currentQuestion.question2}
+                              </StaticMathField>
                             )
                           ) : null}
                         </>
