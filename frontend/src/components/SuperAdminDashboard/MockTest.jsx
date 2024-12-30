@@ -817,7 +817,7 @@ const MockTestManagement = ({ user }) => {
 
       // Send the request using fetch
       const response = await fetch(
-        "https://mockexam.pythonanywhere.com/exam-subject-chapter-questions/",
+        `${config.apiUrl}/exam-subject-chapter-questions/`,
         {
           method: "POST",
           headers: {

@@ -108,7 +108,7 @@ const Dashboard = () => {
               {/* Card for Active Tests */}
               <div className="bg-white shadow-md rounded-lg p-3">
                 <h2 className="text-base md:text-lg">Active Tests</h2>
-                <p className="text-xl md:text-2xl font-bold">5</p>
+                <p className="text-xl md:text-2xl font-bold">{userData.total_mock_tests}</p>
               </div>
             </div>
 

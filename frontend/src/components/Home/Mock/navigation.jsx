@@ -368,7 +368,7 @@ const QuestionNavigation = ({
 
       // Submit the data to the server in one request
       const response = await fetch(
-        `https://mockexam.pythonanywhere.com/submit-answers/?${queryParams}`,
+        `${config.apiUrl}/submit-answers/?${queryParams}`,
         {
           method: "POST",
           headers: {

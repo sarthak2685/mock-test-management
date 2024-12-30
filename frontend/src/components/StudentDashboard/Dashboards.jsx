@@ -108,7 +108,6 @@ const Dashboards = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
               <div className="bg-white shadow-md rounded-lg p-3">
                 <h2 className="text-base md:text-lg">Current Rank</h2>
-
                 <p className="text-xl md:text-2xl font-bold">
                   {currentUserRank || "Loading..."}
                 </p>
