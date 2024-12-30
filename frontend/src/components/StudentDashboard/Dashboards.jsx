@@ -31,24 +31,31 @@ const Dashboards = () => {
     }
   }, []);
   const userInfo = JSON.parse(localStorage.getItem("user"))
+  console.log(userInfo)
+  const institute = userInfo.institute_name;
   const id = userInfo.id;
   useEffect(() => {
     const fetchLeaderboardData = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`${config.apiUrl}/student_performance_single/?student_id=${id}`, {
+        const response = await fetch(`${config.apiUrl}/student_leader_board/?institute=${institute}`, {
           headers: {
             Authorization: `Token ${token}`,
             "Content-Type": "application/json",
           },
         });
         const data = await response.json();
-        const leaderboard = data.leader_board.leaderboard || [];
-        const userRank = data.leader_board.leaderboard ;
-        console.log(leaderboard)
+        console.log('data', data);
+        const leaderboard = data.leaderboard || [];
+        const currentUser = leaderboard.find((entry) => entry.student_id === id);
+        console.log("he",currentUser)
         setLeaderboardData(leaderboard);
-        setCurrentUserRank(userRank);
-      } catch (error) {
+        if (currentUser) {
+          setCurrentUserRank(currentUser.rank);
+        } else {
+          console.warn("User not found in leaderboard.");
+          setCurrentUserRank("Not Ranked");
+        }      } catch (error) {
         console.error("Error fetching leaderboard data:", error);
       } finally {
         setLoading(false);
@@ -101,8 +108,9 @@ const Dashboards = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
               <div className="bg-white shadow-md rounded-lg p-3">
                 <h2 className="text-base md:text-lg">Current Rank</h2>
+
                 <p className="text-xl md:text-2xl font-bold">
-                  {currentUserRank ? currentUserRank.rank : "Loading..."}
+                  {currentUserRank || "Loading..."}
                 </p>
               </div>
 

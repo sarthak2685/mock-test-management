@@ -33,7 +33,7 @@ const StudentPerformances = ({ user }) => {
   const { category, testName } = useParams(); // Get exam name and test name from the URL
   const [loggedInUser, setLoggedInUser] = useState(JSON.parse(localStorage.getItem("user"))); // useState for loggedInUser
   const token = loggedInUser?.token;
-
+  const institute = loggedInUser?.institute_name;
   const navigate = useNavigate();
 
   // If no exam or test is provided, navigate away
@@ -49,7 +49,7 @@ const StudentPerformances = ({ user }) => {
       if (!performanceData) { 
         setLoading(true);
         try {
-          const response = await fetch(`${config.apiUrl}/student_performance_single/?student_id=${loggedInUser.id}`, {
+          const response = await fetch(`${config.apiUrl}/student_performance_single/?student_id=${loggedInUser.id}&institute_name=${institute}`, {
             headers: {
               Authorization: `Token ${token}`,
               "Content-Type": "application/json",
@@ -83,7 +83,6 @@ const StudentPerformances = ({ user }) => {
     fetchPerformanceData();
   }, [category, testName, loggedInUser, token, performanceData]); // Add performanceData as a dependency
 
-  
 
   // Prepare Pie chart data for attempted vs unattempted questions
   const pieData = {
@@ -91,17 +90,7 @@ const StudentPerformances = ({ user }) => {
     datasets: [
       {
         label: "Question Status",
-        data: [
-          performanceData
-            ? Object.values(performanceData.subjects).reduce((acc, curr) => acc + curr.questions_attempted, 0)
-            : 0, // Total attempted questions
-          performanceData
-            ? Object.values(performanceData.subjects).reduce(
-                (acc, curr) => acc + (curr.total_marks - curr.questions_unattempted),
-                0
-              )
-            : 0, // Total unattempted questions
-        ],
+        data: [ performanceData?.question_stats.attempted ,performanceData?.question_stats.total_questions   - performanceData?.question_stats.attempted],
         backgroundColor: ["#36A2EB", "#FF6384"],
         hoverBackgroundColor: ["#36A2EB", "#FF6384"],
       },
@@ -163,7 +152,7 @@ const StudentPerformances = ({ user }) => {
   }, []);
 
   const toggleSidebar = () => {
-    setIsCollapsed((prev) => !prev); // Toggle sidebar collapse state
+    setIsCollapsed((prev) => !prev); 
   };
 
   return (
@@ -186,6 +175,8 @@ const StudentPerformances = ({ user }) => {
             {/* Pie Chart for Attempted vs Unattempted Questions */}
             <div className="bg-white p-2 sm:p-4 shadow-lg rounded-lg mb-4">
               <h3 className="text-xs sm:text-sm font-semibold mb-1 text-center">Attempted vs Unattempted</h3>
+              <h3 className="text-xs sm:text-sm  mb-1 text-center">(Total questions: {performanceData?.question_stats.total_questions})</h3>
+
               <div className="h-32 sm:h-40 lg:h-72 w-full sm:w-[80%] lg:w-[60%] mx-auto">
                 <Pie data={pieData} options={{ maintainAspectRatio: false }} />
               </div>

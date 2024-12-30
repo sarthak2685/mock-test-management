@@ -152,7 +152,7 @@ const FreeMock = () => {
   </div>
 
   {/* Action Button */}
-  <Link to="/instruction">
+  <Link to="/guestinstruction">
     <button className="mt-6 w-full py-2 bg-blue-500 text-white text-sm font-semibold rounded-lg hover:bg-blue-600 transition-all">
       Start Test
     </button>
