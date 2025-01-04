@@ -1,13 +1,13 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { FaYoutube, FaXTwitter } from "react-icons/fa6";
+import { FaFacebookF, FaXTwitter } from "react-icons/fa6";
 import { AiFillInstagram } from "react-icons/ai";
 import { IoCall, IoLocationSharp } from "react-icons/io5";
 import { MdEmail } from "react-icons/md";
 
 const socialLinks = [
   {
-    path: "https://www.instagram.com/",
+    path: "https://www.instagram.com/mockperiod?igsh=MWRldDdnZHZ5aGdmcg==",
     icon: <AiFillInstagram />,
   },
   {
@@ -15,33 +15,40 @@ const socialLinks = [
     icon: <FaXTwitter />,
   },
   {
-    path: "https://www.youtube.com/c/",
-    icon: <FaYoutube />,
-  },
+    path: "https://www.facebook.com/profile.php?id=61571569440041&mibextid=ZbWKwL",
+    icon: <FaFacebookF />,
+    },
 ];
 
 const reach = [
   {
     display: (
       <>
-        <IoLocationSharp className="inline-block mr-2" /> Buxar, India
+        <IoLocationSharp className="inline-block mr-2 hover:text-blue-500" />
+        <span className="hover:text-blue-500">
+          Civil Line Buxar, Bihar, India
+        </span>
       </>
     ),
+    path: "https://maps.app.goo.gl/crJqFFqsqCPKbAc76",
   },
   {
     display: (
       <>
-        <IoCall className="inline-block mr-2" /> +91-9911334455
+        <IoCall className="inline-block mr-2" /> +91-9430995928
       </>
     ),
+    path: "tel:+919430995928", // Correct usage of 'tel:' link
   },
   {
     display: (
       <>
-        <MdEmail className="inline-block mr-2" /> xcv@gmail.com
+        <MdEmail className="inline-block mr-2" /> mockperiod@gmail.com
       </>
     ),
+    path: "mailto:mockperiod@gmail.com", // Correct usage of 'mailto:' link
   },
+
 ];
 
 const company = [
@@ -78,8 +85,9 @@ const Footer = () => {
             {socialLinks.map((link, index) => (
               <Link
                 to={link.path}
+                target={link.path.startsWith("http") ? "_blank" : "_self"}
                 key={index}
-                className="w-12 h-12 flex items-center justify-center group social-link"
+                className="w-12 h-12 flex items-center justify-center group social-link hover:text-blue-500"
                 aria-label={link.ariaLabel}
               >
                 <div className="text-[24px] sm:text-[27px]">{link.icon}</div>
@@ -88,21 +96,26 @@ const Footer = () => {
           </div>
 
           {/* Reach Out To Us Section */}
-          <div className="text-center md:text-right">
+          <div className="text-center md:text-left">
             <h2 className="text-[18px] sm:text-[20px] font-bold mb-3 text-black">
               Reach Out To Us
             </h2>
             <ul>
-              {reach.map((item, index) => (
-                <li key={index} className="mb-4">
-                  <Link
-                    to={item.path}
-                    className="text-[14px] sm:text-[16px] leading-7 font-[400] text-black"
-                  >
-                    {item.display}
-                  </Link>
-                </li>
-              ))}
+              <ul>
+                {reach.map((item, index) => (
+                  <li key={index} className="mb-4">
+                    <a
+                      href={item.path}
+                      target={item.path.startsWith("http") ? "_blank" : "_self"} // Open in a new tab if it's an external link
+                      rel="noopener noreferrer"
+                      className="text-[14px] sm:text-[16px] leading-7 font-[400] text-black hover:text-blue-500"
+                    >
+                      {item.display}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+
             </ul>
           </div>
 
@@ -112,12 +125,12 @@ const Footer = () => {
               Company
             </h2>
             <ul>
-              <a href="#why-us">Why Us</a>
+              <a href="/Disclaimer" className="hover:text-blue-500">Disclaimer</a>
               {company.map((item, index) => (
                 <li key={index} className="mb-4">
                   <Link
                     to={item.path}
-                    className="text-[14px] sm:text-[16px] leading-7 font-[400] text-black"
+                    className="text-[14px] sm:text-[16px] leading-7 font-[400] text-black hover:text-blue-500"
                   >
                     {item.display}
                   </Link>
@@ -128,19 +141,30 @@ const Footer = () => {
         </div>
         <br></br>
         <hr></hr>
+        <div className="flex justify-between ">
+          <div className="md:text-left py-3 mt-auto items-center text-center justify-center">
+            <p
+              style={{ fontSize: "10px" }}
+              className="text-gray-600 font-semibold"
+            >
+              Developed By
+              <span className="font-semibold text-blue-500"> WebCraftix</span>
+            </p>
+          </div>
 
-        {/* Copyright Section */}
-        <div className="md:text-right py-3 mt-auto items-center text-center justify-center">
-          <p
-            style={{ fontSize: "10px" }}
-            className="text-gray-600 font-semibold"
-          >
-            {" "}
-            {/* Adjust ml-* for desired margin */}© Copyright{" "}
-            {new Date().getFullYear()}{" "}
-            <span className="font-semibold text-blue-500">WebCraftrix</span> |
-            All Rights Reserved.
-          </p>
+          {/* Copyright Section */}
+          <div className="md:text-right py-3 mt-auto items-center text-center justify-center">
+            <p
+              style={{ fontSize: "10px" }}
+              className="text-gray-600 font-semibold"
+            >
+              {" "}
+              {/* Adjust ml-* for desired margin */}© Copyright{" "}
+              {new Date().getFullYear()}{" "}
+              <span className="font-semibold text-blue-500">MockPeriod</span> |
+              All Rights Reserved.
+            </p>
+          </div>
         </div>
       </div>
     </footer>

@@ -60,7 +60,7 @@ const Exams = () => {
 
   // Get the appropriate logo for an exam
   const getLogo = (exam) => {
-    if (exam.image) return exam.image; // Use image from API if available
+    if (exam.image) return exam.image; // Use image from the exam data if available
 
     // Match a logo based on exam name
     for (const key in logoMap) {

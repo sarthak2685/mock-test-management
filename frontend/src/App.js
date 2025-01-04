@@ -41,6 +41,9 @@ import TestTime from "./components/SuperAdminDashboard/TestTime.jsx";
 import ChapterScore from "./components/Home/Mock/ChapterScore.jsx";
 import ChapterPerformance from "./components/StudentDashboard/SubjectPerformance.jsx";
 import ChapterWise from "./components/StudentDashboard/ChapterWise.jsx";
+import PrivacyPolicy from "./components/PrivacyPolicy.jsx";
+import TermsAndConditions from "./components/TermConditon.jsx";
+import Disclaimer from "./components/Disclaimer.jsx";
 
 
 function App() {
@@ -105,13 +108,16 @@ function App() {
             element={<SubscriptionForm />}
           />
 
-<Route path="/examdesktop" element={<ExamDesktop />} />
-<Route path="/analysis" element={<Analysis />} />
-<Route path="/guestinstruction" element={<GuestInstruction />} />
+          <Route path="/examdesktop" element={<ExamDesktop />} />
+          <Route path="/analysis" element={<Analysis />} />
+          <Route path="/guestinstruction" element={<GuestInstruction />} />
 
 
           <Route path="/scorecard" element={<ChapterScore />} />
           <Route path="/subject-Wise-Performance" element={<ChapterPerformance />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-condition" element={<TermsAndConditions />} />
+          <Route path="/disclaimer" element={<Disclaimer />} />
 
 
         </Routes>
