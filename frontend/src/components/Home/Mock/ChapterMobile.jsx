@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FaBars, FaTimes, FaChevronDown } from "react-icons/fa";
 import ChapterNavigation from "../Mock/ChapterNavigation";
 import Timer from "./Timer";
-// import config from "../../../config";
+import config from "../../../config";
 import UserProfile from "../Mock/UserProfile";
 
 const ChapterMobile = ({
@@ -154,7 +154,7 @@ const ChapterMobile = ({
   //     });
   //   };
 
-  const baseUrl = "http://mockexam.pythonanywhere.com";
+  const baseUrl = `${config.apiUrl}`;
   const defaultFileValue = "/media/uploads/questions/option_4_uFtm5qj.png";
 
   return (

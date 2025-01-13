@@ -1,9 +1,19 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { AiOutlinePlus, AiOutlineMinus } from 'react-icons/ai'; // Importing icons from react-icons
 
 const FAQ = () => {
   const [visibleSection, setVisibleSection] = useState('payment'); // Set 'payment' section to be visible initially
   const [activeIndex, setActiveIndex] = useState(null); // Add this to track which FAQ is expanded
+  const [userType, setUserType] = useState(null);
+
+  useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem("user"));
+    if (userData && userData.type === "student") {
+      setUserType(userData.type);
+    } else {
+      setUserType(null);
+    }
+  },[])
 
   const paymentFAQs = [
     {
@@ -91,6 +101,8 @@ const FAQ = () => {
             <h1 className="text-xl font-semibold ">Table of Contents</h1>
             <div className="mt-4 space-y-4 lg:mt-8">
               {/* Payment FAQs Button */}
+              {!userType && (
+
               <div
                 className={` py-6 px-4 rounded-lg text-sm shadow-md cursor-pointer opacity-50 transition-transform transform hover:scale-105  ${
                   visibleSection === 'payment' ? 'border-b-2 opacity-100 font-semibold border-[#007bff] ' : ''
@@ -101,6 +113,7 @@ const FAQ = () => {
                   Payment/Transaction FAQs
                 </h2>
               </div>
+              )}
 
               {/* Test FAQs Button */}
               <div

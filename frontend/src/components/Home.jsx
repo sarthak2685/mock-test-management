@@ -31,7 +31,7 @@ function Home() {
       <Exam />
       {shouldRenderMockTest && <FreeMock />}
       <Subject />
-      <WhyUs />
+      {shouldRenderMockTest && <WhyUs />}
       {shouldRenderMockTest && <Subscription />}
       <FAQ />
       <Message />

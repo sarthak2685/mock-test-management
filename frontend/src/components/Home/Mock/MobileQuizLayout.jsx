@@ -4,6 +4,7 @@ import QuestionNavigation from "../Mock/navigation";
 import Timer from "./Timer";
 // import config from "../../../config";
 import UserProfile from "../Mock/UserProfile";
+import config from "../../../config";
 
 const MobileQuizLayout = ({
   currentSectionIndex,
@@ -305,7 +306,7 @@ const MobileQuizLayout = ({
                 "/media/uploads/questions/option_4_uFtm5qj.png" ? (
                 currentQuestion.question2.startsWith("/media/uploads/") ? (
                   <img
-                    src={`http://mockexam.pythonanywhere.com${currentQuestion.question2}`}
+                    src={`${config.apiUrl}${currentQuestion.question2}`}
                     alt="Additional question"
                     className="max-w-full max-h-24 object-contain mt-4"
                   />
@@ -317,8 +318,8 @@ const MobileQuizLayout = ({
               {/* Display Question Files or Options */}
               <div className="space-y-3 grid grid-cols-1 mt-6">
                 {(() => {
-                  const baseUrl = "http://mockexam.pythonanywhere.com";
-                  const validFiles = currentQuestion.files?.filter(
+                    const baseUrl = `${config.apiUrl}`;
+                    const validFiles = currentQuestion.files?.filter(
                     (file) =>
                       file &&
                       file !== "/media/uploads/questions/option_4_uFtm5qj.png"

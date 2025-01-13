@@ -521,7 +521,7 @@ const MockDemo = () => {
                         (section) => section.subject === selectedSubject
                       )?.questions[currentQuestionIndex];
 
-                      const baseUrl = "http://mockexam.pythonanywhere.com";
+                      const baseUrl = `${config.apiUrl}`;
 
                       return (
                         <>
@@ -566,7 +566,7 @@ const MockDemo = () => {
                       (section) => section.subject === selectedSubject
                     )?.questions[currentQuestionIndex];
 
-                    const baseUrl = "http://mockexam.pythonanywhere.com";
+                    const baseUrl = `${config.apiUrl}`;
 
                     // Check if valid files exist, excluding the default value
                     const validFiles = currentQuestion?.files?.filter(
