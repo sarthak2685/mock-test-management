@@ -673,7 +673,27 @@ const MockTestManagement = ({ user }) => {
     fetchInstitutes(); // Fetch institutes when component mounts
   }, []); // Run once when the component mounts
 
+  const [isFormValid, setIsFormValid] = useState(false); // Existing state from previous code
+
+  useEffect(() => {
+    const isValid =
+      selectedOptions.length > 0 &&
+      newTest.testName &&
+      newTest.duration &&
+      newTest.subject &&
+      newTest.correctMark !== "" &&
+      newTest.negativeMark !== "" &&
+      (!newTest.domain || (newTest.domain && !newTest.chapter)); // Chapter not required if domain exists
+
+    setIsFormValid(isValid);
+  }, [selectedOptions, newTest]);
+
   const handleTest = async () => {
+    if (!isFormValid) {
+      alert("Please fill in all required fields before submitting the test.");
+      return; // Stop execution if the form is invalid
+    }
+
     try {
       const currentQuestion = newTest.questions[currentQuestionIndex];
       if (!currentQuestion) {
@@ -904,600 +924,620 @@ const MockTestManagement = ({ user }) => {
               </Link>
             </div>
 
-            <div className="bg-white p-4 sm:p-6 shadow-md rounded-lg mb-8">
-              <h2 className="text-lg sm:text-xl font-semibold mb-3">
-                Create New Test
-              </h2>
+            <form>
+              <div className="bg-white p-4 sm:p-6 shadow-md rounded-lg mb-8">
+                <h2 className="text-lg sm:text-xl font-semibold mb-3">
+                  Create New Test
+                </h2>
 
-              {/* Dropdowns Layout */}
-              <div className="mb-4">
-                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4">
-                  {/* Institute Name Multi-Select */}
-                  <div className="flex-grow" onClick={fetchInstitutes}>
-                    <Select
-                      isMulti
-                      options={[
-                        { value: "selectAll", label: "Select All" },
-                        { value: "deselectAll", label: "Deselect All" },
-                        ...institutes, // Institutes are now in the correct format for the Select component
-                      ]}
-                      onChange={handleInstituteChange}
-                      className="basic-multi-select"
-                      classNamePrefix="select"
-                      placeholder="Select Institute(s)"
-                      value={selectedOptions} // track current selected options
-                      styles={{
-                        control: (base) => ({
-                          ...base,
-                          borderColor: "lightgray",
-                          boxShadow: "none",
-                          "&:hover": {
-                            borderColor: "blue",
-                          },
-                        }),
-                        option: (base, { data }) => ({
-                          ...base,
-                          display:
-                            data.value === "selectAll" ||
-                            data.value === "deselectAll"
-                              ? "inline-block"
-                              : "block",
-                          width:
-                            data.value === "selectAll" ||
-                            data.value === "deselectAll"
-                              ? "50%"
-                              : "100%", // Ensure equal width for select/deselect options
-                          textAlign: "center", // Center-align the labels
-                        }),
-                        menu: (base) => ({
-                          ...base,
-                          display: "flex",
-                          flexDirection: "column",
-                        }),
-                      }}
-                    />
-                  </div>
-
-                  {/* Domain Dropdown */}
-                  <div className="flex-grow" onClick={fetchDomains}>
-                    <select
-                      name="domain"
-                      value={newTest.domain || ""} // Use empty string when no value is selected
-                      onChange={(e) => {
-                        const selectedDomainId = e.target.value;
-
-                        setNewTest((prevTest) => ({
-                          ...prevTest,
-                          domain: selectedDomainId, // Store domain ID directly
-                          chapter: null, // Reset chapter selection when domain changes
-                        }));
-                      }}
-                      className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
-                    >
-                      <option value="" disabled>
-                        Select Domain
-                      </option>
-                      {domains.map((domain) => (
-                        <option key={domain.id} value={domain.id}>
-                          {domain.name}{" "}
-                          {/* Display the name, but send the ID */}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                  {/* Test Name Input */}
-                  <div>
-                    <input
-                      type="text"
-                      name="testName"
-                      value={newTest.testName}
-                      onChange={(e) => {
-                        const updatedTestName = e.target.value;
-                        setNewTest((prevTest) => ({
-                          ...prevTest,
-                          testName: updatedTestName,
-                        }));
-                      }}
-                      placeholder="Enter Test Name/Chapter Name"
-                      className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
-                    />
-                  </div>
-
-                  {/* Duration Input */}
-                  <div>
-                    <input
-                      type="number"
-                      name="duration"
-                      id="duration"
-                      value={newTest.duration || ""}
-                      onChange={(e) => {
-                        const value = e.target.value;
-
-                        setNewTest((prevTest) => ({
-                          ...prevTest,
-                          duration: value, // Update duration value
-                        }));
-                      }}
-                      placeholder="Enter duration in minutes"
-                      className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
-                    />
-                  </div>
-
-                  {/* Subject Dropdown */}
-                  <div onClick={fetchSubjects}>
-                    <select
-                      name="subject"
-                      value={newTest.subject}
-                      onChange={(e) => {
-                        const selectedSubjectId = e.target.value;
-
-                        if (selectedSubjectId === "ALL") {
-                          // Include all subject IDs
-                          setNewTest((prevTest) => ({
-                            ...prevTest,
-                            subject: selectedSubjectId,
-                            selectedSubjects: subjects.map(
-                              (subject) => subject.id
-                            ),
-                          }));
-                        } else {
-                          setNewTest((prevTest) => ({
-                            ...prevTest,
-                            subject: selectedSubjectId,
-                            selectedSubjects: prevTest.selectedSubjects
-                              ? [
-                                  ...prevTest.selectedSubjects,
-                                  selectedSubjectId,
-                                ]
-                              : [selectedSubjectId],
-                          }));
-                        }
-
-                        if (selectedSubjectId !== "ALL") {
-                          const updatedQuestions = newTest.questions.map(
-                            (question) => ({
-                              ...question,
-                              subtopic: "", // Reset subtopics
-                            })
-                          );
-
-                          setNewTest((prevTest) => ({
-                            ...prevTest,
-                            mainSubtopic: "", // Reset main subtopic
-                            questions: updatedQuestions,
-                          }));
-                        }
-                      }}
-                      className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
-                    >
-                      <option value="" disabled>
-                        Select Subject
-                      </option>
-                      {subjects.map((subject) => (
-                        <option key={subject.id} value={subject.id}>
-                          {subject.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Chapter Dropdown */}
-                  <div onClick={fetchChapters}>
-                    <select
-                      name="chapter"
-                      value={newTest.chapter?.id || ""} // No default value if disabled
-                      onChange={(e) => {
-                        const selectedChapterId = e.target.value;
-                        const selectedChapter = chapters.find(
-                          (chapter) => chapter.id === selectedChapterId
-                        );
-
-                        setNewTest((prevTest) => ({
-                          ...prevTest,
-                          chapter: selectedChapter || null, // Set to null if no selection
-                        }));
-                      }}
-                      disabled={!!newTest.domain} // Disable when domain is selected
-                      className={`border p-2 w-full rounded-md transition duration-200 ${
-                        newTest.domain
-                          ? "bg-gray-200 cursor-not-allowed focus:ring-0" // Adjust styles when disabled
-                          : "focus:outline-none focus:ring focus:ring-blue-400"
-                      }`}
-                    >
-                      <option value="" disabled>
-                        Select Chapter
-                      </option>
-                      {chapters.map((chapter) => (
-                        <option key={chapter.id} value={chapter.id}>
-                          {chapter.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                {/* Correct Mark and Negative Mark Inputs in Same Row */}
-                <div className="flex gap-4 mt-3">
-                  {/* Correct Mark Input */}
-                  <div className="flex-grow">
-                    <input
-                      type="number"
-                      step="0.01" // Allows decimal inputs
-                      name="correctMark"
-                      value={newTest.correctMark}
-                      onChange={(e) => {
-                        const updatedCorrectMark =
-                          parseFloat(e.target.value) || ""; // Parse as float or empty if NaN
-                        setNewTest((prevTest) => ({
-                          ...prevTest,
-                          correctMark: updatedCorrectMark,
-                        }));
-                      }}
-                      placeholder="Correct Mark"
-                      className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
-                    />
-                  </div>
-
-                  {/* Negative Mark Input */}
-                  <div className="flex-grow">
-                    <input
-                      type="number"
-                      step="0.01" // Allows decimal inputs
-                      name="negativeMark"
-                      value={newTest.negativeMark}
-                      onChange={(e) => {
-                        let updatedNegativeMark = e.target.value;
-
-                        // Ensure the value has a negative sign
-                        if (
-                          !updatedNegativeMark.startsWith("-") &&
-                          updatedNegativeMark !== ""
-                        ) {
-                          updatedNegativeMark = `-${updatedNegativeMark}`;
-                        }
-                        setNewTest((prevTest) => ({
-                          ...prevTest,
-                          negativeMark: parseFloat(updatedNegativeMark) || "", // Parse as float or empty if NaN
-                        }));
-                      }}
-                      placeholder="Negative Mark"
-                      className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Questions Section */}
-            <div className="bg-white p-3 sm:p-6 shadow-md rounded-lg mb-3 sm:mb-8">
-              <h2 className="text-md sm:text-xl font-semibold mb-2 sm:mb-4">
-                Questions
-              </h2>
-
-              {/* Render only the current question */}
-              {newTest.questions[currentQuestionIndex] && (
-                <div className="mb-2 sm:mb-4 border p-2 sm:p-4 rounded-md shadow-md bg-gray-50">
-                  <div className="flex justify-between items-center mb-1 sm:mb-2">
-                    <h4 className="font-semibold text-sm sm:text-lg">
-                      Question {currentQuestionIndex + 1}
-                    </h4>
-                    <button
-                      onClick={() => handleDeleteQuestion(currentQuestionIndex)}
-                      className="text-red-500 text-xs sm:text-base hover:underline"
-                    >
-                      <FaTrashAlt />
-                    </button>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row gap-1 sm:gap-4 mb-1 sm:mb-2">
-                    {/* Question Text Area */}
-                    <div className="relative w-full">
-                      <EditableMathField
-                        latex={
-                          newTest.questions[currentQuestionIndex]
-                            ?.questionText || ""
-                        }
-                        onChange={(mathField) => {
-                          const updatedQuestions = [...newTest.questions];
-                          updatedQuestions[currentQuestionIndex].questionText =
-                            mathField.latex();
-                          setNewTest((prevState) => ({
-                            ...prevState,
-                            questions: updatedQuestions,
-                          }));
+                {/* Dropdowns Layout */}
+                <div className="mb-4">
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4">
+                    {/* Institute Name Multi-Select */}
+                    <div className="flex-grow" onClick={fetchInstitutes}>
+                      <Select
+                        isMulti
+                        options={[
+                          { value: "selectAll", label: "Select All" },
+                          { value: "deselectAll", label: "Deselect All" },
+                          ...institutes, // Institutes are now in the correct format for the Select component
+                        ]}
+                        onChange={handleInstituteChange}
+                        className="basic-multi-select"
+                        classNamePrefix="select"
+                        placeholder="Select Institute(s)"
+                        value={selectedOptions} // track current selected options
+                        required
+                        styles={{
+                          control: (base) => ({
+                            ...base,
+                            borderColor: "lightgray",
+                            boxShadow: "none",
+                            "&:hover": {
+                              borderColor: "blue",
+                            },
+                          }),
+                          option: (base, { data }) => ({
+                            ...base,
+                            display:
+                              data.value === "selectAll" ||
+                              data.value === "deselectAll"
+                                ? "inline-block"
+                                : "block",
+                            width:
+                              data.value === "selectAll" ||
+                              data.value === "deselectAll"
+                                ? "50%"
+                                : "100%", // Ensure equal width for select/deselect options
+                            textAlign: "center", // Center-align the labels
+                          }),
+                          menu: (base) => ({
+                            ...base,
+                            display: "flex",
+                            flexDirection: "column",
+                          }),
                         }}
-                        className="border p-1 sm:p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 text-xs sm:text-base"
                       />
                     </div>
 
-                    {/* Subtopic Dropdown */}
-                    <div className="flex-shrink-0 w-full sm:w-auto">
+                    {/* Domain Dropdown */}
+                    <div className="flex-grow" onClick={fetchDomains}>
                       <select
-                        value={
-                          newTest.questions[currentQuestionIndex]?.subtopic ||
-                          ""
-                        }
-                        onClick={() => {
-                          // Fetch subtopics only if "ALL" is selected
-                          if (newTest.subject === "ALL") {
-                            fetchSubtopic();
-                          }
-                        }}
+                        name="domain"
+                        value={newTest.domain || ""} // Use empty string when no value is selected
                         onChange={(e) => {
-                          const value = e.target.value?.trim() || ""; // Ensure value is defined and trimmed
-                          handleQuestionChange(
-                            currentQuestionIndex,
-                            "subtopic",
-                            value
-                          );
+                          const selectedDomainId = e.target.value;
+
+                          setNewTest((prevTest) => ({
+                            ...prevTest,
+                            domain: selectedDomainId, // Store domain ID directly
+                            chapter: null, // Reset chapter selection when domain changes
+                          }));
                         }}
-                        className={`border p-1 sm:p-2 w-full sm:w-auto rounded-md focus:outline-none focus:ring focus:ring-blue-400 text-xs sm:text-base ${
-                          newTest.subject === "ALL"
-                            ? ""
-                            : "bg-gray-200 cursor-not-allowed"
-                        }`}
-                        disabled={newTest.subject !== "ALL"}
+                        className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
                       >
                         <option value="" disabled>
-                          Select Sub-Subject
+                          Select Domain
                         </option>
-                        {subTopic.map((subtopic) => (
-                          <option key={subtopic.id} value={subtopic.name}>
-                            {subtopic.name}
+                        {domains.map((domain) => (
+                          <option key={domain.id} value={domain.id}>
+                            {domain.name}{" "}
+                            {/* Display the name, but send the ID */}
                           </option>
                         ))}
                       </select>
                     </div>
                   </div>
 
-                  {/* Image Upload Section */}
-                  <div className="mt-2 mb-6">
-                    <label className="block text-gray-700 font-semibold mb-2 text-sm sm:text-base">
-                      Upload PNG Image For Question
-                    </label>
-                    <div className="flex items-center gap-4 flex-col sm:flex-row">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                    {/* Test Name Input */}
+                    <div>
                       <input
-                        type="file"
-                        ref={fileInputRef}
-                        accept=".png,image/png" // Restrict to PNG files only
+                        type="text"
+                        name="testName"
+                        value={newTest.testName}
                         onChange={(e) => {
-                          const selectedFile = e.target.files[0];
-                          if (selectedFile) {
-                            // Validate file type
-                            if (selectedFile.type === "image/png") {
-                              handleImageUpload(
-                                currentQuestionIndex,
-                                selectedFile
-                              );
-                              setFileInputValue(selectedFile.name);
-                            } else {
-                              alert(
-                                "Only PNG files are allowed. Please upload a valid PNG image."
-                              );
-                              // Reset the input value
-                              if (fileInputRef.current) {
-                                fileInputRef.current.value = null;
-                              }
-                            }
+                          const updatedTestName = e.target.value;
+                          setNewTest((prevTest) => ({
+                            ...prevTest,
+                            testName: updatedTestName,
+                          }));
+                        }}
+                        placeholder="Enter Test Name/Chapter Name"
+                        className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
+                        required
+                      />
+                    </div>
+
+                    {/* Duration Input */}
+                    <div>
+                      <input
+                        type="number"
+                        name="duration"
+                        id="duration"
+                        value={newTest.duration || ""}
+                        onChange={(e) => {
+                          const value = e.target.value;
+
+                          setNewTest((prevTest) => ({
+                            ...prevTest,
+                            duration: value, // Update duration value
+                          }));
+                        }}
+                        placeholder="Enter duration in minutes"
+                        className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
+                        required
+                      />
+                    </div>
+
+                    {/* Subject Dropdown */}
+                    <div onClick={fetchSubjects}>
+                      <select
+                        name="subject"
+                        value={newTest.subject}
+                        onChange={(e) => {
+                          const selectedSubjectId = e.target.value;
+
+                          if (selectedSubjectId === "ALL") {
+                            // Include all subject IDs
+                            setNewTest((prevTest) => ({
+                              ...prevTest,
+                              subject: selectedSubjectId,
+                              selectedSubjects: subjects.map(
+                                (subject) => subject.id
+                              ),
+                            }));
+                          } else {
+                            setNewTest((prevTest) => ({
+                              ...prevTest,
+                              subject: selectedSubjectId,
+                              selectedSubjects: prevTest.selectedSubjects
+                                ? [
+                                    ...prevTest.selectedSubjects,
+                                    selectedSubjectId,
+                                  ]
+                                : [selectedSubjectId],
+                            }));
+                          }
+
+                          if (selectedSubjectId !== "ALL") {
+                            const updatedQuestions = newTest.questions.map(
+                              (question) => ({
+                                ...question,
+                                subtopic: "", // Reset subtopics
+                              })
+                            );
+
+                            setNewTest((prevTest) => ({
+                              ...prevTest,
+                              mainSubtopic: "", // Reset main subtopic
+                              questions: updatedQuestions,
+                            }));
                           }
                         }}
-                        className="border p-1 sm:p-2 rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200 cursor-pointer text-xs sm:text-sm"
-                      />
-                      {newTest.questions[currentQuestionIndex].image && (
-                        <div className="relative">
-                          <img
-                            src={newTest.questions[currentQuestionIndex].image}
-                            alt="Uploaded"
-                            className="h-20 w-20 sm:h-32 sm:w-32 object-cover rounded-md shadow-md cursor-pointer"
-                            onClick={() =>
-                              openModal(
-                                newTest.questions[currentQuestionIndex].image
-                              )
-                            }
-                          />
-                          <button
-                            onClick={() => {
-                              removeImage(currentQuestionIndex);
-                              setFileInputValue("");
-                              if (fileInputRef.current) {
-                                fileInputRef.current.value = null;
-                              }
-                            }}
-                            className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full focus:outline-none text-xs sm:text-sm"
-                          >
-                            <FaTrashAlt />
-                          </button>
-                        </div>
-                      )}
+                        className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
+                        required
+                      >
+                        <option value="" disabled>
+                          Select Subject
+                        </option>
+                        {subjects.map((subject) => (
+                          <option key={subject.id} value={subject.id}>
+                            {subject.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Chapter Dropdown */}
+                    <div onClick={fetchChapters}>
+                      <select
+                        name="chapter"
+                        value={newTest.chapter?.id || ""} // No default value if disabled
+                        onChange={(e) => {
+                          const selectedChapterId = e.target.value;
+                          const selectedChapter = chapters.find(
+                            (chapter) => chapter.id === selectedChapterId
+                          );
+
+                          setNewTest((prevTest) => ({
+                            ...prevTest,
+                            chapter: selectedChapter || null, // Set to null if no selection
+                          }));
+                        }}
+                        disabled={!!newTest.domain} // Disable when domain is selected
+                        className={`border p-2 w-full rounded-md transition duration-200 ${
+                          newTest.domain
+                            ? "bg-gray-200 cursor-not-allowed focus:ring-0" // Adjust styles when disabled
+                            : "focus:outline-none focus:ring focus:ring-blue-400"
+                        }`}
+                        required={!newTest.domain} // Chapter is required only if domain is empty
+                      >
+                        <option value="" disabled>
+                          Select Chapter
+                        </option>
+                        {chapters.map((chapter) => (
+                          <option key={chapter.id} value={chapter.id}>
+                            {chapter.name}
+                          </option>
+                        ))}
+                      </select>
                     </div>
                   </div>
 
-                  {/* Options Input */}
-                  <div className="flex flex-col sm:flex-row gap-1 sm:gap-4 mb-1 sm:mb-2">
-                    {newTest.questions[currentQuestionIndex].options.map(
-                      (option, optionIndex) => (
-                        <div key={optionIndex} className="flex-grow">
-                          <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 ease-in-out">
-                            {/* Option Input Field (Text) */}
-                            <input
-                              type="text"
-                              placeholder={`Option ${optionIndex + 1}`}
-                              value={option.text || ""}
-                              onChange={(e) =>
-                                handleOptionTextChange(
+                  {/* Correct Mark and Negative Mark Inputs in Same Row */}
+                  <div className="flex gap-4 mt-3">
+                    {/* Correct Mark Input */}
+                    <div className="flex-grow">
+                      <input
+                        type="number"
+                        step="0.01" // Allows decimal inputs
+                        name="correctMark"
+                        value={newTest.correctMark}
+                        onChange={(e) => {
+                          const updatedCorrectMark =
+                            parseFloat(e.target.value) || ""; // Parse as float or empty if NaN
+                          setNewTest((prevTest) => ({
+                            ...prevTest,
+                            correctMark: updatedCorrectMark,
+                          }));
+                        }}
+                        placeholder="Correct Mark"
+                        className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
+                        required
+                      />
+                    </div>
+
+                    {/* Negative Mark Input */}
+                    <div className="flex-grow">
+                      <input
+                        type="number"
+                        step="0.01" // Allows decimal inputs
+                        name="negativeMark"
+                        value={newTest.negativeMark}
+                        onChange={(e) => {
+                          let updatedNegativeMark = e.target.value;
+
+                          // Ensure the value has a negative sign
+                          if (
+                            !updatedNegativeMark.startsWith("-") &&
+                            updatedNegativeMark !== ""
+                          ) {
+                            updatedNegativeMark = `-${updatedNegativeMark}`;
+                          }
+                          setNewTest((prevTest) => ({
+                            ...prevTest,
+                            negativeMark: parseFloat(updatedNegativeMark) || "", // Parse as float or empty if NaN
+                          }));
+                        }}
+                        placeholder="Negative Mark"
+                        className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Questions Section */}
+              <div className="bg-white p-3 sm:p-6 shadow-md rounded-lg mb-3 sm:mb-8">
+                <h2 className="text-md sm:text-xl font-semibold mb-2 sm:mb-4">
+                  Questions
+                </h2>
+
+                {/* Render only the current question */}
+                {newTest.questions[currentQuestionIndex] && (
+                  <div className="mb-2 sm:mb-4 border p-2 sm:p-4 rounded-md shadow-md bg-gray-50">
+                    <div className="flex justify-between items-center mb-1 sm:mb-2">
+                      <h4 className="font-semibold text-sm sm:text-lg">
+                        Question {currentQuestionIndex + 1}
+                      </h4>
+                      <button
+                        onClick={() =>
+                          handleDeleteQuestion(currentQuestionIndex)
+                        }
+                        className="text-red-500 text-xs sm:text-base hover:underline"
+                      >
+                        <FaTrashAlt />
+                      </button>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-1 sm:gap-4 mb-1 sm:mb-2">
+                      {/* Question Text Area */}
+                      <div className="relative w-full">
+                        <EditableMathField
+                          latex={
+                            newTest.questions[currentQuestionIndex]
+                              ?.questionText || ""
+                          }
+                          onChange={(mathField) => {
+                            const updatedQuestions = [...newTest.questions];
+                            updatedQuestions[
+                              currentQuestionIndex
+                            ].questionText = mathField.latex();
+                            setNewTest((prevState) => ({
+                              ...prevState,
+                              questions: updatedQuestions,
+                            }));
+                          }}
+                          className="border p-1 sm:p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 text-xs sm:text-base"
+                          required // Added required
+                        />
+                      </div>
+
+                      {/* Subtopic Dropdown */}
+                      <div className="flex-shrink-0 w-full sm:w-auto">
+                        <select
+                          value={
+                            newTest.questions[currentQuestionIndex]?.subtopic ||
+                            ""
+                          }
+                          onClick={() => {
+                            // Fetch subtopics only if "ALL" is selected
+                            if (newTest.subject === "ALL") {
+                              fetchSubtopic();
+                            }
+                          }}
+                          onChange={(e) => {
+                            const value = e.target.value?.trim() || ""; // Ensure value is defined and trimmed
+                            handleQuestionChange(
+                              currentQuestionIndex,
+                              "subtopic",
+                              value
+                            );
+                          }}
+                          className={`border p-1 sm:p-2 w-full sm:w-auto rounded-md focus:outline-none focus:ring focus:ring-blue-400 text-xs sm:text-base ${
+                            newTest.subject === "ALL"
+                              ? ""
+                              : "bg-gray-200 cursor-not-allowed"
+                          }`}
+                          disabled={newTest.subject !== "ALL"}
+                          // required // Added required
+                        >
+                          <option value="" disabled>
+                            Select Sub-Subject
+                          </option>
+                          {subTopic.map((subtopic) => (
+                            <option key={subtopic.id} value={subtopic.name}>
+                              {subtopic.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Image Upload Section */}
+                    <div className="mt-2 mb-6">
+                      <label className="block text-gray-700 font-semibold mb-2 text-sm sm:text-base">
+                        Upload PNG Image For Question
+                      </label>
+                      <div className="flex items-center gap-4 flex-col sm:flex-row">
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          accept=".png,image/png" // Restrict to PNG files only
+                          onChange={(e) => {
+                            const selectedFile = e.target.files[0];
+                            if (selectedFile) {
+                              // Validate file type
+                              if (selectedFile.type === "image/png") {
+                                handleImageUpload(
                                   currentQuestionIndex,
-                                  optionIndex,
-                                  e.target.value
+                                  selectedFile
+                                );
+                                setFileInputValue(selectedFile.name);
+                              } else {
+                                alert(
+                                  "Only PNG files are allowed. Please upload a valid PNG image."
+                                );
+                                // Reset the input value
+                                if (fileInputRef.current) {
+                                  fileInputRef.current.value = null;
+                                }
+                              }
+                            }
+                          }}
+                          className="border p-1 sm:p-2 rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200 cursor-pointer text-xs sm:text-sm"
+                          // required // Added required
+                        />
+                        {newTest.questions[currentQuestionIndex].image && (
+                          <div className="relative">
+                            <img
+                              src={
+                                newTest.questions[currentQuestionIndex].image
+                              }
+                              alt="Uploaded"
+                              className="h-20 w-20 sm:h-32 sm:w-32 object-cover rounded-md shadow-md cursor-pointer"
+                              onClick={() =>
+                                openModal(
+                                  newTest.questions[currentQuestionIndex].image
                                 )
                               }
-                              className="border p-1 sm:p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 text-xs sm:text-base"
                             />
+                            <button
+                              onClick={() => {
+                                removeImage(currentQuestionIndex);
+                                setFileInputValue("");
+                                if (fileInputRef.current) {
+                                  fileInputRef.current.value = null;
+                                }
+                              }}
+                              className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full focus:outline-none text-xs sm:text-sm"
+                            >
+                              <FaTrashAlt />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
 
-                            {/* Image Upload for Each Option */}
-                            <div className="mt-2">
+                    {/* Options Input */}
+                    <div className="flex flex-col sm:flex-row gap-1 sm:gap-4 mb-1 sm:mb-2">
+                      {newTest.questions[currentQuestionIndex].options.map(
+                        (option, optionIndex) => (
+                          <div key={optionIndex} className="flex-grow">
+                            <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 ease-in-out">
+                              {/* Option Input Field (Text) */}
                               <input
-                                type="file"
-                                ref={(el) =>
-                                  (optionFileInputRefs.current[optionIndex] =
-                                    el)
-                                } // Attach dynamic ref
-                                accept="image/png"
+                                type="text"
+                                placeholder={`Option ${optionIndex + 1}`}
+                                value={option.text || ""}
                                 onChange={(e) =>
-                                  handleImageUploadOption(
-                                    e,
+                                  handleOptionTextChange(
                                     currentQuestionIndex,
-                                    optionIndex
+                                    optionIndex,
+                                    e.target.value
                                   )
                                 }
                                 className="border p-1 sm:p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 text-xs sm:text-base"
+                                required // Added required
                               />
 
-                              {option.image && (
-                                <div className="relative mt-2">
+                              {/* Image Upload for Each Option */}
+                              <div className="mt-2">
+                                <input
+                                  type="file"
+                                  ref={(el) =>
+                                    (optionFileInputRefs.current[optionIndex] =
+                                      el)
+                                  } // Attach dynamic ref
+                                  accept="image/png"
+                                  onChange={(e) =>
+                                    handleImageUploadOption(
+                                      e,
+                                      currentQuestionIndex,
+                                      optionIndex
+                                    )
+                                  }
+                                  className="border p-1 sm:p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 text-xs sm:text-base"
+                                  // required // Added required
+                                />
+
+                                {option.image && (
+                                  <div className="relative mt-2">
+                                    <img
+                                      src={option.image}
+                                      alt={`Option ${optionIndex + 1}`}
+                                      className="w-16 h-16 object-cover rounded-lg cursor-pointer"
+                                      onClick={() => openModal(option.image)}
+                                    />
+                                    <button
+                                      onClick={() => {
+                                        deleteOptionImage(
+                                          currentQuestionIndex,
+                                          optionIndex
+                                        );
+                                        if (
+                                          optionFileInputRefs.current[
+                                            optionIndex
+                                          ]
+                                        ) {
+                                          optionFileInputRefs.current[
+                                            optionIndex
+                                          ].value = null; // Reset file input
+                                        }
+                                      }}
+                                      className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full focus:outline-none text-xs sm:text-sm"
+                                    >
+                                      <FaTrashAlt />
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      )}
+                    </div>
+
+                    {/* Correct Answer Dropdown */}
+                    <div className="relative w-full mt-6">
+                      <div
+                        onClick={() =>
+                          isDropdownEnabled && setDropdownOpen(!isDropdownOpen)
+                        }
+                        className={`border p-2 w-full rounded-md focus:outline-none ${
+                          isDropdownEnabled
+                            ? "bg-gray-100 cursor-pointer focus:ring focus:ring-blue-400"
+                            : "bg-gray-200 cursor-not-allowed"
+                        } text-xs sm:text-base flex items-center justify-between`}
+                      >
+                        {newTest.questions[currentQuestionIndex]
+                          .correctAnswer ? (
+                          newTest.questions[currentQuestionIndex].correctAnswer
+                            .image ? (
+                            <img
+                              src={
+                                newTest.questions[currentQuestionIndex]
+                                  .correctAnswer.image
+                              }
+                              alt="Selected option"
+                              className="w-6 h-6 object-cover rounded-full mr-2"
+                            />
+                          ) : (
+                            newTest.questions[currentQuestionIndex]
+                              .correctAnswer.text
+                          )
+                        ) : (
+                          "Select Correct Answer"
+                        )}
+                        <span className="ml-2 text-gray-500">&#9662;</span>
+                      </div>
+
+                      {isDropdownOpen && isDropdownEnabled && (
+                        <div className="absolute top-full left-0 w-full bg-white border border-gray-300 mt-2 rounded-md shadow-lg z-10">
+                          {newTest.questions[currentQuestionIndex].options.map(
+                            (option, optionIndex) => (
+                              <div
+                                key={optionIndex}
+                                onClick={() => handleSelectChange(option)}
+                                className="flex items-center p-2 cursor-pointer hover:bg-gray-100"
+                              >
+                                {option.image && (
                                   <img
                                     src={option.image}
                                     alt={`Option ${optionIndex + 1}`}
-                                    className="w-16 h-16 object-cover rounded-lg cursor-pointer"
-                                    onClick={() => openModal(option.image)}
+                                    className="w-6 h-6 object-cover rounded-full mr-2"
                                   />
-                                  <button
-                                    onClick={() => {
-                                      deleteOptionImage(
-                                        currentQuestionIndex,
-                                        optionIndex
-                                      );
-                                      if (
-                                        optionFileInputRefs.current[optionIndex]
-                                      ) {
-                                        optionFileInputRefs.current[
-                                          optionIndex
-                                        ].value = null; // Reset file input
-                                      }
-                                    }}
-                                    className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full focus:outline-none text-xs sm:text-sm"
-                                  >
-                                    <FaTrashAlt />
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          </div>
+                                )}
+                                {option.text}
+                              </div>
+                            )
+                          )}
                         </div>
-                      )
-                    )}
-                  </div>
-
-                  {/* Correct Answer Dropdown */}
-                  <div className="relative w-full mt-6">
-                    <div
-                      onClick={() =>
-                        isDropdownEnabled && setDropdownOpen(!isDropdownOpen)
-                      }
-                      className={`border p-2 w-full rounded-md focus:outline-none ${
-                        isDropdownEnabled
-                          ? "bg-gray-100 cursor-pointer focus:ring focus:ring-blue-400"
-                          : "bg-gray-200 cursor-not-allowed"
-                      } text-xs sm:text-base flex items-center justify-between`}
-                    >
-                      {newTest.questions[currentQuestionIndex].correctAnswer ? (
-                        newTest.questions[currentQuestionIndex].correctAnswer
-                          .image ? (
-                          <img
-                            src={
-                              newTest.questions[currentQuestionIndex]
-                                .correctAnswer.image
-                            }
-                            alt="Selected option"
-                            className="w-6 h-6 object-cover rounded-full mr-2"
-                          />
-                        ) : (
-                          newTest.questions[currentQuestionIndex].correctAnswer
-                            .text
-                        )
-                      ) : (
-                        "Select Correct Answer"
                       )}
-                      <span className="ml-2 text-gray-500">&#9662;</span>
-                    </div>
-
-                    {isDropdownOpen && isDropdownEnabled && (
-                      <div className="absolute top-full left-0 w-full bg-white border border-gray-300 mt-2 rounded-md shadow-lg z-10">
-                        {newTest.questions[currentQuestionIndex].options.map(
-                          (option, optionIndex) => (
-                            <div
-                              key={optionIndex}
-                              onClick={() => handleSelectChange(option)}
-                              className="flex items-center p-2 cursor-pointer hover:bg-gray-100"
-                            >
-                              {option.image && (
-                                <img
-                                  src={option.image}
-                                  alt={`Option ${optionIndex + 1}`}
-                                  className="w-6 h-6 object-cover rounded-full mr-2"
-                                />
-                              )}
-                              {option.text}
-                            </div>
-                          )
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Buttons Section */}
-              <div className="flex flex-col sm:flex-row justify-between items-center mt-3 sm:mt-4">
-                <div className="flex flex-row gap-1 w-full sm:w-auto">
-                  {/*<button
-                    onClick={addQuestion}
-                    className="bg-blue-500 text-white p-2 rounded-md w-full sm:w-auto h-8 sm:h-auto text-xs sm:text-base"
-                  >
-                    Add Question
-                  </button>*/}
-                  <button
-                    onClick={handleTest}
-                    className="bg-teal-500 text-white p-2 rounded-md w-full sm:w-auto h-8 sm:h-auto text-xs sm:text-base"
-                  >
-                    Save and Next
-                  </button>
-                </div>
-                <button
-                  onClick={handleAddTest}
-                  className="bg-green-500 text-white p-2 rounded-md w-full sm:w-auto mt-2 sm:mt-0 text-xs sm:text-base"
-                >
-                  Submit Test
-                </button>
-                {/* Confirmation Modal */}
-                {showConfirmationModal && (
-                  <div className="fixed inset-0 flex items-center justify-center bg-gray-700 bg-opacity-50 sm:bg-opacity-75">
-                    <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md text-center w-10/12 max-w-md sm:max-w-lg">
-                      <p className="text-sm sm:text-base">
-                        All questions are submitted. Do you want to proceed to
-                        the view page?
-                      </p>
-                      <div className="flex justify-center mt-4">
-                        <button
-                          onClick={confirmSubmission}
-                          className="bg-blue-500 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-md text-sm sm:text-base mr-2"
-                        >
-                          Yes
-                        </button>
-                        <button
-                          onClick={() => setShowConfirmationModal(false)}
-                          className="bg-gray-300 text-gray-800 px-3 py-1.5 sm:px-4 sm:py-2 rounded-md text-sm sm:text-base"
-                        >
-                          No
-                        </button>
-                      </div>
                     </div>
                   </div>
                 )}
+
+                {/* Buttons Section */}
+                <div className="flex flex-col sm:flex-row justify-between items-center mt-3 sm:mt-4">
+                  <div className="flex flex-row gap-1 w-full sm:w-auto">
+                    <button
+                      type="button"
+                      onClick={handleTest} // Ensure this function does not cause a reload
+                      className="bg-teal-500 text-white p-2 rounded-md w-full sm:w-auto h-8 sm:h-auto text-xs sm:text-base"
+                    >
+                      Save and Next
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddTest} // Ensure this function does not cause a reload
+                    className="bg-green-500 text-white p-2 rounded-md w-full sm:w-auto mt-2 sm:mt-0 text-xs sm:text-base"
+                  >
+                    Submit Test
+                  </button>
+                  {/* Confirmation Modal */}
+                  {showConfirmationModal && (
+                    <div className="fixed inset-0 flex items-center justify-center bg-gray-700 bg-opacity-50 sm:bg-opacity-75">
+                      <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md text-center w-10/12 max-w-md sm:max-w-lg">
+                        <p className="text-sm sm:text-base">
+                          All questions are submitted. Do you want to proceed to
+                          the view page?
+                        </p>
+                        <div className="flex justify-center mt-4">
+                          <button
+                            type="button"
+                            onClick={confirmSubmission}
+                            className="bg-blue-500 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-md text-sm sm:text-base mr-2"
+                          >
+                            Yes
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setShowConfirmationModal(false)}
+                            className="bg-gray-500 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-md text-sm sm:text-base"
+                          >
+                            No
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            </form>
           </div>
 
           {/* Image Modal */}

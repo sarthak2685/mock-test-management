@@ -172,6 +172,12 @@ const TestTime = () => {
       console.log("Test saved successfully:", result);
 
       alert("Test saved successfully!");
+
+      // Clear the form data
+      setSelectedOptions([]);
+      setTestName("");
+      setStartTime("");
+      setEndTime("");
     } catch (error) {
       console.error("Error saving test:", error);
       alert("Failed to save test. Please try again.");

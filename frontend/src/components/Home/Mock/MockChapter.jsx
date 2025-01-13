@@ -26,7 +26,6 @@ const MockChapter = () => {
   const token = S.token;
   const institueName = S.institute_name;
 
-
   // const sectionIcons = [
   //   <FaBrain />,
   //   <FaBook />,
@@ -515,7 +514,7 @@ const MockChapter = () => {
                               "/media/uploads/"
                             ) ? (
                               <img
-                                src={`${baseUrl}${currentQuestion.question_1}`}
+                                src={`${config.apiUrl}${currentQuestion.question_1}`}
                                 alt="Additional question"
                                 className="max-w-full max-h-24 object-contain mt-4"
                               />
@@ -576,7 +575,7 @@ const MockChapter = () => {
                           {/* Display image if item is a file, otherwise display text */}
                           {item.startsWith("/media/uploads/") ? (
                             <img
-                              src={`${baseUrl}${item}`}
+                              src={`${config.apiUrl}${item}`}
                               alt={`Option ${index + 1}`}
                               className="max-w-full max-h-24 object-contain"
                             />

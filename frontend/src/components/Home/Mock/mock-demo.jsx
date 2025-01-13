@@ -540,7 +540,7 @@ const MockDemo = () => {
                               "/media/uploads/"
                             ) ? (
                               <img
-                                src={`${baseUrl}${currentQuestion.question2}`}
+                                src={`${config.apiUrl}${currentQuestion.question2}`}
                                 alt="Additional question"
                                 className="max-w-full max-h-24 object-contain mt-4"
                               />
@@ -602,7 +602,7 @@ const MockDemo = () => {
                           {/* Show image if item is a valid file, otherwise show text */}
                           {item.startsWith("/media/uploads/") ? (
                             <img
-                              src={`${baseUrl}${item}`}
+                              src={`${config.apiUrl}${item}`}
                               alt={`Option ${index + 1}`}
                               className="max-w-full max-h-24 object-contain"
                             />

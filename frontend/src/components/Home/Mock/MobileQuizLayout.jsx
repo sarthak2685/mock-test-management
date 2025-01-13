@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FaBars, FaTimes, FaChevronDown } from "react-icons/fa";
 import QuestionNavigation from "../Mock/navigation";
 import Timer from "./Timer";
-// import config from "../../../config";
+import config from "../../../config";
 import UserProfile from "../Mock/UserProfile";
 
 const MobileQuizLayout = ({
@@ -305,7 +305,7 @@ const MobileQuizLayout = ({
                 "/media/uploads/questions/option_4_uFtm5qj.png" ? (
                 currentQuestion.question2.startsWith("/media/uploads/") ? (
                   <img
-                    src={`http://mockexam.pythonanywhere.com${currentQuestion.question2}`}
+                    src={`${config.apiUrl}${currentQuestion.question2}`}
                     alt="Additional question"
                     className="max-w-full max-h-24 object-contain mt-4"
                   />
@@ -348,7 +348,7 @@ const MobileQuizLayout = ({
                         />
                         {item.startsWith("/media/uploads/") ? (
                           <img
-                            src={`${baseUrl}${item}`}
+                            src={`${config.apiUrl}${item}`}
                             alt={`Option ${index + 1}`}
                             className="max-w-full max-h-24 object-contain"
                           />
