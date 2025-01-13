@@ -8,6 +8,7 @@ const MockTest = () => {
 
   const [mockTestData, setMockTestData] = useState([]);
   const [studentGivenTests, setStudentGivenTests] = useState([]);
+  const [testTimes, setTestTimes] = useState({});
 
   const SubjectId = localStorage.getItem("selectedSubjectId");
   const S = JSON.parse(localStorage.getItem("user"));
@@ -25,7 +26,6 @@ const MockTest = () => {
           throw new Error("Failed to fetch mock test data");
         }
         const result = await response.json();
-        console.log("Response JSON:", result);
 
         const examDomain = result.data.exam_domain || "N/A";
 
@@ -42,7 +42,6 @@ const MockTest = () => {
               .join(", ");
 
             return {
-              exam_domain: examDomain,
               test_name: testName,
               subjects: subjects || "N/A",
               total_questions: testDetails.total_questions || 0,
@@ -51,8 +50,41 @@ const MockTest = () => {
           });
 
         setMockTestData(groupedTests);
+        return groupedTests.map((test) => test.test_name);
       } catch (error) {
         console.error("Error fetching mock test data:", error);
+        return [];
+      }
+    };
+
+    const fetchTestTimes = async (testNames) => {
+      try {
+        const query = testNames
+          .map((name) => `test_name=${encodeURIComponent(name)}`)
+          .join("&");
+        const response = await fetch(
+          `${config.apiUrl}/test_time/?${query}&institute_name=${institueName}`,
+          {
+            headers: {
+              Authorization: `Token ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch test times");
+        }
+        const data = await response.json();
+        const mappedTestTimes = data.data.reduce((acc, test) => {
+          acc[test.test_name] = {
+            start_time: new Date(test.start_time),
+            end_time: new Date(test.end_time),
+          };
+          return acc;
+        }, {});
+        setTestTimes(mappedTestTimes);
+      } catch (error) {
+        console.error("Error fetching test times:", error);
       }
     };
 
@@ -71,17 +103,25 @@ const MockTest = () => {
           throw new Error("Failed to fetch student test data");
         }
         const data = await response.json();
-        console.log("Student Given Tests:", data.student_given);
-
-        // Store the test names the student has already given
         setStudentGivenTests(data.student_given || []);
       } catch (error) {
         console.error("Error fetching student test data:", error);
       }
     };
 
-    fetchMockTests();
-    fetchStudentGivenTests();
+    const fetchAllData = async () => {
+      try {
+        const testNames = await fetchMockTests();
+        await Promise.all([
+          fetchTestTimes(testNames),
+          fetchStudentGivenTests(),
+        ]);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchAllData();
   }, [SubjectId, id, institueName, token]);
 
   const handleCardClick = (testName, examDuration) => {
@@ -92,14 +132,10 @@ const MockTest = () => {
     );
   };
 
+  const getCurrentTime = () => new Date();
+
   return (
     <div className="relative bg-gray-100 min-h-screen overflow-hidden">
-      {/* Background gradient decorations */}
-      <div className="absolute top-0 left-0 w-32 h-32 bg-gradient-to-br from-blue-500 to-indigo-500 opacity-30 transform rotate-45 z-0" />
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-pink-500 to-yellow-500 opacity-30 transform rotate-45 z-0" />
-      <div className="absolute bottom-0 left-0 w-32 h-32 bg-gradient-to-tr from-green-500 to-teal-500 opacity-30 transform rotate-45 z-0" />
-      <div className="absolute bottom-0 right-0 w-32 h-32 bg-gradient-to-tl from-purple-500 to-red-500 opacity-30 transform rotate-45 z-0" />
-
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
         <h2 className="text-4xl font-bold text-center text-gray-800 mb-8 capitalize">
           {exam.name} Mock Tests
@@ -109,14 +145,36 @@ const MockTest = () => {
           {mockTestData.map((test, index) => {
             const isTestGiven = studentGivenTests.includes(test.test_name);
 
+            const startTime = testTimes[test.test_name]?.start_time
+              ? new Date(testTimes[test.test_name].start_time)
+              : null;
+            const endTime = testTimes[test.test_name]?.end_time
+              ? new Date(testTimes[test.test_name].end_time)
+              : null;
+            const currentTime = getCurrentTime();
+
+            const isTestTimeValid =
+              startTime &&
+              endTime &&
+              currentTime >= startTime &&
+              currentTime <= endTime;
+
+            // Check if the test is missed
+            const isTestMissed =
+              !isTestGiven && endTime && currentTime > endTime;
+
             return (
               <div
                 key={test.test_name}
                 className={`relative p-8 rounded-2xl shadow-lg transform transition duration-500 ease-in-out card-3d ${
-                  isTestGiven ? "opacity-50 pointer-events-none" : ""
+                  isTestGiven || !isTestTimeValid
+                    ? "opacity-50 pointer-events-none"
+                    : ""
                 }`}
                 onClick={() =>
-                  !isTestGiven && handleCardClick(test.test_name, test.exam_duration)
+                  !isTestGiven &&
+                  isTestTimeValid &&
+                  handleCardClick(test.test_name, test.exam_duration)
                 }
               >
                 <div className="relative z-20 flex flex-col justify-between h-full p-4">
@@ -135,9 +193,20 @@ const MockTest = () => {
                       </span>
                     </p>
                   </div>
-                  {!isTestGiven && (
+
+                  {isTestGiven ? (
+                    <p className="text-center text-green-600 font-semibold">
+                      You attempted the test
+                    </p>
+                  ) : isTestMissed ? (
+                    <p className="text-center text-red-600 font-semibold">
+                      You missed the test
+                    </p>
+                  ) : null}
+
+                  {!isTestGiven && isTestTimeValid && (
                     <Link
-                      to={`/instruction`}
+                      to="/instruction"
                       className="inline-block bg-[#007bff] text-white font-semibold py-1 px-3 rounded-lg hover:bg-blue-700 transition duration-300 text-center text-sm"
                     >
                       Start Test
