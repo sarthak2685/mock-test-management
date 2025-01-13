@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { FaBars, FaTimes, FaChevronDown } from "react-icons/fa";
 import QuestionNavigation from "../Mock/navigation";
 import Timer from "./Timer";
-import config from "../../../config";
 import UserProfile from "../Mock/UserProfile";
 import config from "../../../config";
 
