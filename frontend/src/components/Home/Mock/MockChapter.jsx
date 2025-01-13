@@ -494,8 +494,8 @@ const MockChapter = () => {
                         mockTestData[currentSectionIndex]?.questions[
                           currentQuestionIndex
                         ];
-                      const baseUrl = "http://mockexam.pythonanywhere.com";
-                      const defaultFileValue =
+                        const baseUrl = `${config.apiUrl}`;
+                        const defaultFileValue =
                         "/media/uploads/questions/option_4_uFtm5qj.png";
 
                       return (
@@ -538,8 +538,8 @@ const MockChapter = () => {
                       mockTestData[currentSectionIndex]?.questions[
                         currentQuestionIndex
                       ];
-                    const baseUrl = "http://mockexam.pythonanywhere.com";
-                    const defaultFileValue =
+                      const baseUrl = `${config.apiUrl}`;
+                      const defaultFileValue =
                       "/media/uploads/questions/option_4_uFtm5qj.png";
 
                     // Filter files to exclude default values

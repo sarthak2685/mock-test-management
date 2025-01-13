@@ -7,109 +7,139 @@ const TermsAndConditions = () => {
         <h1 className="text-4xl font-bold text-center text-black mb-8">
           Terms and Conditions
         </h1>
-        <p className="text-gray-700 mb-6 leading-7">
-          Welcome to <strong>MockPeriod!</strong>
-        </p>
-        <p className="text-gray-700 mb-6 leading-7">
-          These terms and conditions outline the rules and regulations for the
-          use of MockPeriod, located at{" "}
-          <a
-            href="https://mockperiod.com"
-            className="text-blue-500 underline hover:text-blue-700"
-          >
-            mockperiod.com
-          </a>
-          .
-        </p>
-        <p className="text-gray-700 mb-6 leading-7">
-          By accessing this website, we assume you accept these terms and
-          conditions. Do not continue to use MockPeriod if you
-          do not agree to all the terms and conditions stated on this page.
-        </p>
 
-        {/* Section: Cookies */}
-        <div className="border-t border-gray-200 pt-8 mt-8">
-          <h2 className="text-2xl font-semibold text-black mb-4">Cookies</h2>
+        {/* Section: Application and Account Details */}
+        <div className="border-b border-gray-200 pb-6 mb-6">
+          <h2 className="text-2xl font-semibold text-black mb-4">Application and Account Details</h2>
           <p className="text-gray-700 mb-6 leading-7">
-            We employ the use of cookies. By accessing{" "}
-            MockPeriod, you agreed to use cookies in agreement
-            with our{" "}
+            By using this platform and creating an account, you are responsible for ensuring the
+            confidentiality of your account credentials, including your username and password. It is
+            also your responsibility to prevent unauthorized access to your computer or device. You
+            agree to be accountable for all activities conducted through your account.
+          </p>
+          <p className="text-gray-700 mb-6 leading-7">
+            If you are under 13 years of age, you may only use MockPeriod with the supervision and
+            consent of a parent or legal guardian.
+          </p>
+          <p className="text-gray-700 leading-7">
+            MockPeriod reserves the right to deny services to any individual or organization, terminate
+            accounts, edit or remove content, or cancel orders at its sole discretion. The information
+            you provide may be combined with data from third parties to enhance our services,
+            personalize content, and optimize advertisements. This data-sharing process may involve
+            reciprocal arrangements with other organizations.
+          </p>
+        </div>
+
+        {/* Section: Mailing List */}
+        <div className="border-b border-gray-200 pb-6 mb-6">
+          <h2 className="text-2xl font-semibold text-black mb-4">Mailing List</h2>
+          <p className="text-gray-700 mb-6 leading-7">
+            Occasionally, we may share a portion of our customer database with trusted third-party
+            companies to send you promotional offers or important information via mail, email, or phone.
+            If you do not wish to share your information, no longer want to receive our catalog, or
+            want to report duplicate communications, please contact us at
             <a
-              href="/privacy-policy"
+              href="mailto:mockperiod@gmail.com"
               className="text-blue-500 underline hover:text-blue-700"
             >
-              Privacy Policy
-            </a>
-            .
+              mockperiod@gmail.com
+            </a>.
           </p>
         </div>
 
-        <div className="border-t border-gray-200 pt-8 mt-8">
-          <h2 className="text-2xl font-semibold text-black mb-4">License</h2>
-          <p className="text-gray-700 mb-6 leading-7">
-            Unless otherwise stated, MockPeriod and/or its
-            licensors own the intellectual property rights for all material on{" "}
-            MockPeriod. All intellectual property rights are
-            reserved.
+        {/* Section: Delivery */}
+        <div className="border-b border-gray-200 pb-6 mb-6">
+          <h2 className="text-2xl font-semibold text-black mb-4">Delivery</h2>
+          <p className="text-gray-700 leading-7">
+            We do not offer physical product deliveries. All services and deliveries associated with
+            payments are conducted online and processed in real time.
           </p>
-          <ul className="list-disc list-inside text-gray-700 leading-7">
-            <li>You must not republish material from MockPeriod.</li>
-            <li>You must not sell, rent, or sub-license material from MockPeriod.</li>
-            <li>You must not reproduce, duplicate, or copy material from MockPeriod.</li>
-            <li>You must not redistribute content from MockPeriod.</li>
-          </ul>
         </div>
 
-        {/* Section: User Comments */}
-        <div className="border-t border-gray-200 pt-8 mt-8">
-          <h2 className="text-2xl font-semibold text-black mb-4">
-            User Comments
-          </h2>
-          <p className="text-gray-700 mb-6 leading-7">
-            Certain areas of this website allow users to post and exchange
-            opinions and information. MockPeriod does not
-            filter, edit, publish, or review Comments prior to their appearance
-            on the website.
+        {/* Section: Service Availability */}
+        <div className="border-b border-gray-200 pb-6 mb-6">
+          <h2 className="text-2xl font-semibold text-black mb-4">Service Availability</h2>
+          <p className="text-gray-700 leading-7">
+            We strive to provide uninterrupted service but cannot guarantee it. Downtime may occur
+            due to maintenance, technical issues, or other reasons.
           </p>
-          <ul className="list-disc list-inside text-gray-700 leading-7">
-            <li>Your Comments must not infringe intellectual property rights.</li>
-            <li>Your Comments must not contain offensive material.</li>
-            <li>Your Comments must not solicit business or promote unlawful activities.</li>
-          </ul>
         </div>
 
-        {/* Section: Hyperlinking */}
-        <div className="border-t border-gray-200 pt-8 mt-8">
-          <h2 className="text-2xl font-semibold text-black mb-4">
-            Hyperlinking to Our Content
-          </h2>
-          <p className="text-gray-700 mb-6 leading-7">
-            Organizations such as government agencies, search engines, and news
-            organizations may link to our website without prior approval. Links
-            must not be deceptive, falsely imply sponsorship, or appear in
-            inappropriate contexts.
+        {/* Section: Refund Policy */}
+        <div className="border-b border-gray-200 pb-6 mb-6">
+          <h2 className="text-2xl font-semibold text-black mb-4">Refund Policy</h2>
+          <p className="text-gray-700 leading-7">We do not offer refunds.</p>
+        </div>
+
+        {/* Section: Monthly Subscription Plan */}
+        <div className="border-b border-gray-200 pb-6 mb-6">
+          <h2 className="text-2xl font-semibold text-black mb-4">Monthly Subscription Plan</h2>
+          <p className="text-gray-700 leading-7">
+            Enjoy the flexibility of our Monthly Subscription Plan tailored to suit your needs. It provides
+            regular practice opportunities for various competitive exams.
           </p>
         </div>
 
         {/* Section: Disclaimer */}
-        <div className="border-t border-gray-200 pt-8 mt-8">
-          <h2 className="text-2xl font-semibold text-black mb-4">
-            Disclaimer
-          </h2>
+        <div className="border-b border-gray-200 pb-6 mb-6">
+          <h2 className="text-2xl font-semibold text-black mb-4">Disclaimer</h2>
           <p className="text-gray-700 mb-6 leading-7">
-            To the maximum extent permitted by law, we exclude all
-            representations, warranties, and conditions relating to our website
-            and the use of this website.
+            THIS WEBSITE, THE APPLICATION, AND THE SERVICES ARE PROVIDED ON AN
+            "AS IS" BASIS WITH ALL FAULTS AND WITHOUT ANY WARRANTY OF ANY KIND.
+            THE COMPANY DISCLAIMS ALL WARRANTIES AND CONDITIONS, INCLUDING
+            MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
           </p>
           <p className="text-gray-700 leading-7">
-            As long as the website is free of charge, we will not be liable for
-            any loss or damage of any nature.
+            Use of this website is entirely at your own risk. We are not responsible for ensuring
+            services meet your specific requirements.
           </p>
         </div>
-      </div>
-      <footer className="mt-12 text-center">
+
+        {/* Section: Copyright */}
+        <div className="border-b border-gray-200 pb-6 mb-6">
+          <h2 className="text-2xl font-semibold text-black mb-4">Copyright</h2>
+          <p className="text-gray-700 leading-7">
+            All content on the MockPeriod.com platform, including text, graphics, and software, is owned
+            by MockPeriod.com or its licensors and protected by Indian and international copyright laws.
+            Unauthorized use of this content is strictly prohibited.
+          </p>
+        </div>
+
+        {/* Section: Amendments */}
+        <div className="border-b border-gray-200 pb-6 mb-6">
+          <h2 className="text-2xl font-semibold text-black mb-4">Amendments</h2>
+          <p className="text-gray-700 leading-7">
+            MockPeriod.com may modify its platform, policies, and Conditions of Use at any time. If any
+            condition is found invalid or unenforceable, it will be severed without affecting the validity
+            of the remaining conditions. Users are encouraged to regularly check this page for updates.
+          </p>
+        </div>
+
+        {/* Section: Limitation of Liability */}
+        <div className="border-b border-gray-200 pb-6 mb-6">
+          <h2 className="text-2xl font-semibold text-black mb-4">Limitation of Liability</h2>
+          <p className="text-gray-700 leading-7">
+            MockPeriod.com is not liable for any inaccuracies, damages, or technical issues caused by
+            third parties. Users are encouraged to critically assess content before relying on it. The site
+            is not responsible for verifying the accuracy of information shared by participants and advises
+            users to independently verify content.
+          </p>
+        </div>
+
+        {/* Section: Mock Test Questions */}
+        <div className="border-b border-gray-200 pb-6 mb-6">
+          <h2 className="text-2xl font-semibold text-black mb-4">Mock Test Questions</h2>
+          <p className="text-gray-700 mb-6 leading-7">
+            MockPeriod.com sources mock test questions from a mix of reference books and online
+            platforms like Google. Questions are organized by topic, validated for accuracy, and updated
+            regularly. If you think any question infringes on copyrights, please inform us, and we will
+            address it promptly.
+          </p>
+        </div>
+
+        <footer className="mt-12 text-center">
           <p className="text-gray-600 text-sm">
-            For any queries, contact us at{" "}
+            For any queries, contact us at
             <a
               href="mailto:mockperiod@gmail.com"
               className="text-blue-600 hover:underline"
@@ -119,6 +149,7 @@ const TermsAndConditions = () => {
             .
           </p>
         </footer>
+      </div>
     </div>
   );
 };

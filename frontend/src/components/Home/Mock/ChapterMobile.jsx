@@ -154,7 +154,7 @@ const ChapterMobile = ({
   //     });
   //   };
 
-  const baseUrl = "http://mockexam.pythonanywhere.com";
+  const baseUrl = `${config.apiUrl}`;
   const defaultFileValue = "/media/uploads/questions/option_4_uFtm5qj.png";
 
   return (

@@ -157,12 +157,14 @@ function Banner() {
               progress and improve your performance with detailed analytics.
             </p>
             <div className="text-center mb-10 md:text-left">
+              {!userType && (
               <a
                 href="#subscription"
                 className="bg-[#007bff] hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-md transition duration-300 ease-in-out animate-bounceIn delay-1"
               >
                 Get Your Plan
               </a>
+            )}
             </div>
           </div>
 
