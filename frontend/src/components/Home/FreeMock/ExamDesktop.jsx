@@ -202,6 +202,7 @@ const ExamDesktop = () => {
       currentQuestionIndex={currentQuestionIndex}
       handleOptionChange={handleOptionChange}
       handleNext={handleNext}
+      handleSubmit={handleSubmit}
       handlePrevious={handlePrevious}
       handleSubmitNext={handleSubmitNext}
       handleMarkForReview={handleMarkForReview}
@@ -214,6 +215,7 @@ const ExamDesktop = () => {
       setCurrentQuestionIndex={setCurrentQuestionIndex}
       answeredQuestions={answeredQuestions}
       markedForReview={markedForReview}
+      selectedOption={selectedOption}
     />
   ) : (
     <div className="flex flex-col items-center bg-gray-100 min-h-full">

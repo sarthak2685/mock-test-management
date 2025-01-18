@@ -279,6 +279,7 @@ const SectionNavigation = ({
     const filteredQuestions = showMarkedOnly
       ? questions.filter((_, i) => markedForReview.includes(i))
       : questions;
+      
   
     return (
       <div className="bg-white p-7 rounded-lg shadow-lg">
@@ -378,7 +379,7 @@ const SectionNavigation = ({
   onClick={() => {
     if (window.confirm("Are you sure you want to submit the test?")) {
       handleSubmit(); // Call the score calculation logic
-      onSubmit();     // Trigger the submission process
+      // onSubmit();     // Trigger the submission process
      window.location.href = "/analysis"; // Uncomment if redirecting to analysis page
     }
   }}
