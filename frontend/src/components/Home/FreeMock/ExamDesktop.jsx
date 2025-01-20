@@ -202,6 +202,7 @@ const ExamDesktop = () => {
       currentQuestionIndex={currentQuestionIndex}
       handleOptionChange={handleOptionChange}
       handleNext={handleNext}
+      handleSubmit={handleSubmit}
       handlePrevious={handlePrevious}
       handleSubmitNext={handleSubmitNext}
       handleMarkForReview={handleMarkForReview}
@@ -214,6 +215,7 @@ const ExamDesktop = () => {
       setCurrentQuestionIndex={setCurrentQuestionIndex}
       answeredQuestions={answeredQuestions}
       markedForReview={markedForReview}
+      selectedOption={selectedOption}
     />
   ) : (
     <div className="flex flex-col items-center bg-gray-100 min-h-full">
@@ -258,46 +260,57 @@ const ExamDesktop = () => {
                 <Timer />
               </div>
             </div>
-       {/* Question Section */}
-       <div className="p-8">
+            {/* Question Section */}
+            <div className="p-8">
               <h2 className="text-3xl font-bold text-blue-600 mb-6">
                 Question {currentQuestionIndex + 1}
               </h2>
 
-             {/* Display the question as separate lines */}
-<div className="mb-6">
-  {currentQuestion?.question.map((line, index) => {
-    const isImageURL =
-      typeof line === "string" &&
-      (/\.(jpg|jpeg|png|gif|bmp|svg)$/i.test(line) ||
-        /^data:image\/(jpeg|jpg|png|gif|bmp|svg);base64,/.test(line));
+              {/* Display the question as separate lines */}
+              <div className="mb-6">
+                {currentQuestion?.question.map((line, index) => {
+                  const isImageURL =
+                    typeof line === "string" &&
+                    (/\.(jpg|jpeg|png|gif|bmp|svg)$/i.test(line) ||
+                      /^data:image\/(jpeg|jpg|png|gif|bmp|svg);base64,/.test(
+                        line
+                      ));
 
-    if (!isImageURL) {
-      return (
-        <p key={index} className="text-lg font-medium mb-2">
-          {line}
-        </p>
-      );
-    }
-    return null; // Do not render anything if the line is an image URL
-  })}
+                  if (!isImageURL) {
+                    return (
+                      <p key={index} className="text-lg font-medium mb-2">
+                        {line}
+                      </p>
+                    );
+                  }
+                  return null; // Do not render anything if the line is an image URL
+                })}
 
-  {/* Render question image if it is a valid image URL or base64 */}
-  {typeof currentQuestion?.question[currentQuestion.question.length - 1] === "string" &&
-    (/\.(jpeg|jpg|png|gif|bmp|svg)$/i.test(
-      currentQuestion?.question[currentQuestion.question.length - 1]
-    ) ||
-      /^data:image\/(jpeg|jpg|png|gif|bmp|svg);base64,/.test(
-        currentQuestion?.question[currentQuestion.question.length - 1]
-      )) && (
-      <img
-        src={currentQuestion?.question[currentQuestion.question.length - 1]}
-        alt="Question Image"
-        className="w-auto h-auto mt-4" // Updated for responsive images
-      />
-    )}
-</div>
-
+                {/* Render question image if it is a valid image URL or base64 */}
+                {typeof currentQuestion?.question[
+                  currentQuestion.question.length - 1
+                ] === "string" &&
+                  (/\.(jpeg|jpg|png|gif|bmp|svg)$/i.test(
+                    currentQuestion?.question[
+                      currentQuestion.question.length - 1
+                    ]
+                  ) ||
+                    /^data:image\/(jpeg|jpg|png|gif|bmp|svg);base64,/.test(
+                      currentQuestion?.question[
+                        currentQuestion.question.length - 1
+                      ]
+                    )) && (
+                    <img
+                      src={
+                        currentQuestion?.question[
+                          currentQuestion.question.length - 1
+                        ]
+                      }
+                      alt="Question Image"
+                      className="w-auto h-auto mt-4" // Updated for responsive images
+                    />
+                  )}
+              </div>
 
               {/* Options Section */}
               <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-6 mb-10">
@@ -306,7 +319,7 @@ const ExamDesktop = () => {
                     key={index}
                     className={`border border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center text-center cursor-pointer transition duration-200 transform ${
                       selectedOption === option
-                        ? "bg-blue-50 border-blue-500 shadow-md"
+                        ? "bg-blue-200 border-blue-800 shadow-md"
                         : "hover:bg-gray-50 hover:shadow-sm"
                     }`}
                     role="button"
