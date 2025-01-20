@@ -41,12 +41,14 @@ const Chapters = () => {
             tests: items
               .filter(
                 (item) =>
-                  item.test_name && item.duration && item.total_no_of_questions
+                  item.test_name && item.duration && item.total_no_of_questions && item._negative_marks && item._positive_marks
               )
               .map((test) => ({
                 testName: test.test_name,
                 examDuration: test.duration,
                 noOfQuestions: test.total_no_of_questions,
+                negativeMarks: test._negative_marks,
+                positiveMarks: test._positive_marks,
               })),
           })
         );
@@ -104,17 +106,23 @@ const Chapters = () => {
       // Check if the chapter has tests
       const testDetails = selectedChapter.tests[0]; // Assuming you want the first test details
       if (testDetails) {
-        const { testName, examDuration } = testDetails;
+        const { testName, examDuration,noOfQuestions, positiveMarks, negativeMarks } = testDetails;
 
         // Store selected chapter, test name, and duration in local storage
         localStorage.setItem("selectedChapter", chapterName);
         localStorage.setItem("selectedTestName", testName);
         localStorage.setItem("testDuration", examDuration);
+        localStorage.setItem("noOfQuestions", noOfQuestions);
+        localStorage.setItem("positiveMarks", positiveMarks);
+        localStorage.setItem("negativeMarks", negativeMarks);
 
         // Log the values to the console
         console.log("Chapter Selected:", chapterName);
         console.log("Test Name:", testName || "No test name provided");
         console.log("Test Duration:", examDuration || "No duration provided");
+        console.log("No of Questions:", noOfQuestions || "No questions provided");
+        console.log("Positive Marks:", positiveMarks || "No positive marks provided");
+        console.log("Negative Marks:", negativeMarks || "No negative marks provided");
 
         // Navigate to the chapter instruction page
         navigate("/chapterinstruction");
@@ -182,7 +190,10 @@ const Chapters = () => {
                     handleChapterClick(
                       chapter.name,
                       test.testName,
-                      test.examDuration
+                      test.examDuration,
+                      test.total_no_of_questions,
+                      test.positiveMarks,
+                      test.negativeMarks,                    
                     )
                   }
                 >

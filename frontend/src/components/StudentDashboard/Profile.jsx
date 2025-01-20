@@ -6,23 +6,17 @@ import AvatarSelector from "../Avatar"; // Import your AvatarSelector
 
 
 const Profile = () => {
-  const user = JSON.parse(localStorage.getItem("user")) || {
-    type: "guest",
-    user: "Guest",
-    name: "Guest"
-  };
-
-  const safeUser = user;
-  const token = safeUser.token;
-
+  const S = JSON.parse(localStorage.getItem("user"));
+  const token = S.token;
+  console.log("Profile",S)
 
   const [formData, setFormData] = useState({
-    name: safeUser.name || "",
-    avatar: safeUser.avatar || "",
-    age: safeUser.age || "",
-    sex: safeUser.sex || "",
-    mobile: safeUser.mobile || "",
-    customAvatar: null,
+    name: S.name || "",
+    avatar: "",
+    age: S.age || "",
+    sex: S.gender || "",
+    mobile: S.mobile || "",
+    customAvatar: "",
   });
 
   const handleAvatarSelect = (avatarConfig) => {
@@ -32,11 +26,24 @@ const Profile = () => {
       customAvatar: null,
     });
   };
-
+  const convertImageToBase64 = async (avatarUrl) => {
+    const response = await fetch(avatarUrl);
+    const blob = await response.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };
   // Handle custom avatar file upload
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (file.size > 5 * 1024 * 1024) { 
+        alert("File size must be less than 5MB.");
+        return;
+      }
       const reader = new FileReader();
       reader.onload = () => {
         setFormData({ ...formData, customAvatar: reader.result, avatar: "" });
@@ -44,6 +51,7 @@ const Profile = () => {
       reader.readAsDataURL(file);
     }
   };
+  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -68,7 +76,7 @@ const Profile = () => {
 
     if (formData.name) formDataToSend.append("name", formData.name);
     if (formData.mobile) formDataToSend.append("mobile_no", formData.mobile);
-    if (formData.sex) formDataToSend.append("sex", formData.sex);
+    if (formData.sex) formDataToSend.append("gender", formData.sex);
 
     try {
       let avatarBase64 = null;
@@ -87,7 +95,7 @@ const Profile = () => {
 
       // Sending the form data to the server
       const response = await fetch(
-        `${config.apiUrl}/admin-student-crud/?id=${safeUser.id}`,
+        `${config.apiUrl}/admin-student-crud/?id=${S.id}`,
         {
           method: "PUT",
           body: formDataToSend,
@@ -112,20 +120,11 @@ const Profile = () => {
   };
 
   // Convert predefined avatar image to Base64 format
-  const convertImageToBase64 = async (avatarUrl) => {
-    const response = await fetch(avatarUrl);
-    const blob = await response.blob();
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
-  };
+ 
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
-                <DashboardHeader user={safeUser} />
+                <DashboardHeader user={S} />
 
       <div className="flex flex-row flex-grow">
         <Sidebar />

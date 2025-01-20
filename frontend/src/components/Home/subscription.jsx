@@ -18,7 +18,7 @@ function Subscription() {
         { text: "chapter wise mock test", available: true },
         { text: "anylize growth and low scoring subject", available: true },
         {
-          text: "Instuite / Coaching Can take group mock test",
+          text: "Institute / Coaching Can take group mock test",
           available: true,
         },
       ],

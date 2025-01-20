@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import { useUser } from "./UserContext/UserContext";
 import { FaBars } from "react-icons/fa";
+import config from "../config";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -53,17 +54,17 @@ const Navbar = () => {
                   className="cursor-pointer flex items-center space-x-2"
                   onClick={toggleProfileMenu}
                 >
-                  {user.avatar ? (
-                    <img
-                      src={user.avatar}
-                      alt="Avatar"
-                      className="w-10 h-10 rounded-full"
-                    />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-[#007bff] flex items-center justify-center text-white font-semibold">
-                      {user.name ? user.name.charAt(0).toUpperCase() : ""}
-                    </div>
-                  )}
+               {user.pic && user.pic !== "/media/uploads/questions/option_4_uFtm5qj.png" ? (
+        <img
+          src={`${config.apiUrl}${user.pic}`}
+          alt="Avatar"
+          className="w-10 h-10 rounded-full"
+        />
+      ) : (
+        <div className="w-10 h-10 rounded-full bg-[#007bff] flex items-center justify-center text-white font-semibold">
+          {user.name ? user.name.charAt(0).toUpperCase() : ""}
+        </div>
+      )}
                 </div>
 
                 {profileMenuOpen && (
@@ -128,17 +129,17 @@ const Navbar = () => {
                 className="flex items-center rounded-md text-base font-medium cursor-pointer"
                 onClick={toggleProfileMenu}
               >
-                {user.avatar ? (
-                  <img
-                    src={user.avatar}
-                    alt="Avatar"
-                    className="w-8 h-8 rounded-full"
-                  />
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-[#007bff] flex items-center justify-center text-white font-semibold">
-                    {user.name ? user.name.charAt(0).toUpperCase() : ""}
-                  </div>
-                )}
+                         {user.pic && user.pic !== "/media/uploads/questions/option_4_uFtm5qj.png" ? (
+        <img
+          src={`${config.apiUrl}${user.pic}`}
+          alt="Avatar"
+          className="w-10 h-10 rounded-full"
+        />
+      ) : (
+        <div className="w-10 h-10 rounded-full bg-[#007bff] flex items-center justify-center text-white font-semibold">
+          {user.name ? user.name.charAt(0).toUpperCase() : ""}
+        </div>
+      )}
                 <span className="ml-2">{user.name}</span>
               </div>
               {profileMenuOpen && (

@@ -14,7 +14,7 @@ const Dashboard = () => {
   const [leaderboard, setLeaderboard] = useState([])
 
   const institueName = user.institute_name;
-
+  console.log("user",user,institueName)
 
   const fetchPerformanceData = async () => {
     try {

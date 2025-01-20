@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import config from "../../../config";
 
 const ChapterTestInstructions = () => {
   const [isChecked, setIsChecked] = useState(false);
@@ -24,6 +25,28 @@ const ChapterTestInstructions = () => {
     setError1(""); // Clear error when a language is selected
     localStorage.setItem("selectedLanguage", selectedLanguage);
   };
+  const [selectedChapter, setSelectedChapter] = useState("");
+  const [testDuration, setTestDuration] = useState("");
+  const [noOfQuestions, setNoOfQuestions] = useState("");
+  const [positiveMarks, setPositiveMarks] = useState("");
+  const [negativeMarks, setNegativeMarks] = useState("")
+
+  useEffect(() => {
+    // Get items from localStorage
+    const chapter = localStorage.getItem("selectedChapter");
+    const duration = localStorage.getItem("testDuration");
+    const questions = localStorage.getItem("noOfQuestions");
+    const positiveMarks = localStorage.getItem("positiveMarks");
+    const negativeMarks = localStorage.getItem("negativeMarks");
+
+    // Set them in state
+    setSelectedChapter(chapter || "");
+    setTestDuration(duration || "");
+    setNoOfQuestions(questions || "");
+    setPositiveMarks(positiveMarks || 0);
+    setNegativeMarks(negativeMarks || 0);
+  }, []);
+
 
   // const handleOptionalSubjectChange = (e) => {
   //   const selectedSubject = e.target.value;
@@ -36,9 +59,6 @@ const ChapterTestInstructions = () => {
     if (step === 1) {
       if (!language) {
         setError1("Please select a language before proceeding.");
-        return;
-      } else if (!optionalSubject) {
-        setError2("Please select an optional subject before proceeding.");
         return;
       }
       setStep(2);
@@ -79,19 +99,7 @@ const ChapterTestInstructions = () => {
     examId: "1",
   };
 
-  useEffect(() => {
-    // Retrieve selections from local storage on component mount
-    const storedLanguage = localStorage.getItem("selectedLanguage");
-    const storedOptionalSubject = localStorage.getItem(
-      "selectedOptionalSubject"
-    );
-    if (storedLanguage) {
-      setLanguage(storedLanguage);
-    }
-    if (storedOptionalSubject) {
-      setOptionalSubject(storedOptionalSubject);
-    }
-  }, []);
+ 
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-screen-3xl mx-auto bg-white shadow-md rounded-lg flex flex-col lg:flex-row">
@@ -129,7 +137,7 @@ const ChapterTestInstructions = () => {
 
             {/* General Instructions */}
             <ul className="list-disc list-inside space-y-2 text-gray-700">
-              <li>The total duration of the examination is 60 minutes.</li>
+              <li>The total duration of the examination is {testDuration} minutes.</li>
               <li>
                 The clock will be set at the server. The countdown timer in the
                 top right corner will display the remaining time. When the timer
@@ -202,26 +210,26 @@ const ChapterTestInstructions = () => {
                 <tbody>
                   <tr>
                     <td className="px-2 sm:px-4 py-2 border border-gray-300">
-                      English
+                      {selectedChapter}
                     </td>
                     <td className="px-2 sm:px-4 py-2 border border-gray-300">
-                      25
+                      {noOfQuestions}
                     </td>
                     <td className="px-2 sm:px-4 py-2 border border-gray-300">
-                      100
+                      {testDuration}
                     </td>
                     <td className="px-2 sm:px-4 py-2 border border-gray-300">
-                      60 min
+                    {testDuration} min
                     </td>
                   </tr>
                 </tbody>
                 <tfoot>
-                  <tr className="font-semibold ">
+                  {/* <tr className="font-semibold ">
                     <td className="px-4 py-2 border border-gray-300">Total</td>
                     <td className="px-4 py-2 border border-gray-300">25</td>
                     <td className="px-4 py-2 border border-gray-300">100</td>
                     <td className="px-4 py-2 border border-gray-300">60 min</td>
-                  </tr>
+                  </tr> */}
                 </tfoot>
               </table>
             </div>
@@ -246,8 +254,8 @@ const ChapterTestInstructions = () => {
               Marking Scheme:
             </h2>
             <ul className="list-disc list-inside space-y-2 text-gray-700">
-              <li>4 marks for each correct answer.</li>
-              <li>1/4th negative marking for incorrect answers.</li>
+              <li>{positiveMarks} marks for each correct answer.</li>
+              <li>{negativeMarks} negative marking for incorrect answers.</li>
               <li>No penalty for un-attempted questions.</li>
             </ul>
             <div className="mt-6">
@@ -289,16 +297,20 @@ const ChapterTestInstructions = () => {
       </div>
       {/* Profile Sidebar */}
       <div className="w-full lg:w-1/4 mt-8 lg:mt-0 flex flex-col items-center bg-gray-100 p-4 rounded-lg shadow-md">
-        <img
-          className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-blue-500 mb-4"
-          src={user.profileImage || "https://via.placeholder.com/100"}
-          alt="User Profile"
-        />
+      {user.pic ? (
+          <img
+            src={`${config.apiUrl}${user.pic}`}
+            alt="Avatar"
+            className="w-10 h-10 rounded-full object-cover"
+          />
+        ) : (
+          user.name ? user.name.charAt(0).toUpperCase() : "G"
+        )}
         <h3 className="text-lg sm:text-xl font-semibold text-gray-700">
           {user.name}
         </h3>
-        <p className="text-gray-500 text-sm">Student ID: {user.studentId}</p>
-        <p className="text-gray-500 text-sm">Exam ID: {user.examId}</p>
+        {/* <p className="text-gray-500 text-sm">Student ID: {user.studentId}</p>
+        <p className="text-gray-500 text-sm">Exam ID: {user.examId}</p> */}
       </div>
     </div>
   );
