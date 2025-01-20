@@ -80,6 +80,8 @@ const Score = () => {
     localStorage.removeItem("end_time");
     localStorage.removeItem("selectedTestName");
     localStorage.removeItem("exam_id");
+    localStorage.removeItem("selectedExamDuration");
+    localStorage.removeItem("selectedTestDetails");
     navigate("/");
   };
 

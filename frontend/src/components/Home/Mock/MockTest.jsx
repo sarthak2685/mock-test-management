@@ -37,7 +37,10 @@ const MockTest = () => {
                 (key) =>
                   key !== "exam_duration" &&
                   key !== "total_marks" &&
-                  key !== "total_questions"
+                  key !== "total_questions" &&
+                  key !== "_positive_marks" &&
+                  key !== "_negative_marks"
+                  
               )
               .join(", ");
 
@@ -46,9 +49,11 @@ const MockTest = () => {
               subjects: subjects || "N/A",
               total_questions: testDetails.total_questions || 0,
               exam_duration: testDetails.exam_duration || "N/A",
+              total_marks: parseFloat(testDetails.total_marks) || 0,
+              postiveMarks : testDetails._positive_marks || 0,
+              negativeMarks : testDetails._negative_marks || 0,
             };
           });
-
         setMockTestData(groupedTests);
         return groupedTests.map((test) => test.test_name);
       } catch (error) {
@@ -124,13 +129,25 @@ const MockTest = () => {
     fetchAllData();
   }, [SubjectId, id, institueName, token]);
 
-  const handleCardClick = (testName, examDuration) => {
+  const handleCardClick = (testName, examDuration, subjects, totalMarks, totalQuestions,postiveMarks,negativeMarks) => {
     localStorage.setItem("selectedTestName", testName);
     localStorage.setItem("selectedExamDuration", examDuration);
+  
+    // Store distinct subjects, total marks, and total questions in localStorage
+    const testDetails = {
+      subjects: subjects.split(", ").filter((subject) => subject.trim() !== ""),
+      totalMarks,
+      totalQuestions,
+      postiveMarks,
+      negativeMarks,
+    };
+    localStorage.setItem("selectedTestDetails", JSON.stringify(testDetails));
+  
     console.log(
-      `Test name '${testName}' and Exam Duration '${examDuration}' saved to localStorage`
+      `Test name '${testName}', Exam Duration '${examDuration}', Subjects '${subjects}', Total Marks '${totalMarks}', and Total Questions '${totalQuestions}',${postiveMarks},${negativeMarks} saved to localStorage`
     );
   };
+  
 
   const getCurrentTime = () => new Date();
 
@@ -172,9 +189,15 @@ const MockTest = () => {
                     : ""
                 }`}
                 onClick={() =>
-                  !isTestGiven &&
-                  isTestTimeValid &&
-                  handleCardClick(test.test_name, test.exam_duration)
+                  handleCardClick(
+                    test.test_name,
+                    test.exam_duration,
+                    test.subjects,
+                    test.total_marks || "0",
+                    test.total_questions || "0",
+                    test.postiveMarks || "0",
+                    test.negativeMarks || "0"
+                  )
                 }
               >
                 <div className="relative z-20 flex flex-col justify-between h-full p-4">

@@ -44,6 +44,7 @@ import ChapterWise from "./components/StudentDashboard/ChapterWise.jsx";
 import PrivacyPolicy from "./components/PrivacyPolicy.jsx";
 import TermsAndConditions from "./components/TermConditon.jsx";
 import Disclaimer from "./components/Disclaimer.jsx";
+import Announcement from "./components/AdminDasboard/Announcement.jsx";
 
 
 function App() {
@@ -118,6 +119,7 @@ function App() {
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-condition" element={<TermsAndConditions />} />
           <Route path="/disclaimer" element={<Disclaimer />} />
+          <Route path="/announcement" element={<Announcement />} />
 
 
         </Routes>

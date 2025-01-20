@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { FiBell } from "react-icons/fi";
 import { FaUser, FaBars } from "react-icons/fa"; 
 import { useNavigate } from "react-router-dom";
+import config from "../../config";
 
 const DashboardHeaders = ({ toggleSidebar }) => {
   const [openDropdown, setOpenDropdown] = useState(null);
@@ -99,12 +100,20 @@ const DashboardHeaders = ({ toggleSidebar }) => {
         <div className="relative cursor-pointer" ref={userDropdownRef}>
         <div className="flex items-center space-x-2" onClick={() => toggleDropdown("user")}>
       <span className="font-semibold text-gray-700">{user.name}</span>
-      <div
-        className="w-10 h-10 rounded-full text-white flex items-center justify-center"
-        style={{ backgroundColor: avatarColor }}
-      >
-        {!user.image && (user.name ? user.name.charAt(0).toUpperCase() : "G")}
-      </div>
+<div
+  className="w-10 h-10 rounded-full text-white flex items-center justify-center"
+  style={{ backgroundColor: avatarColor }}
+>
+{user.pic && user.pic !== "/media/uploads/questions/option_4_uFtm5qj.png" ? (
+    <img
+    src={`${config.apiUrl}${user.pic}`}
+    alt="Avatar"
+      className="w-10 h-10 rounded-full object-cover"
+    />
+  ) : (
+    user.name ? user.name.charAt(0).toUpperCase() : "G"
+  )}
+</div>
     </div>
 
           {openDropdown === "user" && (
