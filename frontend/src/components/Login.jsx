@@ -34,16 +34,39 @@ const Login = () => {
 
       if (response.data.data && response.data.data.type) {
         // Extract fields from the response
-        const { type, user, token, id, name, institute_name } =
-          response.data.data;
+        const {
+          type,
+          user,
+          token,
+          id,
+          name,
+          institute_name,
+          expiry, // Added expiry
+          plan_taken, // Added plan_taken
+          id_auth, // Added id_auth
+        } = response.data.data;
 
         // Consolidate into a single object
-        const userData = { type, user, token, id, name, institute_name };
+        const userData = {
+          type,
+          user,
+          token,
+          id,
+          name,
+          institute_name,
+          id_auth, // Added id_auth to the object
+        };
 
         console.log("Data being saved to localStorage: ", userData);
 
         // Save the object in localStorage
         localStorage.setItem("user", JSON.stringify(userData));
+
+        // Save expiry and plan_taken in localStorage
+        localStorage.setItem("expiry", expiry);
+        localStorage.setItem("plan_taken", plan_taken);
+
+        console.log("Expiry, Plan Taken, and id_auth stored in localStorage");
 
         // Clear the Data from localStorage
         // localStorage.removeItem("submittedData");
@@ -70,7 +93,7 @@ const Login = () => {
           setError("Unknown role. Please contact support.");
         }
       } else {
-        setError("Account Expired Please Renew");
+        setError("Account Expired. Please Renew");
       }
     } catch (error) {
       setError("Login failed. Please check your credentials.");

@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 function Subscription() {
   const plans = [
     {
+      id: "32d3b528-88b3-4a77-bf17-ecb340c3f64e", // Basic Plan ID
       name: "Basic Plan",
       price: "₹449",
       description: "Ideal for institutes with up to 50 students per month.",
@@ -15,17 +16,18 @@ function Subscription() {
           available: true,
         },
         { text: "Full length Mock Test 10", available: true },
-        { text: "chapter wise mock test", available: true },
-        { text: "anylize growth and low scoring subject", available: true },
+        { text: "Chapter wise mock test", available: true },
+        { text: "Analyze growth and low scoring subjects", available: true },
         {
-          text: "Instuite / Coaching Can take group mock test",
+          text: "Institute/Coaching can take group mock tests",
           available: true,
         },
       ],
     },
     {
+      id: "c66e89db-f655-41db-9787-9ab3fdcbb7d1", // Standard Plan ID
       name: "Standard Plan",
-      price: "₹649",
+      price: "₹699",
       description: "Perfect for institutes with up to 80 students per month.",
       features: [
         {
@@ -33,15 +35,20 @@ function Subscription() {
           available: true,
         },
         { text: "Full length Mock Test 10+", available: true },
-        { text: "chapter wise mock test", available: true },
-        { text: "anylize growth and low scoring subject", available: true },
+        { text: "Chapter wise mock test", available: true },
+        { text: "Analyze growth and low scoring subjects", available: true },
         {
-          text: "Instuite / Coaching Can take group mock test",
+          text: "Institute/Coaching can take group mock tests",
           available: true,
         },
       ],
     },
   ];
+
+  const handlePlanSelect = (plan) => {
+    // Store the selected plan details in localStorage or any state management library
+    localStorage.setItem("selectedPlan", JSON.stringify(plan));
+  };
 
   return (
     <section className="bg-white subscription" id="subscription">
@@ -101,8 +108,9 @@ function Subscription() {
                   </li>
                 ))}
               </ul>
-              <Link to="/subscriptionform">
+              <Link to="/payment">
                 <button
+                  onClick={() => handlePlanSelect(plan)}
                   className="text-white bg-[#007bff] hover:bg-blue-700 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
                   aria-label={`Subscribe to the ${plan.name}`}
                 >

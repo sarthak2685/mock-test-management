@@ -4,18 +4,26 @@ import { FiUsers, FiBarChart } from "react-icons/fi";
 import { HomeIcon, ArrowLeftOnRectangleIcon } from "@heroicons/react/24/solid";
 import { FaTimes } from "react-icons/fa";
 import { FiHelpCircle } from "react-icons/fi";
+import { HiOutlineBell } from "react-icons/hi"; // Notice Board icon
 
 const Sidebar = ({ isCollapsed, toggleSidebar }) => {
-  
   const handleLogout = () => {
+    // Remove user and subscription details from localStorage
     localStorage.removeItem("user");
-    window.location.href = "/login"; 
+    localStorage.removeItem("plan_taken");
+    localStorage.removeItem("expiry");
+
+    console.log("User and subscription details removed from localStorage.");
+
+    // Redirect to the login page
+    window.location.href = "/login";
   };
 
   return (
     <aside
-      className={`bg-[#007bff] text-white fixed top-0 left-0 w-64 h-screen p-4 flex flex-col transition-transform duration-300 ${isCollapsed ? "-translate-x-full" : "translate-x-0"
-        }`}
+      className={`bg-[#007bff] text-white fixed top-0 left-0 w-64 h-screen p-4 flex flex-col transition-transform duration-300 ${
+        isCollapsed ? "-translate-x-full" : "translate-x-0"
+      }`}
     >
       <div className="flex items-center justify-between p-2 rounded-md mb-7">
         <span className="text-2xl font-bold text-white">Mock Period</span>
@@ -34,7 +42,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
         <NavLink
           to="/admin"
           className={({ isActive }) =>
-            `flex items-center py-2 px-4 rounded hover:bg-blue-700 ${isActive ? "bg-blue-700" : "text-white"
+            `flex items-center py-2 px-4 rounded hover:bg-blue-700 ${
+              isActive ? "bg-blue-700" : "text-white"
             }`
           }
         >
@@ -45,7 +54,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
         <NavLink
           to="/students"
           className={({ isActive }) =>
-            `flex items-center py-2 px-4 mt-4 rounded hover:bg-blue-700 ${isActive ? "bg-blue-700" : ""
+            `flex items-center py-2 px-4 mt-4 rounded hover:bg-blue-700 ${
+              isActive ? "bg-blue-700" : ""
             }`
           }
         >
@@ -58,12 +68,26 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
         <NavLink
           to="/performance"
           className={({ isActive }) =>
-            `flex items-center py-2 px-4 mt-4 rounded hover:bg-blue-700 ${isActive ? "bg-blue-700" : ""
+            `flex items-center py-2 px-4 mt-4 rounded hover:bg-blue-700 ${
+              isActive ? "bg-blue-700" : ""
             }`
           }
         >
           <FiBarChart className="mr-2" />
           <span className="block">{isCollapsed ? "" : "Performance"}</span>
+        </NavLink>
+
+        {/* Notice Board Section */}
+        <NavLink
+          to="/notice-admin"
+          className={({ isActive }) =>
+            `flex items-center py-2 px-4 mt-4 rounded hover:bg-blue-700 ${
+              isActive ? "bg-blue-700" : ""
+            }`
+          }
+        >
+          <HiOutlineBell className="mr-2" /> {/* Notice Board icon */}
+          <span className="block">{isCollapsed ? "" : "Notice Board"}</span>
         </NavLink>
 
         {/* Separator Line */}
@@ -74,8 +98,11 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
         <NavLink
           to="/help"
           className={({ isActive }) =>
-            `flex justify-center items-center py-2 px-4 mt-4 rounded hover:bg-blue-700 ${isActive ? "bg-blue-700" : ""
-            }`}        >
+            `flex justify-center items-center py-2 px-4 mt-4 rounded hover:bg-blue-700 ${
+              isActive ? "bg-blue-700" : ""
+            }`
+          }
+        >
           <FiHelpCircle className="h-5 w-5 mr-2" />
           <span className="block">{isCollapsed ? "" : "Help"}</span>
         </NavLink>

@@ -106,30 +106,36 @@ const MockDemo = () => {
                     key !== "total_marks" &&
                     key !== "total_questions"
                 )
-                .map(([subjectName, subjectDetails]) => ({
-                  subject: subjectName,
-                  no_of_questions: subjectDetails.no_of_questions,
-                  questions: subjectDetails.questions.map((question) => ({
-                    id: question.id,
-                    question: question.question,
-                    question2: question.question2, // Include question2
-                    marks: question.positive_marks,
-                    negativeMarks: question.negative_marks,
-                    subject: question.subject || subjectName,
-                    options: [
-                      question.option_1,
-                      question.option_2,
-                      question.option_3,
-                      question.option_4,
-                    ], // Dynamically map the options
-                    files: [
-                      question.file_1,
-                      question.file_2,
-                      question.file_3,
-                      question.file_4,
-                    ], // Dynamically map the files
-                  })),
-                }));
+                .map(([subjectName, subjectDetails]) => {
+                  const questions = Array.isArray(subjectDetails.questions)
+                    ? subjectDetails.questions.map((question) => ({
+                        id: question.id,
+                        question: question.question,
+                        question2: question.question2, // Include question2
+                        marks: question.positive_marks,
+                        negativeMarks: question.negative_marks,
+                        subject: question.subject || subjectName,
+                        options: [
+                          question.option_1,
+                          question.option_2,
+                          question.option_3,
+                          question.option_4,
+                        ], // Dynamically map the options
+                        files: [
+                          question.file_1,
+                          question.file_2,
+                          question.file_3,
+                          question.file_4,
+                        ], // Dynamically map the files
+                      }))
+                    : []; // Default to an empty array if questions is not an array
+
+                  return {
+                    subject: subjectName,
+                    no_of_questions: subjectDetails.no_of_questions,
+                    questions,
+                  };
+                });
 
               console.log("Grouped Test Data:", groupedTests);
               setMockTestData(groupedTests);
