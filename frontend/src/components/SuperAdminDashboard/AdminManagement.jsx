@@ -217,6 +217,9 @@ const AdminManagement = ({ user }) => {
         },
       ]);
       setError("");
+
+      // Refresh the page
+      window.location.reload();
     } catch (error) {
       console.error(
         "Error adding admins:",
@@ -225,30 +228,29 @@ const AdminManagement = ({ user }) => {
       setError("Failed to add admins. Please try again.");
     }
   };
+
   const handleRemoveAdmin = async (id) => {
     console.log("Admin ID:", id); // Add this line
     if (!id) {
-       console.error("ID is undefined");
-       setError("Invalid admin ID.");
-       return;
+      console.error("ID is undefined");
+      setError("Invalid admin ID.");
+      return;
     }
     try {
-       await axios.delete(`${config.apiUrl}/vendor-admin-crud/?id=${id}`,
-        {
-          headers: {
-            Authorization: `Token ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-       );
-       setAdmins(admins.filter((admin) => admin.id !== id));
+      await axios.delete(`${config.apiUrl}/vendor-admin-crud/?id=${id}`, {
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+      setAdmins(admins.filter((admin) => admin.id !== id));
     } catch (error) {
-       console.error("Error deleting admin:", error);
-       setError("Failed to delete admin. Please try again.");
+      console.error("Error deleting admin:", error);
+      setError("Failed to delete admin. Please try again.");
     }
- };
- 
-    const handleChangePassword = async (id) => {
+  };
+
+  const handleChangePassword = async (id) => {
     const newPassword = prompt("Enter new password:");
     if (newPassword) {
       try {
@@ -268,8 +270,10 @@ const AdminManagement = ({ user }) => {
 
   const filteredAdmins = (Array.isArray(admins) ? admins : []).filter(
     (admin) =>
-      admin.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      admin.username.toLowerCase().includes(searchTerm.toLowerCase())
+      (admin.name &&
+        admin.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (admin.username &&
+        admin.username.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const indexOfLastAdmin = currentPage * adminsPerPage;
@@ -295,13 +299,12 @@ const AdminManagement = ({ user }) => {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "admin_data.csv");
+    link.setAttribute("download", "Admins List.csv");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
-  console.log("Admin",currentAdmins);
-
+  console.log("Admin", currentAdmins);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -415,31 +418,31 @@ const AdminManagement = ({ user }) => {
 
                     {/* Subscription Plan Dropdown */}
                     <div className="relative">
-  <FaCogs className="absolute left-3 top-3 text-gray-400 sm:left-2 sm:top-2 sm:text-xs lg:left-3 lg:top-3 lg:text-sm" />
-  <select
-    value={admin.subscriptionPlan || ""} // Controlled input for subscriptionPlan
-    onChange={(e) =>
-      handleAdminChange(
-        index,
-        "subscriptionPlan",
-        e.target.value
-      )
-    }
-    className="border text-gray-400 p-2 pl-10 mb-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 sm:p-1 sm:pl-8 sm:mb-1 sm:text-xs lg:p-2 lg:pl-10 lg:mb-2 lg:text-sm"
-  >
-    <option value="">Select Subscription Plan</option>
-    {Array.isArray(subscriptionPlans) && subscriptionPlans.length > 0 ? (
-      subscriptionPlans.map((plan) => (
-        <option key={plan.id} value={plan.id}>
-          {plan.name || "Unnamed Subscription"}
-        </option>
-      ))
-    ) : (
-      <option disabled>No plans available</option>
-    )}
-  </select>
-</div>
-
+                      <FaCogs className="absolute left-3 top-3 text-gray-400 sm:left-2 sm:top-2 sm:text-xs lg:left-3 lg:top-3 lg:text-sm" />
+                      <select
+                        value={admin.subscriptionPlan || ""} // Controlled input for subscriptionPlan
+                        onChange={(e) =>
+                          handleAdminChange(
+                            index,
+                            "subscriptionPlan",
+                            e.target.value
+                          )
+                        }
+                        className="border text-gray-400 p-2 pl-10 mb-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 sm:p-1 sm:pl-8 sm:mb-1 sm:text-xs lg:p-2 lg:pl-10 lg:mb-2 lg:text-sm"
+                      >
+                        <option value="">Select Subscription Plan</option>
+                        {Array.isArray(subscriptionPlans) &&
+                        subscriptionPlans.length > 0 ? (
+                          subscriptionPlans.map((plan) => (
+                            <option key={plan.id} value={plan.id}>
+                              {plan.name || "Unnamed Subscription"}
+                            </option>
+                          ))
+                        ) : (
+                          <option disabled>No plans available</option>
+                        )}
+                      </select>
+                    </div>
                   </div>
                 </div>
               ))}

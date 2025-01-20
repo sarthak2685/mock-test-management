@@ -214,7 +214,7 @@ const AdminList = () => {
           <DashboardHeader user={user} toggleSidebar={toggleSidebar} />
 
           <div className="p-2 md:p-6">
-            <h1 className="text-2xl md:text-3xl font-bold mb-4 text-left">
+            <h1 className="text-xl md:text-3xl font-bold mb-4 text-left">
               Admin List
             </h1>
 
@@ -223,61 +223,82 @@ const AdminList = () => {
                 <table className="min-w-full leading-normal border border-gray-300 rounded-lg overflow-hidden">
                   <thead className="bg-gradient-to-r from-[#007bff] to-[#0056b3] text-white">
                     <tr>
-                    <th className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-left text-xs font-semibold uppercase tracking-wider">
-                         Name
+                      <th className="px-1 py-1 sm:px-2 sm:py-2 md:px-3 md:py-3 border-b border-gray-200 text-left text-xs sm:text-sm font-semibold uppercase tracking-wider">
+                        Name
                       </th>
-                      <th className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-left text-xs font-semibold uppercase tracking-wider">
+                      <th className="px-1 py-1 sm:px-2 sm:py-2 md:px-3 md:py-3 border-b border-gray-200 text-left text-xs sm:text-sm font-semibold uppercase tracking-wider">
                         Institute Name
                       </th>
-                      <th className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-left text-xs font-semibold uppercase tracking-wider">
+                      <th className="px-1 py-1 sm:px-2 sm:py-2 md:px-3 md:py-3 border-b border-gray-200 text-left text-xs sm:text-sm font-semibold uppercase tracking-wider">
                         Duration
                       </th>
-                      <th className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-left text-xs font-semibold uppercase tracking-wider">
+                      <th className="px-1 py-1 sm:px-2 sm:py-2 md:px-3 md:py-3 border-b border-gray-200 text-left text-xs sm:text-sm font-semibold uppercase tracking-wider">
                         Subscription
                       </th>
-                      <th className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-left text-xs font-semibold uppercase tracking-wider">
+                      <th className="px-1 py-1 sm:px-2 sm:py-2 md:px-3 md:py-3 border-b border-gray-200 text-left text-xs sm:text-sm font-semibold uppercase tracking-wider">
                         Action
                       </th>
                     </tr>
                   </thead>
                   <tbody>
                     {admins.map((admin) => {
+                      const isExpired =
+                        new Date(admin.date_expiry) < new Date(); // Check if expired
                       return (
                         <tr
                           key={admin.id}
                           className="hover:bg-gray-100 transition-colors bg-white"
                         >
-                            <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
+                          <td className="px-1 py-1 sm:px-2 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
                             <p className="text-gray-900 font-medium whitespace-no-wrap">
                               {admin.name}
                             </p>
                           </td>
-                          <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
+                          <td className="px-1 py-1 sm:px-2 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
                             <p className="text-gray-900 font-medium whitespace-no-wrap">
                               {admin.institute_name}
                             </p>
                           </td>
-                          <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
+                          <td className="px-1 py-1 sm:px-2 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
                             <p className="text-gray-900 font-bold whitespace-no-wrap">
                               {admin.licence && admin.licence.licence_expiry
-                                ? admin.licence.licence_expiry
-                                : ""}{" "}
-                              Month
+                                ? `${admin.licence.licence_expiry} Month`
+                                : ""}
                             </p>
                           </td>
-                          <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
-                            <p className="text-gray-700 whitespace-no-wrap">
-                              {admin.licence && admin.licence.name
-                                ? admin.licence.name
-                                : "No Plan"}
-                            </p>
+                          <td className="px-1 py-1 sm:px-2 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
+                            <div className="flex items-center">
+                              <p
+                                className={`text-xs sm:text-sm font-semibold ${
+                                  isExpired ? "text-red-500" : "text-green-500"
+                                } whitespace-no-wrap`}
+                              >
+                                {admin.licence && admin.licence.name
+                                  ? `${admin.licence.name}`
+                                  : "No Plan"}
+                              </p>
+                              <span
+                                className={`ml-2 text-xs font-medium ${
+                                  isExpired ? "text-red-500" : "text-green-500"
+                                }`}
+                              >
+                                {isExpired
+                                  ? "(Expired)"
+                                  : `- Active until ${new Date(
+                                      admin.date_expiry
+                                    ).toLocaleDateString()}`}
+                              </span>
+                            </div>
                           </td>
-                          <td className="px-2 py-1 sm:px-3 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
+                          <td className="px-1 py-1 sm:px-2 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
+                            {/* Conditional Button for Update/Renew */}
                             <button
-                              className="bg-blue-500 text-white py-2 px-4 rounded-md"
+                              className={`${
+                                isExpired ? "bg-red-500" : "bg-blue-500"
+                              } text-white py-1 sm:py-2 px-2 sm:px-4 rounded-md transition duration-300`}
                               onClick={() => openModal(admin)}
                             >
-                              Update
+                              {isExpired ? "Renew" : "Update"}
                             </button>
                           </td>
                         </tr>

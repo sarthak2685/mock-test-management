@@ -3,8 +3,8 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { FiUsers, FiBarChart } from "react-icons/fi";
 import { HomeIcon, ArrowLeftOnRectangleIcon } from "@heroicons/react/24/solid";
 import { FaTimes } from "react-icons/fa"; // Importing Font Awesome close icon
-import { HiUserGroup } from "react-icons/hi"; // Importing HiUserGroup icon for "Admins List"
-import { HiClock } from "react-icons/hi"; // Importing a time-related icon
+import { HiUserGroup, HiClock } from "react-icons/hi"; // Importing icons for other sections
+import { HiOutlineBell } from "react-icons/hi"; // Notice Board icon
 
 const Sidebar = ({ isCollapsed, toggleSidebar }) => {
   const navigate = useNavigate();
@@ -59,7 +59,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
           <span className="block">{isCollapsed ? "" : "Admin Management"}</span>
         </NavLink>
 
-        {/* Admins List Section with HiUserGroup icon */}
+        {/* Admins List Section */}
         <NavLink
           to="/admins-list"
           className={({ isActive }) =>
@@ -68,7 +68,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
             }`
           }
         >
-          <HiUserGroup className="mr-2" /> {/* Changed to HiUserGroup icon */}
+          <HiUserGroup className="mr-2" />
           <span className="block">{isCollapsed ? "" : "Admins List"}</span>
         </NavLink>
 
@@ -84,7 +84,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
           <span className="block">{isCollapsed ? "" : "Create Test"}</span>
         </NavLink>
 
-        {/* Test Time Section with HiClock icon */}
+        {/* Test Time Section */}
         <NavLink
           to="/test-time"
           className={({ isActive }) =>
@@ -93,8 +93,21 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
             }`
           }
         >
-          <HiClock className="mr-2" /> {/* Changed to HiClock icon */}
+          <HiClock className="mr-2" />
           <span className="block">{isCollapsed ? "" : "Test Time"}</span>
+        </NavLink>
+
+        {/* Notice Board Section */}
+        <NavLink
+          to="/notice-owner"
+          className={({ isActive }) =>
+            `flex items-center py-2 px-4 mt-4 rounded hover:bg-blue-700 ${
+              isActive ? "bg-blue-700" : ""
+            }`
+          }
+        >
+          <HiOutlineBell className="mr-2" /> {/* Notice Board icon */}
+          <span className="block">{isCollapsed ? "" : "Notice Board"}</span>
         </NavLink>
 
         {/* Separator Line */}

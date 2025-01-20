@@ -7,7 +7,7 @@ import {
   FaUserPlus,
   FaPaperPlane,
   FaFileCsv,
-  FaPhone // Import the phone icon
+  FaPhone, // Import the phone icon
 } from "react-icons/fa";
 import DashboardHeader from "./DashboardHeader";
 import Sidebar from "../AdminDasboard/Sidebar/SideBars"; // Importing Sidebar
@@ -16,7 +16,9 @@ import axios from "axios";
 
 const StudentManagement = ({ user }) => {
   const [students, setStudents] = useState([]);
-  const [newStudents, setNewStudents] = useState([{ name: "", username: "", password: "", mobile_no: "" }]); // Added mobile_no field
+  const [newStudents, setNewStudents] = useState([
+    { name: "", username: "", password: "", mobile_no: "" },
+  ]); // Added mobile_no field
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -53,8 +55,8 @@ const StudentManagement = ({ user }) => {
         const response = await fetch(`${config.apiUrl}/admin-student-crud/`, {
           method: "GET",
           headers: {
-            'Authorization': `Token ${token}`,
-            'Content-Type': 'application/json',
+            Authorization: `Token ${token}`,
+            "Content-Type": "application/json",
           },
         });
 
@@ -90,7 +92,10 @@ const StudentManagement = ({ user }) => {
   };
 
   const handleAddStudentField = () => {
-    setNewStudents([...newStudents, { name: "", username: "", password: "", mobile_no: "" }]); // Added mobile_no field
+    setNewStudents([
+      ...newStudents,
+      { name: "", username: "", password: "", mobile_no: "" },
+    ]); // Added mobile_no field
   };
 
   const handleRemoveStudentField = (index) => {
@@ -98,62 +103,77 @@ const StudentManagement = ({ user }) => {
     setNewStudents(updatedStudents);
   };
 
-const handleSubmitStudents = async () => {
+  const handleSubmitStudents = async () => {
     // Check if the token exists
     if (!token) {
-        setError("Authentication token is required.");
-        return;
+      setError("Authentication token is required.");
+      return;
     }
 
     // Check for required fields in new students
-    if (newStudents.some(student => !student.name || !student.username || !student.password || !student.mobile_no)) {
-        setError("All fields (name, username, password, mobile_no) are required.");
-        return;
+    if (
+      newStudents.some(
+        (student) =>
+          !student.name ||
+          !student.username ||
+          !student.password ||
+          !student.mobile_no
+      )
+    ) {
+      setError(
+        "All fields (name, username, password, mobile_no) are required."
+      );
+      return;
     }
 
     try {
-        // Prepare the POST requests
-        const responses = await Promise.all(newStudents.map(student => {
-            return axios.post(`${config.apiUrl}/admin-student-crud/`, {
-                name: student.name,
-                mobile_no: student.mobile_no,
-                institute_name: "none", // Placeholder; modify if necessary
-                email_id: "none", // Placeholder; modify if necessary
-                password_encoded: student.password,
-            }, {
-                headers: {
-                    'Authorization': `Token ${token}`,
-                    'Content-Type': 'application/json',
-                },
-            });
-        }));
+      // Prepare the POST requests
+      const responses = await Promise.all(
+        newStudents.map((student) => {
+          return axios.post(
+            `${config.apiUrl}/admin-student-crud/`,
+            {
+              name: student.name,
+              mobile_no: student.mobile_no,
+              institute_name: "none", // Placeholder; modify if necessary
+              email_id: "none", // Placeholder; modify if necessary
+              password_encoded: student.password,
+            },
+            {
+              headers: {
+                Authorization: `Token ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+        })
+      );
 
-        // Log responses for debugging
-        console.log("Responses from API:", responses);
+      // Log responses for debugging
+      console.log("Responses from API:", responses);
 
-        // Update state with newly added students
-        const newStudentData = responses.map((response, index) => ({
-            ...newStudents[index],
-            id: students.length + index + 1, // Generate a unique ID for each new student
-            apiResponse: response.data // Optional: Store the response from the API if needed
-        }));
+      // Update state with newly added students
+      const newStudentData = responses.map((response, index) => ({
+        ...newStudents[index],
+        id: students.length + index + 1, // Generate a unique ID for each new student
+        apiResponse: response.data, // Optional: Store the response from the API if needed
+      }));
 
-        // Update the students state
-        setStudents([...students, ...newStudentData]);
-        setNewStudents([{ name: "", username: "", password: "", mobile_no: "" }]); // Reset the input fields
-        setError(""); // Clear any existing error message
+      // Update the students state
+      setStudents([...students, ...newStudentData]);
+      setNewStudents([{ name: "", username: "", password: "", mobile_no: "" }]); // Reset the input fields
+      setError(""); // Clear any existing error message
+      // Refresh the page
+      window.location.reload();
     } catch (error) {
-        // Enhanced error handling
-        console.error("Error adding students:", error.response ? error.response.data : error);
-        setError("Failed to add students. Please try again.");
+      // Enhanced error handling
+      console.error(
+        "Error adding students:",
+        error.response ? error.response.data : error
+      );
+      setError("Failed to add students. Please try again.");
     }
-};
-
-
-
-
-
-
+  };
 
   const handleRemoveStudent = async (id) => {
     try {
@@ -161,8 +181,8 @@ const handleSubmitStudents = async () => {
       await fetch(`${config.apiUrl}/admin-student-crud/${id}`, {
         method: "DELETE",
         headers: {
-          'Authorization': `Token ${token}`,
-          'Content-Type': 'application/json',
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
         },
       });
 
@@ -198,16 +218,20 @@ const handleSubmitStudents = async () => {
     }
   };
 
-  const filteredStudents = Array.isArray(students) 
-    ? students.filter(student => 
-        student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.username.toLowerCase().includes(searchTerm.toLowerCase())
-    ) 
+  const filteredStudents = Array.isArray(students)
+    ? students.filter(
+        (student) =>
+          student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          student.username.toLowerCase().includes(searchTerm.toLowerCase())
+      )
     : [];
 
   const indexOfLastStudent = currentPage * studentsPerPage;
   const indexOfFirstStudent = indexOfLastStudent - studentsPerPage;
-  const currentStudents = filteredStudents.slice(indexOfFirstStudent, indexOfLastStudent);
+  const currentStudents = filteredStudents.slice(
+    indexOfFirstStudent,
+    indexOfLastStudent
+  );
   const totalPages = Math.ceil(filteredStudents.length / studentsPerPage);
 
   // Add a check to avoid out of bounds for pagination
@@ -217,15 +241,26 @@ const handleSubmitStudents = async () => {
   };
 
   const handleExport = () => {
+    // Assuming the first student has the institute_name you want to use
+    const instituteName = students[0]?.institute_name || "Institute"; // Default to "Institute" if not available
     const header = "Name,Password,Mobile Number";
     const csvContent =
       "data:text/csv;charset=utf-8," +
-      header + "\n" +
-      students.map((student) => `${student.name},${student.password_encoded},${student.mobile_no}`).join("\n"); // Include mobile_no in CSV
+      header +
+      "\n" +
+      students
+        .map(
+          (student) =>
+            `${student.name},${student.password_encoded},${student.mobile_no}`
+        )
+        .join("\n"); // Include mobile_no in CSV
+
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "students.csv");
+
+    // Use the institute_name as part of the file name
+    link.setAttribute("download", `${instituteName} student list.csv`);
     document.body.appendChild(link);
     link.click();
   };
@@ -241,8 +276,15 @@ const handleSubmitStudents = async () => {
         />
 
         {/* Main Content */}
-        <div className={`flex-grow transition-all duration-300 ease-in-out ${isCollapsed ? "ml-0" : "ml-64"}`}>
-          <DashboardHeader user={user || { name: "Guest" }} toggleSidebar={toggleSidebar} />
+        <div
+          className={`flex-grow transition-all duration-300 ease-in-out ${
+            isCollapsed ? "ml-0" : "ml-64"
+          }`}
+        >
+          <DashboardHeader
+            user={user || { name: "Guest" }}
+            toggleSidebar={toggleSidebar}
+          />
 
           <div className="p-6">
             <h1 className="text-3xl font-bold mb-6">Manage Students</h1>
@@ -251,7 +293,10 @@ const handleSubmitStudents = async () => {
             <div className="bg-white p-6 mb-6 shadow-lg rounded-lg">
               <h2 className="text-2xl font-semibold mb-4">Add Students</h2>
               {newStudents.map((student, index) => (
-                <div key={index} className="mb-4 p-4 bg-gray-50 rounded-lg shadow-md">
+                <div
+                  key={index}
+                  className="mb-4 p-4 bg-gray-50 rounded-lg shadow-md"
+                >
                   <div className="flex justify-between items-center mb-2">
                     <h3 className="text-lg font-medium">Student {index + 1}</h3>
                     <button
@@ -268,7 +313,9 @@ const handleSubmitStudents = async () => {
                         type="text"
                         placeholder="Name"
                         value={student.name}
-                        onChange={(e) => handleStudentChange(index, "name", e.target.value)}
+                        onChange={(e) =>
+                          handleStudentChange(index, "name", e.target.value)
+                        }
                         className="border p-2 pl-10 mb-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         style={{ paddingLeft: "2.5rem" }}
                       />
@@ -279,7 +326,9 @@ const handleSubmitStudents = async () => {
                         type="text"
                         placeholder="Username"
                         value={student.username}
-                        onChange={(e) => handleStudentChange(index, "username", e.target.value)}
+                        onChange={(e) =>
+                          handleStudentChange(index, "username", e.target.value)
+                        }
                         className="border p-2 pl-10 mb-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         style={{ paddingLeft: "2.5rem" }}
                       />
@@ -290,7 +339,9 @@ const handleSubmitStudents = async () => {
                         type="password"
                         placeholder="Password"
                         value={student.password}
-                        onChange={(e) => handleStudentChange(index, "password", e.target.value)}
+                        onChange={(e) =>
+                          handleStudentChange(index, "password", e.target.value)
+                        }
                         className="border p-2 pl-10 mb-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         style={{ paddingLeft: "2.5rem" }}
                       />
@@ -302,7 +353,13 @@ const handleSubmitStudents = async () => {
                         type="text"
                         placeholder="Mobile Number"
                         value={student.mobile_no}
-                        onChange={(e) => handleStudentChange(index, "mobile_no", e.target.value)}
+                        onChange={(e) =>
+                          handleStudentChange(
+                            index,
+                            "mobile_no",
+                            e.target.value
+                          )
+                        }
                         className="border p-2 pl-10 mb-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                         style={{ paddingLeft: "2.5rem" }}
                       />
@@ -310,7 +367,7 @@ const handleSubmitStudents = async () => {
                   </div>
                 </div>
               ))}
-             <div className="flex flex-col sm:flex-row sm:justify-between items-center gap-4">
+              <div className="flex flex-col sm:flex-row sm:justify-between items-center gap-4">
                 <button
                   onClick={handleAddStudentField}
                   className="bg-gradient-to-r from-[#007bff] to-[#0056b3] text-white px-4 py-2 rounded-md hover:bg-[#0056b3] hover:to-[#004080] transition text-sm w-full sm:w-auto"
@@ -383,7 +440,8 @@ const handleSubmitStudents = async () => {
                             {student.mobile_no}
                           </td>
                           <td className="px-2 py-1 md:px-4 md:py-2 text-[9px] md:text-sm">
-                            {student.password_encoded} {/* Now visible in mobile */}
+                            {student.password_encoded}{" "}
+                            {/* Now visible in mobile */}
                           </td>
                           <td className="px-2 py-1 md:px-4 md:py-2 text-center">
                             <button
