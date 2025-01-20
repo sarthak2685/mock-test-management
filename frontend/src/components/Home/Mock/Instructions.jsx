@@ -19,6 +19,11 @@ const Instructions = () => {
   const handleCheckboxChange = () => {
     setIsChecked(!isChecked);
   };
+  const [testDetails, setTestDetails] = useState(null);
+
+  const storedDetails = JSON.parse(localStorage.getItem("selectedTestDetails"));
+  const duration = JSON.parse(localStorage.getItem("selectedExamDuration"));
+  console.log("storedDetails", storedDetails, duration);
 
   const handleLanguageChange = (e) => {
     const selectedLanguage = e.target.value;
@@ -26,20 +31,20 @@ const Instructions = () => {
     setError1(""); // Clear error when a language is selected
     localStorage.setItem("selectedLanguage", selectedLanguage);
   };
+
   const fetchSerial = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       const response = await fetch(`${config.apiUrl}/get_slno/}`, {
         headers: {
-          'Authorization': `Token ${token}`,
-          'Content-Type': 'application/json',
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
         },
       });
       const data = await response.json();
-      console.log("serial no",data)
-      
+      console.log("serial no", data);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error("Error fetching data:", error);
     }
   };
 
@@ -50,18 +55,16 @@ const Instructions = () => {
     localStorage.setItem("selectedOptionalSubject", selectedSubject);
   };
 
-  const handleNextStep = async() => {
+  const handleNextStep = async () => {
     if (step === 1) {
-      if (!language) {
+      // Validate language selection if both Hindi and English are present
+      if (storedDetails?.subjects.includes("Hindi") && storedDetails?.subjects.includes("English") && !language) {
         setError1("Please select a language before proceeding.");
-        return;
-      } else if (!optionalSubject) {
-        setError2("Please select an optional subject before proceeding.");
         return;
       }
       setStep(2); // Move to the next step
     } else if (step === 2 && isChecked) {
-      // Format function for date-time (same as in handleSubmit)
+      // Proceed to the mock demo
       const formatDateTime = (date) => {
         return new Intl.DateTimeFormat("en-GB", {
           year: "numeric",
@@ -77,10 +80,8 @@ const Instructions = () => {
           .replace(/\//g, "-");
       };
 
-      // Store formatted start time when transitioning to step 2
       const startTimeFormatted = formatDateTime(new Date());
-      localStorage.setItem("start_time", startTimeFormatted);
-      await fetchSerial();
+      localStorage.setItem("start_time", startTimeFormatted); // Store start time in localStorage
       navigate("/mock-demo");
     }
   };
@@ -89,7 +90,6 @@ const Instructions = () => {
     if (step > 1) setStep(step - 1);
   };
 
-  // User data
   const user = JSON.parse(localStorage.getItem("user")) || {
     type: "guest",
     user: "Guest",
@@ -98,37 +98,28 @@ const Instructions = () => {
     examId: "1",
   };
 
-  // Data for subjects and mark
-  const subjectData = [
-    {
-      subject: "GENERAL INTELLIGENCE & REASONING",
-      questions: 25,
-      marks: 50,
-      time: 15,
-    },
-    { subject: "GENERAL AWARENESS", questions: 25, marks: 50, time: 15 },
-    { subject: "QUANTITATIVE APTITUDE", questions: 25, marks: 50, time: 15 },
-  ];
+  const subjects = storedDetails?.subjects || [];
+  const totalQuestions = storedDetails?.totalQuestions || 0;
+  const totalMarks = storedDetails?.totalMarks || 0;
+  const examDuration = duration || 0; 
+  const positiveMarks = storedDetails?.positiveMarks || 0;
+  const negativeMarks = storedDetails?.negativeMarks || 0
+
+  const subjectData = subjects.map((subject) => ({
+    subject,
+    questions: totalQuestions / subjects.length,
+    marks: totalMarks / subjects.length,
+    time: examDuration / subjects.length, // Assuming equal time distribution
+  }));
 
   const optionalSubjectData = {
     subject: optionalSubject || "Optional Subject",
-    questions: 25,
-    marks: 50,
+    questions: 10,
+    marks: 20,
     time: 15,
   };
-  // Calculate totals
-  const totalQuestions =
-    subjectData.reduce((acc, subject) => acc + subject.questions, 0) +
-    (optionalSubject ? optionalSubjectData.questions : 0);
-  const totalMarks =
-    subjectData.reduce((acc, subject) => acc + subject.marks, 0) +
-    (optionalSubject ? optionalSubjectData.marks : 0);
-  const totalTime =
-    subjectData.reduce((acc, subject) => acc + subject.time, 0) +
-    (optionalSubject ? optionalSubjectData.time : 0);
 
   useEffect(() => {
-    // Retrieve selections from local storage on component mount
     const storedLanguage = localStorage.getItem("selectedLanguage");
     const storedOptionalSubject = localStorage.getItem(
       "selectedOptionalSubject"
@@ -143,15 +134,12 @@ const Instructions = () => {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-screen-3xl mx-auto bg-white shadow-md rounded-lg flex flex-col lg:flex-row">
-      {/* Instructions Section */}
       <div className="w-full lg:w-3/4 pr-0 lg:pr-8">
-        {/* Page 1: General Instructions */}
         {step === 1 && (
           <>
             <h2 className="text-xl sm:text-2xl font-semibold text-blue-600 mb-4">
               General Instructions:
             </h2>
-            {/* Language Dropdown */}
             <div className="flex items-center justify-between mb-6">
               <div className="space-x-2 flex flex-row items-center">
                 <span className="text-[#007bff]">View in: </span>
@@ -169,15 +157,13 @@ const Instructions = () => {
                   <option value="">Select Language</option>
                   <option value="en">English</option>
                   <option value="hi">Hindi</option>
-                  {/* Add more languages as needed */}
                 </select>
               </div>
             </div>
             {error1 && <p className="text-red-500 text-sm mb-4">{error1}</p>}
 
-            {/* General Instructions */}
             <ul className="list-disc list-inside space-y-2 text-gray-700">
-              <li>The total duration of the examination is 60 minutes.</li>
+              <li>The total duration of the examination is {examDuration} minutes.</li>
               <li>
                 The clock will be set at the server. The countdown timer in the
                 top right corner will display the remaining time. When the timer
@@ -229,7 +215,6 @@ const Instructions = () => {
               </li>
             </ul>
 
-            {/* Subjects Table */}
             <div className="overflow-x-auto mt-6">
               <table className="min-w-full border border-gray-300 text-xs sm:text-sm md:text-base">
                 <thead>
@@ -249,74 +234,74 @@ const Instructions = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {subjectData.map((subject, index) => (
-                    <tr key={index}>
-                      <td className="px-2 sm:px-4 py-2 border border-gray-300">
-                        {subject.subject}
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 border border-gray-300">
-                        {subject.questions}
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 border border-gray-300">
-                        {subject.marks}
-                      </td>
-                      <td className="px-2 sm:px-4 py-2 border border-gray-300">
-                        {subject.time} min
-                      </td>
-                    </tr>
-                  ))}
-                  <tr>
-                    <td className="px-2 sm:px-4 py-2 border border-gray-300">
-                      <select
-                        style={{
-                          cursor: "pointer",
-                          width: "200px",
-                          border: "1px solid #ccc",
-                          borderRadius: "5px",
-                          padding: "4px",
-                        }}
-                        value={optionalSubject}
-                        onChange={handleOptionalSubjectChange}
-                      >
-                        <option value="">Select Optional Subject</option>
-                        <option value="English Comprehension">
-                          English Comprehension
-                        </option>
-                        <option value="Hindi Comprehension">
-                          Hindi Comprehension
-                        </option>
-                      </select>
-                    </td>
-                    <td className="px-2 sm:px-4 py-2 border border-gray-300">
-                      {optionalSubjectData.questions}
-                    </td>
-                    <td className="px-2 sm:px-4 py-2 border border-gray-300">
-                      {optionalSubjectData.marks}
-                    </td>
-                    <td className="px-2 sm:px-4 py-2 border border-gray-300">
-                      {optionalSubjectData.time} min
-                    </td>
-                  </tr>
-                  <tr className="font-semibold">
-                    <td className="px-4 py-2 border border-gray-300">Total</td>
-                    <td className="px-4 py-2 border border-gray-300">
-                      {totalQuestions}
-                    </td>
-                    <td className="px-4 py-2 border border-gray-300">
-                      {totalMarks}
-                    </td>
-                    <td className="px-4 py-2 border border-gray-300">
-                      {totalTime} min
-                    </td>
-                  </tr>
-                </tbody>
+      {/* Render rows for subjects */}
+      {subjectData.map((subject, index) => {
+        if (
+          subjects.includes("Hindi") &&
+          subjects.includes("English") &&
+          subject.subject === "Hindi" // Render dropdown for Hindi (skip separate English row)
+        ) {
+          return (
+            <tr key={index}>
+              <td className="px-2 sm:px-4 py-2 border border-gray-300">
+                <select
+                  value={language}
+                  onChange={(e) => {
+                    const selectedLang = e.target.value;
+                    setLanguage(selectedLang); // Update the language state
+                    localStorage.setItem("selectedLanguage", selectedLang); // Save to localStorage
+                  }}
+                  className="border border-gray-300 rounded px-2 py-1"
+                >
+                  <option value="English">English</option>
+                  <option value="Hindi">Hindi</option>
+                </select>
+              </td>
+              <td className="px-2 sm:px-4 py-2 border border-gray-300">
+                {subject.questions}
+              </td>
+              <td className="px-2 sm:px-4 py-2 border border-gray-300">
+                {subject.marks}
+              </td>
+              <td className="px-2 sm:px-4 py-2 border border-gray-300">
+                {subject.time} min
+              </td>
+            </tr>
+          );
+        } else if (
+          (subject.subject === "Hindi" || subject.subject === "English") &&
+          subjects.includes("Hindi") &&
+          subjects.includes("English")
+        ) {
+          // Skip rendering separate row for English if dropdown is shown
+          return null;
+        } else {
+          // Render rows for other subjects
+          return (
+            <tr key={index}>
+              <td className="px-2 sm:px-4 py-2 border border-gray-300">
+                {subject.subject}
+              </td>
+              <td className="px-2 sm:px-4 py-2 border border-gray-300">
+                {subject.questions}
+              </td>
+              <td className="px-2 sm:px-4 py-2 border border-gray-300">
+                {subject.marks}
+              </td>
+              <td className="px-2 sm:px-4 py-2 border border-gray-300">
+                {subject.time} min
+              </td>
+            </tr>
+          );
+        }
+      })}
+    </tbody>
               </table>
             </div>
             {error2 && <p className="text-red-500 text-sm mb-4">{error2}</p>}
           </>
         )}
 
-        {/* Page 2: Additional Instructions */}
         {step === 2 && (
           <>
             <h2 className="text-xl sm:text-2xl font-semibold text-blue-600 mb-4">
@@ -334,8 +319,8 @@ const Instructions = () => {
               Marking Scheme:
             </h2>
             <ul className="list-disc list-inside space-y-2 text-gray-700">
-              <li>4 marks for each correct answer.</li>
-              <li>1/4th negative marking for incorrect answers.</li>
+              <li>{positiveMarks} marks for each correct answer.</li>
+              <li>{negativeMarks} negative marking for incorrect answers.</li>
               <li>No penalty for un-attempted questions.</li>
             </ul>
             <div className="mt-6">
@@ -356,7 +341,6 @@ const Instructions = () => {
           </>
         )}
 
-        {/* Navigation Buttons */}
         <div className="flex justify-between mt-6">
           {step > 1 && (
             <button
@@ -375,18 +359,19 @@ const Instructions = () => {
         </div>
       </div>
 
-      {/* Profile Sidebar */}
       <div className="w-full lg:w-1/4 mt-8 lg:mt-0 flex flex-col items-center bg-gray-100 p-4 rounded-lg shadow-md">
-        <img
-          className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-blue-500 mb-4"
-          src={user.profileImage || "https://via.placeholder.com/100"}
-          alt="User Profile"
-        />
+        {user.pic ? (
+          <img
+            src={`${config.apiUrl}${user.pic}`}
+            alt="Avatar"
+            className="w-10 h-10 rounded-full object-cover"
+          />
+        ) : (
+          user.name ? user.name.charAt(0).toUpperCase() : "G"
+        )}
         <h3 className="text-lg sm:text-xl font-semibold text-gray-700">
           {user.name}
         </h3>
-        <p className="text-gray-500 text-sm">Student ID: {user.studentId}</p>
-        <p className="text-gray-500 text-sm">Exam ID: {user.examId}</p>
       </div>
     </div>
   );

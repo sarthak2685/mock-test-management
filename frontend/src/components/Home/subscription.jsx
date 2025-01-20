@@ -19,7 +19,9 @@ function Subscription() {
         { text: "Chapter wise mock test", available: true },
         { text: "Analyze growth and low scoring subjects", available: true },
         {
-          text: "Institute/Coaching can take group mock tests",
+
+          text: "Institute / Coaching Can take group mock test",
+
           available: true,
         },
       ],

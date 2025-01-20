@@ -12,6 +12,7 @@ const Dashboard = () => {
   const [userData, setUserData] = useState([]);
   const [leaderboard, setLeaderboard] = useState([]);
 
+
   const user = JSON.parse(localStorage.getItem("user")); // Fetch user from localStorage
   const token = user.token;
 
@@ -22,7 +23,10 @@ const Dashboard = () => {
     ? new Date(planExpiryDate) < new Date()
     : false;
 
+
   const institueName = user.institute_name;
+  console.log("user",user,institueName)
+
 
   const fetchPerformanceData = async () => {
     try {

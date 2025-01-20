@@ -44,10 +44,15 @@ import ChapterWise from "./components/StudentDashboard/ChapterWise.jsx";
 import PrivacyPolicy from "./components/PrivacyPolicy.jsx";
 import TermsAndConditions from "./components/TermConditon.jsx";
 import Disclaimer from "./components/Disclaimer.jsx";
+
 import ScrollToTop from "./components/ScrollToTop.jsx";
 import RazorpayPayment from "./components/RazorpayPayment.jsx";
 import NoticeOwner from "./components/SuperAdminDashboard/NoticeOwner.jsx";
 import NoticeAdmin from "./components/AdminDasboard/NoticeAdmin.jsx";
+
+import Announcement from "./components/AdminDasboard/Announcement.jsx";
+
+
 
 function App() {
   const location = useLocation();
@@ -123,6 +128,10 @@ function App() {
           <Route path="/payment" element={<RazorpayPayment />} />
           <Route path="/notice-owner" element={<NoticeOwner />} />
           <Route path="/notice-admin" element={<NoticeAdmin />} />
+
+          <Route path="/announcement" element={<Announcement />} />
+
+
         </Routes>
         {isNavbarFooterVisible && <Footer />}
       </div>

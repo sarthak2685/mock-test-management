@@ -82,23 +82,23 @@ const MockDemo = () => {
         if (!response.ok) {
           throw new Error("Failed to fetch mock test data");
         }
-
+    
         const result = await response.json();
         console.log("Raw API Response:", result);
-
+    
         if (result.data) {
           // Check if the stored test name exists in the API response
           const mockTestKeys = Object.keys(result.data);
           const mockTestKey = mockTestKeys.find(
             (key) => key !== "exam_domain" && key === storedTestName // Match stored test name
           );
-
+    
           if (mockTestKey) {
             const testDetails = result.data[mockTestKey];
-
+    
             if (testDetails) {
               setTimerDuration(Number(testDetails.exam_duration) || 0);
-
+    
               const groupedTests = Object.entries(testDetails)
                 .filter(
                   ([key]) =>
@@ -139,17 +139,17 @@ const MockDemo = () => {
 
               console.log("Grouped Test Data:", groupedTests);
               setMockTestData(groupedTests);
-
+    
               // Set the first subject as the selected subject
               setSelectedSubject(groupedTests[0]?.subject || "");
-
+    
               // Store unique subjects in local storage
               const uniqueSubjects = [
                 ...new Set(groupedTests.map((test) => test.subject)),
               ];
-
+    
               console.log("Unique Subjects:", uniqueSubjects);
-
+    
               // Save unique subjects to localStorage
               localStorage.setItem(
                 "uniqueSubjects",
@@ -170,7 +170,6 @@ const MockDemo = () => {
         console.error("Error fetching mock test data:", error);
       }
     };
-
     if (SubjectId) {
       fetchMockTests();
     }
@@ -593,8 +592,8 @@ const MockDemo = () => {
                           key={index}
                           className={`border border-gray-300 rounded-lg p-4 flex items-center justify-center text-center cursor-pointer transition duration-200 transform ${
                             selectedOption === item
-                              ? "bg-blue-50 border-blue-500 shadow-md"
-                              : "hover:bg-gray-50 hover:shadow-sm"
+                            ? "bg-blue-200 border-blue-800 shadow-md"
+                            : "hover:bg-gray-50 hover:shadow-sm"
                           }`}
                         >
                           <input
