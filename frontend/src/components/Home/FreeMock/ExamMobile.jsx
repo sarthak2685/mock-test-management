@@ -301,7 +301,9 @@ const ExamMobile = ({
                       key={index}
                       className={`border border-gray-300 rounded-lg p-4 flex items-center justify-center text-center cursor-pointer transition duration-100 transform ${
                         selectedOption === option
+
                           ? "bg-blue-200 border-blue-800 shadow-md"
+
                           : "hover:bg-gray-50 hover:shadow-sm"
                       }`}
                     >
