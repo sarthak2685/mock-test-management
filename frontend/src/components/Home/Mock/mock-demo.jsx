@@ -82,23 +82,23 @@ const MockDemo = () => {
         if (!response.ok) {
           throw new Error("Failed to fetch mock test data");
         }
-
+    
         const result = await response.json();
         console.log("Raw API Response:", result);
-
+    
         if (result.data) {
           // Check if the stored test name exists in the API response
           const mockTestKeys = Object.keys(result.data);
           const mockTestKey = mockTestKeys.find(
             (key) => key !== "exam_domain" && key === storedTestName // Match stored test name
           );
-
+    
           if (mockTestKey) {
             const testDetails = result.data[mockTestKey];
-
+    
             if (testDetails) {
               setTimerDuration(Number(testDetails.exam_duration) || 0);
-
+    
               const groupedTests = Object.entries(testDetails)
                 .filter(
                   ([key]) =>
@@ -106,44 +106,50 @@ const MockDemo = () => {
                     key !== "total_marks" &&
                     key !== "total_questions"
                 )
-                .map(([subjectName, subjectDetails]) => ({
-                  subject: subjectName,
-                  no_of_questions: subjectDetails.no_of_questions,
-                  questions: subjectDetails.questions.map((question) => ({
-                    id: question.id,
-                    question: question.question,
-                    question2: question.question2, // Include question2
-                    marks: question.positive_marks,
-                    negativeMarks: question.negative_marks,
-                    subject: question.subject || subjectName,
-                    options: [
-                      question.option_1,
-                      question.option_2,
-                      question.option_3,
-                      question.option_4,
-                    ], // Dynamically map the options
-                    files: [
-                      question.file_1,
-                      question.file_2,
-                      question.file_3,
-                      question.file_4,
-                    ], // Dynamically map the files
-                  })),
-                }));
-
+                .map(([subjectName, subjectDetails]) => {
+                  const questions = Array.isArray(subjectDetails.questions)
+                    ? subjectDetails.questions.map((question) => ({
+                        id: question.id,
+                        question: question.question,
+                        question2: question.question2, // Include question2
+                        marks: question.positive_marks,
+                        negativeMarks: question.negative_marks,
+                        subject: question.subject || subjectName,
+                        options: [
+                          question.option_1,
+                          question.option_2,
+                          question.option_3,
+                          question.option_4,
+                        ], // Dynamically map the options
+                        files: [
+                          question.file_1,
+                          question.file_2,
+                          question.file_3,
+                          question.file_4,
+                        ], // Dynamically map the files
+                      }))
+                    : []; // Default to an empty array if questions is not an array
+    
+                  return {
+                    subject: subjectName,
+                    no_of_questions: subjectDetails.no_of_questions,
+                    questions,
+                  };
+                });
+    
               console.log("Grouped Test Data:", groupedTests);
               setMockTestData(groupedTests);
-
+    
               // Set the first subject as the selected subject
               setSelectedSubject(groupedTests[0]?.subject || "");
-
+    
               // Store unique subjects in local storage
               const uniqueSubjects = [
                 ...new Set(groupedTests.map((test) => test.subject)),
               ];
-
+    
               console.log("Unique Subjects:", uniqueSubjects);
-
+    
               // Save unique subjects to localStorage
               localStorage.setItem(
                 "uniqueSubjects",
@@ -164,7 +170,6 @@ const MockDemo = () => {
         console.error("Error fetching mock test data:", error);
       }
     };
-
     if (SubjectId) {
       fetchMockTests();
     }
