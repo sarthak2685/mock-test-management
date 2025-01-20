@@ -1,11 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FiBell } from "react-icons/fi";
-
-import { FaExclamationTriangle, FaBars } from "react-icons/fa";
-
-import { FaUser, FaBars } from "react-icons/fa"; 
+import { FaExclamationTriangle, FaBars, FaUser } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-
 import config from "../../config";
 
 const DashboardHeader = ({ toggleSidebar }) => {
@@ -13,6 +9,8 @@ const DashboardHeader = ({ toggleSidebar }) => {
   const [notifications, setNotifications] = useState([]);
   const [showAllNotifications, setShowAllNotifications] = useState(false);
   const bellDropdownRef = useRef(null);
+  const userDropdownRef = useRef(null); // Added this ref
+  const navigate = useNavigate();
 
   const user = JSON.parse(localStorage.getItem("user")) || {
     type: "guest",
@@ -64,7 +62,9 @@ const DashboardHeader = ({ toggleSidebar }) => {
       if (
         openDropdown &&
         bellDropdownRef.current &&
-        !bellDropdownRef.current.contains(event.target)
+        !bellDropdownRef.current.contains(event.target) &&
+        userDropdownRef.current &&
+        !userDropdownRef.current.contains(event.target)
       ) {
         setOpenDropdown(null);
       }
@@ -157,33 +157,17 @@ const DashboardHeader = ({ toggleSidebar }) => {
           )}
         </div>
 
-
         {/* User Info */}
-        <div className="flex items-center space-x-4">
-          <span className="font-semibold text-gray-700">{user.name}</span>
-          <div className="w-10 h-10 rounded-full bg-slate-500 text-white flex items-center justify-center">
-            {user.name?.charAt(0).toUpperCase()}
-          </div>
-
-        {/* User Info Dropdown */}
         <div className="relative cursor-pointer" ref={userDropdownRef}>
-        <div className="flex items-center space-x-2" onClick={() => toggleDropdown("user")}>
-      <span className="font-semibold text-gray-700">{user.name}</span>
-<div
-  className="w-10 h-10 rounded-full text-white flex items-center justify-center"
-  style={{ backgroundColor: avatarColor }}
->
-{user.pic && user.pic !== "/media/uploads/questions/option_4_uFtm5qj.png" ? (
-    <img
-    src={`${config.apiUrl}${user.pic}`}
-    alt="Avatar"
-      className="w-10 h-10 rounded-full object-cover"
-    />
-  ) : (
-    user.name ? user.name.charAt(0).toUpperCase() : "G"
-  )}
-</div>
-    </div>
+          <div
+            className="flex items-center space-x-2"
+            onClick={() => toggleDropdown("user")}
+          >
+            <span className="font-semibold text-gray-700">{user.name}</span>
+            <div className="w-10 h-10 rounded-full bg-slate-500 text-white flex items-center justify-center">
+              {user.name?.charAt(0).toUpperCase()}
+            </div>
+          </div>
 
           {openDropdown === "user" && (
             <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 shadow-md rounded-lg z-50">
@@ -196,7 +180,6 @@ const DashboardHeader = ({ toggleSidebar }) => {
               </div>
             </div>
           )}
-
         </div>
       </div>
     </header>

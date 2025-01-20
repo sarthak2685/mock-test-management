@@ -74,17 +74,6 @@ const Login = () => {
 
         console.log("Expiry, Plan Taken, and id_auth stored in localStorage");
 
-        // Clear the Data from localStorage
-        // localStorage.removeItem("submittedData");
-        // localStorage.removeItem("selectedExamDuration");
-        // localStorage.removeItem("timerDuration");
-        // localStorage.removeItem("start_time");
-        // localStorage.removeItem("submissionResult");
-        // localStorage.removeItem("testDuration");
-        // localStorage.removeItem("end_time");
-        // localStorage.removeItem("selectedTestName");
-        // localStorage.removeItem("exam_id");
-
         // Navigation logic
         if (type === "owner") {
           navigate("/super-admin");
@@ -100,27 +89,7 @@ const Login = () => {
         }
       } else {
         setError("Account Expired. Please Renew");
-
-      const response = await axios.post(`${config.apiUrl}/admin-student-owner/login/`, {
-        mobileno: mobileNumber,
-        password: password,
-      });
-      const { type, user, token, id, name, institute_name, pic, gender } =
-        response.data.data || {};
-      const userData = { type, user, token, id, name, institute_name, pic, gender };
-      localStorage.setItem("user", JSON.stringify(userData));
-      if (type === "owner") {
-        navigate("/super-admin");
-        setTimeout(() => window.location.reload(), 0);
-      } else if (type === "admin") {
-        navigate("/admin");
-        setTimeout(() => window.location.reload(), 0);
-      } else if (type === "student") {
-        navigate("/");
-        setTimeout(() => window.location.reload(), 0);
-
       }
-      else setError("Unknown role. Please contact support.");
     } catch (error) {
       setError("Login failed. Please check your credentials.");
     }
@@ -144,7 +113,11 @@ const Login = () => {
       return;
     }
     try {
-      await axios.post(`${config.apiUrl}/reset-password/`, { email, otp, new_password: newPassword, confirm_password: confirmPassword, 
+      await axios.post(`${config.apiUrl}/reset-password/`, {
+        email,
+        otp,
+        new_password: newPassword,
+        confirm_password: confirmPassword,
       });
       setIsForgotPassword(false);
       setOtpSent(false);
