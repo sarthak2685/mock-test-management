@@ -587,8 +587,8 @@ const MockDemo = () => {
                           key={index}
                           className={`border border-gray-300 rounded-lg p-4 flex items-center justify-center text-center cursor-pointer transition duration-200 transform ${
                             selectedOption === item
-                              ? "bg-blue-50 border-blue-500 shadow-md"
-                              : "hover:bg-gray-50 hover:shadow-sm"
+                            ? "bg-blue-200 border-blue-800 shadow-md"
+                            : "hover:bg-gray-50 hover:shadow-sm"
                           }`}
                         >
                           <input
