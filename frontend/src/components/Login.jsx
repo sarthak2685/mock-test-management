@@ -23,25 +23,73 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(`${config.apiUrl}/admin-student-owner/login/`, {
-        mobileno: mobileNumber,
-        password: password,
-      });
-      const { type, user, token, id, name, institute_name, pic, gender } =
-        response.data.data || {};
-      const userData = { type, user, token, id, name, institute_name, pic, gender };
-      localStorage.setItem("user", JSON.stringify(userData));
-      if (type === "owner") {
-        navigate("/super-admin");
-        setTimeout(() => window.location.reload(), 0);
-      } else if (type === "admin") {
-        navigate("/admin");
-        setTimeout(() => window.location.reload(), 0);
-      } else if (type === "student") {
-        navigate("/");
-        setTimeout(() => window.location.reload(), 0);
+      const response = await axios.post(
+        `${config.apiUrl}/admin-student-owner/login/`,
+        {
+          mobileno: mobileNumber,
+          password: password,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      console.log("Data", response.data.data);
+
+      if (response.data.data && response.data.data.type) {
+        // Extract fields from the response
+        const {
+          type,
+          user,
+          token,
+          id,
+          name,
+          institute_name,
+          expiry, // Added expiry
+          plan_taken, // Added plan_taken
+          id_auth, // Added id_auth
+        } = response.data.data;
+
+        // Consolidate into a single object
+        const userData = {
+          type,
+          user,
+          token,
+          id,
+          name,
+          institute_name,
+          id_auth, // Added id_auth to the object
+        };
+
+        console.log("Data being saved to localStorage: ", userData);
+
+        // Save the object in localStorage
+        localStorage.setItem("user", JSON.stringify(userData));
+
+        // Save expiry and plan_taken in localStorage
+        localStorage.setItem("expiry", expiry);
+        localStorage.setItem("plan_taken", plan_taken);
+
+        console.log("Expiry, Plan Taken, and id_auth stored in localStorage");
+
+        // Navigation logic
+        if (type === "owner") {
+          navigate("/super-admin");
+          setTimeout(() => window.location.reload(), 0);
+        } else if (type === "admin") {
+          navigate("/admin");
+          setTimeout(() => window.location.reload(), 0);
+        } else if (type === "student") {
+          navigate("/");
+          setTimeout(() => window.location.reload(), 0);
+        } else {
+          setError("Unknown role. Please contact support.");
+        }
+      } else {
+        setError("Account Expired. Please Renew");
       }
-      else setError("Unknown role. Please contact support.");
     } catch (error) {
       setError("Login failed. Please check your credentials.");
     }
@@ -65,7 +113,11 @@ const Login = () => {
       return;
     }
     try {
-      await axios.post(`${config.apiUrl}/reset-password/`, { email, otp, new_password: newPassword, confirm_password: confirmPassword, 
+      await axios.post(`${config.apiUrl}/reset-password/`, {
+        email,
+        otp,
+        new_password: newPassword,
+        confirm_password: confirmPassword,
       });
       setIsForgotPassword(false);
       setOtpSent(false);

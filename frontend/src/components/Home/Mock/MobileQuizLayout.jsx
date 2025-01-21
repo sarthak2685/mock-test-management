@@ -2,6 +2,9 @@ import React, { useState, useEffect } from "react";
 import { FaBars, FaTimes, FaChevronDown } from "react-icons/fa";
 import QuestionNavigation from "../Mock/navigation";
 import Timer from "./Timer";
+
+// import config from "../../../config";
+
 import UserProfile from "../Mock/UserProfile";
 import config from "../../../config";
 
@@ -317,8 +320,8 @@ const MobileQuizLayout = ({
               {/* Display Question Files or Options */}
               <div className="space-y-3 grid grid-cols-1 mt-6">
                 {(() => {
-                    const baseUrl = `${config.apiUrl}`;
-                    const validFiles = currentQuestion.files?.filter(
+                  const baseUrl = `${config.apiUrl}`;
+                  const validFiles = currentQuestion.files?.filter(
                     (file) =>
                       file &&
                       file !== "/media/uploads/questions/option_4_uFtm5qj.png"

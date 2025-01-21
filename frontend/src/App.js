@@ -44,13 +44,20 @@ import ChapterWise from "./components/StudentDashboard/ChapterWise.jsx";
 import PrivacyPolicy from "./components/PrivacyPolicy.jsx";
 import TermsAndConditions from "./components/TermConditon.jsx";
 import Disclaimer from "./components/Disclaimer.jsx";
+
+import ScrollToTop from "./components/ScrollToTop.jsx";
+import RazorpayPayment from "./components/RazorpayPayment.jsx";
+import NoticeOwner from "./components/SuperAdminDashboard/NoticeOwner.jsx";
+import NoticeAdmin from "./components/AdminDasboard/NoticeAdmin.jsx";
+
 import Announcement from "./components/AdminDasboard/Announcement.jsx";
+
 
 
 function App() {
   const location = useLocation();
 
-  const userRole = localStorage.getItem("userRole"); 
+  const userRole = localStorage.getItem("userRole");
 
   const isNavbarFooterVisible =
     userRole !== "owner" &&
@@ -62,9 +69,9 @@ function App() {
   return (
     <UserProvider>
       <div className="App">
+        <ScrollToTop /> {/* Scroll to top on route change */}
         {/* Conditional Navbar and Footer */}
         {isNavbarFooterVisible && <Navbar />}
-
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
@@ -104,26 +111,28 @@ function App() {
             path="/chapterinstruction"
             element={<ChapterTestInstructions />}
           />
-           <Route
-            path="/subscriptionform"
-            element={<SubscriptionForm />}
-          />
+          <Route path="/subscriptionform" element={<SubscriptionForm />} />
 
           <Route path="/examdesktop" element={<ExamDesktop />} />
           <Route path="/analysis" element={<Analysis />} />
           <Route path="/guestinstruction" element={<GuestInstruction />} />
 
-
           <Route path="/scorecard" element={<ChapterScore />} />
-          <Route path="/subject-Wise-Performance" element={<ChapterPerformance />} />
+          <Route
+            path="/subject-Wise-Performance"
+            element={<ChapterPerformance />}
+          />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-condition" element={<TermsAndConditions />} />
           <Route path="/disclaimer" element={<Disclaimer />} />
+          <Route path="/payment" element={<RazorpayPayment />} />
+          <Route path="/notice-owner" element={<NoticeOwner />} />
+          <Route path="/notice-admin" element={<NoticeAdmin />} />
+
           <Route path="/announcement" element={<Announcement />} />
 
 
         </Routes>
-
         {isNavbarFooterVisible && <Footer />}
       </div>
     </UserProvider>

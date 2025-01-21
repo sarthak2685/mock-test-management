@@ -129,14 +129,14 @@ const MockDemo = () => {
                         ], // Dynamically map the files
                       }))
                     : []; // Default to an empty array if questions is not an array
-    
+
                   return {
                     subject: subjectName,
                     no_of_questions: subjectDetails.no_of_questions,
                     questions,
                   };
                 });
-    
+
               console.log("Grouped Test Data:", groupedTests);
               setMockTestData(groupedTests);
     

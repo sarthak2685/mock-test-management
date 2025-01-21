@@ -3,7 +3,7 @@ import Sidebar from "./Sidebar/SideBars";
 import DashboardHeader from "./DashboardHeader";
 
 const Help = () => {
-const [isCollapsed, setIsCollapsed] = useState(true); 
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -52,17 +52,19 @@ const [isCollapsed, setIsCollapsed] = useState(true);
 
   return (
     <div className="flex flex-col min-h-screen">
-        <DashboardHeader user={user} toggleSidebar={toggleSidebar} />
-      
+      <DashboardHeader user={user} toggleSidebar={toggleSidebar} />
+
       <div className="flex flex-col md:flex-row">
-      <Sidebar
+        <Sidebar
           isCollapsed={isCollapsed}
           toggleSidebar={toggleSidebar}
           className={`${isCollapsed ? "hidden" : "block"} md:block`}
-        />        
+        />
         <main className="flex-grow p-6 bg-gray-100 ">
           <div className="max-w-2xl mx-auto bg-white p-6 rounded-md shadow-md">
-            <h2 className="text-xl font-semibold mb-4 text-center">Admin Support Form</h2>
+            <h2 className="text-xl font-semibold mb-4 text-center">
+              Admin Support Form
+            </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <input
                 type="text"
