@@ -250,6 +250,7 @@ const Instructions = () => {
                     const selectedLang = e.target.value;
                     setLanguage(selectedLang); // Update the language state
                     localStorage.setItem("selectedLanguage", selectedLang); // Save to localStorage
+                    console.log("selectedLanguage", selectedLang);
                   }}
                   className="border border-gray-300 rounded px-2 py-1"
                 >
