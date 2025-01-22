@@ -40,7 +40,6 @@ const MockTest = () => {
                   key !== "total_questions" &&
                   key !== "_positive_marks" &&
                   key !== "_negative_marks"
-                  
               )
               .join(", ");
 
@@ -50,8 +49,8 @@ const MockTest = () => {
               total_questions: testDetails.total_questions || 0,
               exam_duration: testDetails.exam_duration || "N/A",
               total_marks: parseFloat(testDetails.total_marks) || 0,
-              postiveMarks : testDetails._positive_marks || 0,
-              negativeMarks : testDetails._negative_marks || 0,
+              postiveMarks: testDetails._positive_marks || 0,
+              negativeMarks: testDetails._negative_marks || 0,
             };
           });
         setMockTestData(groupedTests);
@@ -129,10 +128,18 @@ const MockTest = () => {
     fetchAllData();
   }, [SubjectId, id, institueName, token]);
 
-  const handleCardClick = (testName, examDuration, subjects, totalMarks, totalQuestions,postiveMarks,negativeMarks) => {
+  const handleCardClick = (
+    testName,
+    examDuration,
+    subjects,
+    totalMarks,
+    totalQuestions,
+    postiveMarks,
+    negativeMarks
+  ) => {
     localStorage.setItem("selectedTestName", testName);
     localStorage.setItem("selectedExamDuration", examDuration);
-  
+
     // Store distinct subjects, total marks, and total questions in localStorage
     const testDetails = {
       subjects: subjects.split(", ").filter((subject) => subject.trim() !== ""),
@@ -142,12 +149,11 @@ const MockTest = () => {
       negativeMarks,
     };
     localStorage.setItem("selectedTestDetails", JSON.stringify(testDetails));
-  
+
     console.log(
       `Test name '${testName}', Exam Duration '${examDuration}', Subjects '${subjects}', Total Marks '${totalMarks}', and Total Questions '${totalQuestions}',${postiveMarks},${negativeMarks} saved to localStorage`
     );
   };
-  
 
   const getCurrentTime = () => new Date();
 
