@@ -72,7 +72,7 @@ const MockDemo = () => {
   const [timerDuration, setTimerDuration] = useState(0); // State for timer
   const SubjectId = localStorage.getItem("selectedSubjectId");
   const optional = localStorage.getItem("nonSelectedLanguage");
-  console.log("Setting", optional)
+  console.log("Setting", optional);
 
   useEffect(() => {
     const fetchMockTests = async () => {
@@ -84,74 +84,82 @@ const MockDemo = () => {
         if (!response.ok) {
           throw new Error("Failed to fetch mock test data");
         }
-    
+
         const result = await response.json();
         console.log("Raw API Response:", result);
-    
+
         if (result.data) {
           // Check if the stored test name exists in the API response
           const mockTestKeys = Object.keys(result.data);
           const mockTestKey = mockTestKeys.find(
             (key) => key !== "exam_domain" && key === storedTestName // Match stored test name
           );
-    
+
           if (mockTestKey) {
             const testDetails = result.data[mockTestKey];
-    
+
             if (testDetails) {
               setTimerDuration(Number(testDetails.exam_duration) || 0);
-    
+
               const groupedTests = Object.entries(testDetails)
                 .filter(
                   ([key]) =>
                     key !== "exam_duration" &&
                     key !== "total_marks" &&
-                    key !== "total_questions"
+                    key !== "total_questions" &&
+                    key !== "_positive_marks" &&
+                    key !== "_negative_marks"
                 )
                 .map(([subjectName, subjectDetails]) => {
-                  const questions = Array.isArray(subjectDetails.questions)
-                    ? subjectDetails.questions.map((question) => ({
-                        id: question.id,
-                        question: question.question,
-                        question2: question.question2, // Include question2
-                        marks: question.positive_marks,
-                        negativeMarks: question.negative_marks,
-                        subject: question.subject || subjectName,
-                        options: [
-                          question.option_1,
-                          question.option_2,
-                          question.option_3,
-                          question.option_4,
-                        ], // Dynamically map the options
-                        files: [
-                          question.file_1,
-                          question.file_2,
-                          question.file_3,
-                          question.file_4,
-                        ], // Dynamically map the files
-                      }))
-                    : []; // Default to an empty array if questions is not an array
+                  let questions = [];
+
+                  // Only process questions if they exist
+                  if (
+                    Array.isArray(subjectDetails.questions) &&
+                    subjectDetails.questions.length > 0
+                  ) {
+                    questions = subjectDetails.questions.map((question) => ({
+                      id: question.id,
+                      question: question.question,
+                      question2: question.question2, // Include question2
+                      marks: question.positive_marks,
+                      negativeMarks: question.negative_marks,
+                      subject: question.subject || subjectName,
+                      options: [
+                        question.option_1,
+                        question.option_2,
+                        question.option_3,
+                        question.option_4,
+                      ], // Dynamically map the options
+                      files: [
+                        question.file_1,
+                        question.file_2,
+                        question.file_3,
+                        question.file_4,
+                      ], // Dynamically map the files
+                    }));
+                  }
 
                   return {
                     subject: subjectName,
                     no_of_questions: subjectDetails.no_of_questions,
-                    questions,
+                    questions, // Only set if there are questions
                   };
                 });
 
               console.log("Grouped Test Data:", groupedTests);
               setMockTestData(groupedTests);
-    
+
               // Set the first subject as the selected subject
               setSelectedSubject(groupedTests[0]?.subject || "");
-    
+
               // Store unique subjects in local storage
               const uniqueSubjects = [
                 ...new Set(groupedTests.map((test) => test.subject)),
               ];
-    
+
               console.log("Unique Subjects:", uniqueSubjects);
-    
+
               // Save unique subjects to localStorage
               localStorage.setItem(
                 "uniqueSubjects",
@@ -383,6 +391,15 @@ const MockDemo = () => {
     (mockTestData?.length || 0) > 0 &&
     currentSectionIndex === (mockTestData?.length || 0) - 1;
 
+  // console.log("mockTestData:", mockTestData);
+  // console.log("currentSectionIndex:", currentSectionIndex);
+  // console.log("currentQuestionIndex:", currentQuestionIndex);
+  // console.log("Current Section:", currentSection);
+  // console.log("Total Sections:", mockTestData.length);
+  // console.log("Total Questions in Section:", currentSection?.questions?.length);
+  // console.log("isLastQuestion:", isLastQuestion);
+  // console.log("isLastSection:", isLastSection);
+
   const handleSectionChange = (sectionIndex, subject) => {
     setCurrentSectionIndex(sectionIndex); // Update the active section index
     setSelectedSubject(subject); // Update the active subject
@@ -594,8 +611,8 @@ const MockDemo = () => {
                           key={index}
                           className={`border border-gray-300 rounded-lg p-4 flex items-center justify-center text-center cursor-pointer transition duration-200 transform ${
                             selectedOption === item
-                            ? "bg-blue-200 border-blue-800 shadow-md"
-                            : "hover:bg-gray-50 hover:shadow-sm"
+                              ? "bg-blue-200 border-blue-800 shadow-md"
+                              : "hover:bg-gray-50 hover:shadow-sm"
                           }`}
                         >
                           <input
