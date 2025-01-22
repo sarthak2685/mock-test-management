@@ -86,127 +86,174 @@ const Score = () => {
   };
 
   const reportRef = useRef();
-  const handlePDFDownload = () => {
-    const doc = new jsPDF();
+  const handlePDFDownload = async () => {
+    const apiUrl = `${config.apiUrl}/analysis-report/?student_id=${studentId}&exam_id=${examId}&test_name=${testName}`;
 
-    // Define reusable colors
-    const titleColor = [50, 50, 50];
-    const sectionColor = [80, 80, 80];
-    const questionColor = [0, 102, 204];
-    const correctAnswerColor = [34, 139, 34]; // Green
-    const markedAnswerCorrectColor = [34, 139, 34];
-    const markedAnswerIncorrectColor = [255, 51, 51]; // Bright red for incorrect answers
-    const borderColor = [200, 200, 200]; // Light grey for borders
-    const cardFillColor = [248, 249, 250]; // Light background color for the card
-
-    // Title
-    doc.setFontSize(22);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(...titleColor);
-    doc.text("Score Report", 20, 15);
-
-    let y = 30; // Starting position for content
-
-    // Section Title
-    if (data.section) {
-      doc.setFontSize(16);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(...sectionColor);
-      doc.text(`Section: ${data.section}`, 20, y);
-      y += 12; // Space after section title
-    }
-
-    // Loop through questions
-    data.questions.forEach((question, index) => {
-      const questionId = index + 1; // Numbering for questions
-
-      // Card border around question content (rounded corners, shadow effect)
-      const cardWidth = 180;
-      const questionWidth = 140;
-      const questionText = `Question ${questionId}: ${question.question}`;
-      const wrappedQuestion = doc.splitTextToSize(questionText, questionWidth);
-
-      const options = question.options.map(
-        (option, idx) => `${String.fromCharCode(65 + idx)}) ${option}`
-      );
-      const correctAnswerText = `Correct Answer: ${question.correctAnswer}`;
-      const markedAnswerText = `Marked Answer: ${
-        question.markedAnswer || "Not Answered"
-      }`;
-
-      // Calculate the height of the question and options dynamically
-      const wrappedHeight = wrappedQuestion.length * 8;
-      const optionsHeight = options.length > 2 ? 16 : 8;
-      const totalHeight = wrappedHeight + optionsHeight + 20;
-
-      // Draw the card border with rounded corners and shadow effect
-      doc.setDrawColor(...borderColor);
-      doc.setLineWidth(0.5);
-      doc.setFillColor(...cardFillColor);
-      doc.roundedRect(15, y, cardWidth, totalHeight, 5, 5, "FD");
-
-      // Question Title
-      doc.setFontSize(14);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(...questionColor);
-      doc.text(wrappedQuestion, 25, y + 10);
-
-      // Space before options
-      let optionYOffset = y + 10 + wrappedHeight;
-
-      // Options (wrap the options text for better fitting)
-      doc.setFontSize(12);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(40, 40, 40);
-      const columnSpacing = 80;
-      options.forEach((opt, idx) => {
-        const wrappedOption = doc.splitTextToSize(opt, questionWidth);
-        const xOffset = idx % 2 === 0 ? 25 : 25 + columnSpacing;
-        const yOffset = optionYOffset + Math.floor(idx / 2) * 8;
-        doc.text(wrappedOption, xOffset, yOffset);
+    try {
+      const response = await fetch(apiUrl, {
+        method: "GET",
+        headers: {
+          Authorization: `Token ${token}`,
+          "Content-Type": "application/json",
+        },
       });
 
-      // Correct and Marked Answers side by side
-      const answerYOffset =
-        optionYOffset + Math.ceil(options.length / 2) * 8 + 3;
-
-      // Correct Answer
-      doc.setFontSize(12);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(...correctAnswerColor);
-      doc.text(correctAnswerText, 25, answerYOffset);
-
-      // Marked Answer (Green if correct, red if incorrect)
-      const markedAnswerColor =
-        question.markedAnswer === question.correctAnswer
-          ? markedAnswerCorrectColor
-          : markedAnswerIncorrectColor;
-      doc.setTextColor(...markedAnswerColor);
-      doc.text(markedAnswerText, 105, answerYOffset);
-
-      y += totalHeight + 8;
-
-      // Page break if necessary (check remaining space on page)
-      if (y + totalHeight > 270) {
-        doc.addPage();
-        y = 20; // Reset y for the new page
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("API Error:", errorText);
+        throw new Error("Failed to fetch report data");
       }
-    });
 
-    // Add Footer with page number
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(150, 150, 150); // Light grey for page numbers
-    const totalPages = doc.internal.getNumberOfPages();
-    doc.text(
-      `Page ${doc.internal.getCurrentPageInfo().pageNumber} of ${totalPages}`,
-      180,
-      290
-    );
+      const apiData = await response.json();
 
-    // Save the PDF
-    doc.save("score-report.pdf");
+      // Utility to sanitize text
+      const sanitizeText = (text) => {
+        if (typeof text === "string") {
+          return text.replace(/\\/g, ""); // Remove all backslashes
+        }
+        return text;
+      };
+      
+      // Transform API data to fit PDF format
+      const data = {
+        section: `${sanitizeText(apiData[0]?.exam_name)} - ${sanitizeText(apiData[0]?.subject_name)}`,
+        questions: apiData.map((q) => ({
+          question: sanitizeText(q.question),
+          options: Object.values(q.options).map(sanitizeText), // Sanitize options
+          correctAnswer: sanitizeText(q.correct_answer),
+          markedAnswer: sanitizeText(q.selected_answer),
+        })),
+      };
+      
+
+      const doc = new jsPDF();
+
+      // Define reusable colors
+      const titleColor = [50, 50, 50];
+      const sectionColor = [80, 80, 80];
+      const questionColor = [0, 102, 204];
+      const correctAnswerColor = [34, 139, 34]; // Green
+      const markedAnswerCorrectColor = [34, 139, 34];
+      const markedAnswerIncorrectColor = [255, 51, 51]; // Bright red for incorrect answers
+      const borderColor = [200, 200, 200]; // Light grey for borders
+      const cardFillColor = [248, 249, 250]; // Light background color for the card
+
+      // Title
+      doc.setFontSize(22);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(...titleColor);
+      doc.text("Score Report", 20, 15);
+
+      let y = 30; // Starting position for content
+
+      // Section Title
+      if (data.section) {
+        doc.setFontSize(16);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(...sectionColor);
+        doc.text(`Section: ${data.section}`, 20, y);
+        y += 12; // Space after section title
+      }
+
+      // Loop through questions
+      data.questions.forEach((question, index) => {
+        const questionId = index + 1; // Numbering for questions
+
+        // Card border around question content (rounded corners, shadow effect)
+        const cardWidth = 180;
+        const questionWidth = 140;
+        const questionText = `Question ${questionId}: ${question.question}`;
+        const wrappedQuestion = doc.splitTextToSize(
+          questionText,
+          questionWidth
+        );
+
+        const options = question.options.map(
+          (option, idx) => `${String.fromCharCode(65 + idx)}) ${option}`
+        );
+        const correctAnswerText = `Correct Answer: ${question.correctAnswer}`;
+        const markedAnswerText = `Marked Answer: ${
+          question.markedAnswer || "Not Answered"
+        }`;
+
+        // Calculate the height of the question and options dynamically
+        const wrappedHeight = wrappedQuestion.length * 8;
+        const optionsHeight = options.length > 2 ? 16 : 8;
+        const totalHeight = wrappedHeight + optionsHeight + 20;
+
+        // Draw the card border with rounded corners and shadow effect
+        doc.setDrawColor(...borderColor);
+        doc.setLineWidth(0.5);
+        doc.setFillColor(...cardFillColor);
+        doc.roundedRect(15, y, cardWidth, totalHeight, 5, 5, "FD");
+
+        // Question Title
+        doc.setFontSize(14);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(...questionColor);
+        doc.text(wrappedQuestion, 25, y + 10);
+
+        // Space before options
+        let optionYOffset = y + 10 + wrappedHeight;
+
+        // Options (wrap the options text for better fitting)
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(40, 40, 40);
+        const columnSpacing = 80;
+        options.forEach((opt, idx) => {
+          const wrappedOption = doc.splitTextToSize(opt, questionWidth);
+          const xOffset = idx % 2 === 0 ? 25 : 25 + columnSpacing;
+          const yOffset = optionYOffset + Math.floor(idx / 2) * 8;
+          doc.text(wrappedOption, xOffset, yOffset);
+        });
+
+        // Correct and Marked Answers side by side
+        const answerYOffset =
+          optionYOffset + Math.ceil(options.length / 2) * 8 + 3;
+
+        // Correct Answer
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(...correctAnswerColor);
+        doc.text(correctAnswerText, 25, answerYOffset);
+
+        // Marked Answer (Green if correct, red if incorrect)
+        const markedAnswerColor =
+          question.markedAnswer === question.correctAnswer
+            ? markedAnswerCorrectColor
+            : markedAnswerIncorrectColor;
+        doc.setTextColor(...markedAnswerColor);
+        doc.text(markedAnswerText, 105, answerYOffset);
+
+        y += totalHeight + 8;
+
+        // Page break if necessary (check remaining space on page)
+        if (y + totalHeight > 270) {
+          doc.addPage();
+          y = 20; // Reset y for the new page
+        }
+      });
+
+      // Add Footer with page number
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(150, 150, 150); // Light grey for page numbers
+      const totalPages = doc.internal.getNumberOfPages();
+      doc.text(
+        `Page ${doc.internal.getCurrentPageInfo().pageNumber} of ${totalPages}`,
+        180,
+        290
+      );
+
+      // Save the PDF
+      doc.save("score-report.pdf");
+    } catch (error) {
+      console.error("Error generating PDF:", error.message);
+      alert("Failed to generate the PDF. Please try again.");
+    }
   };
+
   const parseDate = (str) => {
     const formattedStr = str
       .replace("_", " ")
@@ -224,38 +271,6 @@ const Score = () => {
   // Calculate the difference in milliseconds and convert to seconds
   const diffInSeconds = Math.floor((endDate - startDate) / 1000);
   const averageMarksData = analysisData?.average_marks_by_subject || [];
-  const data = {
-    section: "General Intelligence and Reasoning",
-    questions: [
-      {
-        question:
-          "What is the next number in the series: 1, 4, 9, 16, 25, ...?",
-        options: ["36", "49", "34", "40"],
-        correctAnswer: "36",
-        markedAnswer: "36",
-      },
-      {
-        question: "Which of the following is different from the rest?",
-        options: ["Dog", "Cat", "Bird", "Fish"],
-        correctAnswer: "Fish",
-        markedAnswer: "Cat",
-      },
-      {
-        question:
-          "A person is facing west and turns 45° clockwise. What is the new direction?",
-        options: ["North-West", "South-West", "North-East", "South-East"],
-        correctAnswer: "North-West",
-        markedAnswer: "",
-      },
-      {
-        question:
-          "Pointing to a man, Sita said, 'His mother is the only daughter of my mother.' How is Sita related to the man?",
-        options: ["Mother", "Sister", "Daughter", "Aunt"],
-        correctAnswer: "Mother",
-        markedAnswer: "",
-      },
-    ],
-  };
 
   const renderContent = () => {
     switch (activeTab) {
