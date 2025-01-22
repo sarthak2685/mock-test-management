@@ -71,12 +71,14 @@ const MockDemo = () => {
   const [mockTestData, setMockTestData] = useState([]);
   const [timerDuration, setTimerDuration] = useState(0); // State for timer
   const SubjectId = localStorage.getItem("selectedSubjectId");
+  const optional = localStorage.getItem("nonSelectedLanguage");
+  console.log("Setting", optional)
 
   useEffect(() => {
     const fetchMockTests = async () => {
       try {
         const response = await fetch(
-          `${config.apiUrl}/get-single-exam-details/?exam_id=${SubjectId}&institute_name=${institueName}`
+          `${config.apiUrl}/get-single-exam-details/?exam_id=${SubjectId}&institute_name=${institueName}&optional=${optional}`
         );
 
         if (!response.ok) {

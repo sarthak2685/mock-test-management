@@ -101,9 +101,10 @@ const Instructions = () => {
   const subjects = storedDetails?.subjects || [];
   const totalQuestions = storedDetails?.totalQuestions || 0;
   const totalMarks = storedDetails?.totalMarks || 0;
-  const examDuration = duration || 0; 
-  const positiveMarks = storedDetails?.positiveMarks || 0;
-  const negativeMarks = storedDetails?.negativeMarks || 0
+  const examDuration = duration || 0;
+  const positiveMarks = storedDetails?.postiveMarks || 0;
+  const negativeMarks = storedDetails?.negativeMarks || 0;
+
 
   const subjectData = subjects.map((subject) => ({
     subject,
@@ -120,15 +121,12 @@ const Instructions = () => {
   };
 
   useEffect(() => {
-    const storedLanguage = localStorage.getItem("selectedLanguage");
-    const storedOptionalSubject = localStorage.getItem(
-      "selectedOptionalSubject"
-    );
-    if (storedLanguage) {
-      setLanguage(storedLanguage);
-    }
-    if (storedOptionalSubject) {
-      setOptionalSubject(storedOptionalSubject);
+    if (subjects.includes("Hindi") && subjects.includes("English")) {
+      setLanguage("English"); // Default to English if both languages are available
+      localStorage.setItem("selectedLanguage", "English");
+      localStorage.setItem("nonSelectedLanguage", "Hindi");
+    } else {
+      setLanguage(""); // No default selection if dropdown is not needed
     }
   }, []);
 
@@ -234,69 +232,74 @@ const Instructions = () => {
                   </tr>
                 </thead>
                 <tbody>
-      {/* Render rows for subjects */}
-      {subjectData.map((subject, index) => {
-        if (
-          subjects.includes("Hindi") &&
-          subjects.includes("English") &&
-          subject.subject === "Hindi" // Render dropdown for Hindi (skip separate English row)
-        ) {
-          return (
-            <tr key={index}>
-              <td className="px-2 sm:px-4 py-2 border border-gray-300">
-                <select
-                  value={language}
-                  onChange={(e) => {
-                    const selectedLang = e.target.value;
-                    setLanguage(selectedLang); // Update the language state
-                    localStorage.setItem("selectedLanguage", selectedLang); // Save to localStorage
-                    console.log("selectedLanguage", selectedLang);
-                  }}
-                  className="border border-gray-300 rounded px-2 py-1"
-                >
-                  <option value="English">English</option>
-                  <option value="Hindi">Hindi</option>
-                </select>
-              </td>
-              <td className="px-2 sm:px-4 py-2 border border-gray-300">
-                {subject.questions}
-              </td>
-              <td className="px-2 sm:px-4 py-2 border border-gray-300">
-                {subject.marks}
-              </td>
-              <td className="px-2 sm:px-4 py-2 border border-gray-300">
-                {subject.time} min
-              </td>
-            </tr>
-          );
-        } else if (
-          (subject.subject === "Hindi" || subject.subject === "English") &&
-          subjects.includes("Hindi") &&
-          subjects.includes("English")
-        ) {
-          // Skip rendering separate row for English if dropdown is shown
-          return null;
-        } else {
-          // Render rows for other subjects
-          return (
-            <tr key={index}>
-              <td className="px-2 sm:px-4 py-2 border border-gray-300">
-                {subject.subject}
-              </td>
-              <td className="px-2 sm:px-4 py-2 border border-gray-300">
-                {subject.questions}
-              </td>
-              <td className="px-2 sm:px-4 py-2 border border-gray-300">
-                {subject.marks}
-              </td>
-              <td className="px-2 sm:px-4 py-2 border border-gray-300">
-                {subject.time} min
-              </td>
-            </tr>
-          );
-        }
-      })}
-    </tbody>
+                  {/* Render rows for subjects */}
+                  {subjectData.map((subject, index) => {
+                    if (
+                      subjects.includes("Hindi") &&
+                      subjects.includes("English") &&
+                      subject.subject === "Hindi" // Render dropdown for Hindi (skip separate English row)
+                    ) {
+                      return (
+                        <tr key={index}>
+                          <td className="px-2 sm:px-4 py-2 border border-gray-300">
+                            <select
+                              value={language}
+                              onChange={(e) => {
+                                const selectedLang = e.target.value;
+                                const nonSelectedLang = selectedLang === "English" ? "Hindi" : "English";
+                                setLanguage(selectedLang); // Update the language state
+                                localStorage.setItem("selectedLanguage", selectedLang); // Save selected language to localStorage
+                                localStorage.setItem("nonSelectedLanguage", nonSelectedLang); // Save non-selected language to localStorage
+                                console.log("selectedLanguage", selectedLang);
+                                console.log("nonSelectedLanguage", nonSelectedLang);
+                              }}
+                              className="border border-gray-300 rounded px-2 py-1"
+                            >
+                              <option value="" disabled>
+                                Select Optional Subject
+                              </option>                  <option value="English">English</option>
+                              <option value="Hindi">Hindi</option>
+                            </select>
+                          </td>
+                          <td className="px-2 sm:px-4 py-2 border border-gray-300">
+                            {subject.questions}
+                          </td>
+                          <td className="px-2 sm:px-4 py-2 border border-gray-300">
+                            {subject.marks}
+                          </td>
+                          <td className="px-2 sm:px-4 py-2 border border-gray-300">
+                            {subject.time} min
+                          </td>
+                        </tr>
+                      );
+                    } else if (
+                      (subject.subject === "Hindi" || subject.subject === "English") &&
+                      subjects.includes("Hindi") &&
+                      subjects.includes("English")
+                    ) {
+                      // Skip rendering separate row for English if dropdown is shown
+                      return null;
+                    } else {
+                      // Render rows for other subjects
+                      return (
+                        <tr key={index}>
+                          <td className="px-2 sm:px-4 py-2 border border-gray-300">
+                            {subject.subject}
+                          </td>
+                          <td className="px-2 sm:px-4 py-2 border border-gray-300">
+                            {subject.questions}
+                          </td>
+                          <td className="px-2 sm:px-4 py-2 border border-gray-300">
+                            {subject.marks}
+                          </td>
+                          <td className="px-2 sm:px-4 py-2 border border-gray-300">
+                            {subject.time} min
+                          </td>
+                        </tr>
+                      );
+                    }
+                  })}
+                </tbody>
               </table>
             </div>
             {error2 && <p className="text-red-500 text-sm mb-4">{error2}</p>}
