@@ -1,16 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FiBell } from "react-icons/fi";
-import {
-  FaFileAlt,
-  FaDollarSign,
-  FaExclamationTriangle,
-  FaBars,
-} from "react-icons/fa";
+import { FaExclamationTriangle, FaBars } from "react-icons/fa"; // Fix: Import FaBars icon
+import config from "../../config"; // Fix: Import config
 
 const Header = ({ toggleSidebar }) => {
   const [openDropdown, setOpenDropdown] = useState(null);
   const mailDropdownRef = useRef(null);
   const bellDropdownRef = useRef(null);
+  const [bellNotifications, setBellNotifications] = useState([]);
+  const [showAllNotifications, setShowAllNotifications] = useState(false);
 
   // Fetch user data from localStorage
   const user = JSON.parse(localStorage.getItem("user")) || {
@@ -18,27 +16,33 @@ const Header = ({ toggleSidebar }) => {
     user: "Guest",
   };
 
-  // Mock notification data (replace with real data)
-  const bellNotifications = [
-    {
-      id: 1,
-      alert: "A new monthly report is ready to download!",
-      time: "December 12, 2019",
-      type: "report",
-    },
-    {
-      id: 2,
-      alert: "$290.29 has been deposited into your account!",
-      time: "December 7, 2019",
-      type: "deposit",
-    },
-    {
-      id: 3,
-      alert: "We've noticed unusually high spending for your account.",
-      time: "December 2, 2019",
-      type: "spending",
-    },
-  ];
+  // Fetch notifications from API
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const token = JSON.parse(localStorage.getItem("user"))?.token;
+        if (!token) return;
+
+        const response = await fetch(`${config.apiUrl}/notifications/`, {
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log("Fetched notifications:", data);
+          setBellNotifications(data); // Assuming the API returns an array of notifications
+        } else {
+          console.error("Failed to fetch notifications");
+        }
+      } catch (error) {
+        console.error("Error fetching notifications:", error);
+      }
+    };
+
+    fetchNotifications();
+  }, []);
 
   // Toggle dropdowns
   const toggleDropdown = (dropdown) => {
@@ -50,12 +54,10 @@ const Header = ({ toggleSidebar }) => {
     const handleClickOutside = (event) => {
       if (
         openDropdown &&
-        mailDropdownRef.current &&
         bellDropdownRef.current &&
-        !mailDropdownRef.current.contains(event.target) &&
         !bellDropdownRef.current.contains(event.target)
       ) {
-        setOpenDropdown(null);
+        setOpenDropdown(null); // Close the dropdown if clicked outside
       }
     };
 
@@ -67,18 +69,14 @@ const Header = ({ toggleSidebar }) => {
   }, [openDropdown]);
 
   // Function to get the corresponding icon for each alert type
-  const getAlertIcon = (type) => {
-    switch (type) {
-      case "report":
-        return <FaFileAlt className="text-blue-500 w-6 h-6" />;
-      case "deposit":
-        return <FaDollarSign className="text-green-500 w-6 h-6" />;
-      case "spending":
-        return <FaExclamationTriangle className="text-yellow-500 w-6 h-6" />;
-      default:
-        return null;
-    }
+  const getAlertIcon = () => {
+    return <FaExclamationTriangle className="text-yellow-500 w-6 h-6" />;
   };
+
+  // Get the notifications to show (limit to 3 if not showing all)
+  const notificationsToShow = showAllNotifications
+    ? bellNotifications
+    : bellNotifications.slice(0, 3);
 
   return (
     <header className="bg-white shadow-lg flex items-center justify-between p-4 relative">
@@ -107,29 +105,45 @@ const Header = ({ toggleSidebar }) => {
           {openDropdown === "bell" && (
             <div
               className={`${
-                window.innerWidth < 768 ? "fixed right-2 w-64" : "absolute right-0 mt-2 w-80"
+                window.innerWidth < 768
+                  ? "fixed right-2 w-64"
+                  : "absolute right-0 mt-2 w-80"
               } bg-white border border-gray-200 shadow-md rounded-lg z-50`}
             >
               <div className="p-4 text-sm">
-                <h4 className="font-semibold mb-2 text-blue-500">Alerts Center</h4>
-                {bellNotifications.length > 0 ? (
-                  bellNotifications.map((alert) => (
+                <h4 className="font-semibold mb-2 text-blue-500">
+                  Alerts Center
+                </h4>
+                {notificationsToShow.length > 0 ? (
+                  notificationsToShow.map((notification) => (
                     <div
-                      key={alert.id}
+                      key={notification.id}
                       className="flex items-start py-2 px-3 border-b last:border-none hover:bg-gray-100 transition"
                     >
-                      <div className="mr-3">{getAlertIcon(alert.type)}</div>
+                      <div className="mr-3">{getAlertIcon()}</div>
                       <div>
-                        <p className="text-gray-700 font-semibold">{alert.alert}</p>
-                        <span className="text-xs text-gray-500">{alert.time}</span>
+                        <p className="text-gray-700 font-semibold">
+                          {notification.message}
+                        </p>
+                        <span className="text-xs text-gray-500">
+                          Sent by:{" "}
+                          {notification.institute
+                            ? notification.institute.institute_name
+                            : "Unknown Institute"}
+                        </span>
                       </div>
                     </div>
                   ))
                 ) : (
                   <div className="p-3 text-gray-600">No new alerts</div>
                 )}
-                <div className="text-blue-500 text-sm font-semibold cursor-pointer hover:underline mt-2">
-                  Show All Alerts
+                <div
+                  className="text-blue-500 text-sm font-semibold cursor-pointer hover:underline mt-2"
+                  onClick={() => setShowAllNotifications((prev) => !prev)}
+                >
+                  {showAllNotifications
+                    ? "Show Less Notifications"
+                    : "Show All Notifications"}
                 </div>
               </div>
             </div>
