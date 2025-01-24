@@ -83,6 +83,7 @@ const NoticeAdmin = () => {
           message: message.trim(),
           sender: idAuth, // User ID as sender
           recipient: option.value, // Single Student ID as recipient
+          is_admin: option.value === 1 ? "OK" : "NOT OK", // Set is_admin to "OK" if recipient is 1, otherwise "NOT OK"
         };
 
         try {

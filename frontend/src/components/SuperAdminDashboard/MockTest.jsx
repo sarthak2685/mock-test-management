@@ -240,6 +240,7 @@ const MockTestManagement = ({ user }) => {
       subtopic: currentQuestion.subtopic,
       image: currentQuestion.image,
     };
+    console.log(questionText);
 
     console.log(
       `Saved Question Data for Question ${currentQuestionIndex + 1}:`,
@@ -286,6 +287,7 @@ const MockTestManagement = ({ user }) => {
     setOptions(nextQuestion.options || ["", "", "", ""]);
     setSubtopic(nextQuestion.subtopic || "");
     setImage(nextQuestion.image || null);
+    setText(""); // Clear the text area after saving the current question
   };
 
   const handleDeleteQuestion = (index) => {
@@ -771,10 +773,12 @@ const MockTestManagement = ({ user }) => {
       formData.append("exam_duration", newTest.duration);
       formData.append("for_exam", newTest.domain);
 
-      // Append institutes as array of UUIDs
-      selectedOptions.forEach((option) =>
-        formData.append("institutes", option.value)
-      );
+      // Append institutes only if "All Institutes" is not selected
+      if (!selectedOptions.some((option) => option.value === "allInstitutes")) {
+        selectedOptions.forEach((option) =>
+          formData.append("institutes", option.value)
+        );
+      }
 
       // Append for_exam_subjects_o as array of UUIDs
       forExamSubjects.forEach((id) =>
@@ -788,6 +792,11 @@ const MockTestManagement = ({ user }) => {
 
       formData.append("marks", newTest.correctMark);
       formData.append("negative_marks", newTest.negativeMark);
+
+      // Ensure the question text is set properly with the current textarea content
+      currentQuestion.questionText = text; // Update the question text with the textarea content
+
+      // Append question text (from textarea)
       formData.append("question", currentQuestion.questionText || null);
 
       // Append question image file as Base64 if available
@@ -892,6 +901,43 @@ const MockTestManagement = ({ user }) => {
     setFileInputValue(""); // Reset the file input value when an image is removed
   };
 
+  const [text, setText] = useState("");
+  const renderRef = useRef(null);
+
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src =
+      "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML";
+    script.async = true;
+    document.body.appendChild(script);
+
+    script.onload = () => {
+      window.MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [["$", "$"]],
+          displayMath: [["$$", "$$"]],
+          processEscapes: true,
+        },
+      });
+
+      if (renderRef.current) {
+        window.MathJax.Hub.Queue([
+          "Typeset",
+          window.MathJax.Hub,
+          renderRef.current,
+        ]);
+      }
+    };
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, [text]);
+
+  const handleTextChange = (e) => {
+    setText(e.target.value);
+  };
+
   return (
     <div className="flex flex-col min-h-screen">
       <div className="flex flex-row flex-grow">
@@ -933,21 +979,40 @@ const MockTestManagement = ({ user }) => {
                 {/* Dropdowns Layout */}
                 <div className="mb-4">
                   <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4">
-                    {/* Institute Name Multi-Select */}
+                    {/* Institute Name Selection */}
                     <div className="flex-grow" onClick={fetchInstitutes}>
                       <Select
-                        isMulti
                         options={[
-                          { value: "selectAll", label: "Select All" },
-                          { value: "deselectAll", label: "Deselect All" },
-                          ...institutes, // Institutes are now in the correct format for the Select component
+                          { value: "allInstitutes", label: "All Institutes" }, // Single-select option
+                          ...institutes, // Institutes for multi-select
                         ]}
-                        onChange={handleInstituteChange}
-                        className="basic-multi-select"
+                        onChange={(selected) => {
+                          if (selected?.value === "allInstitutes") {
+                            // If "All Institutes" is selected, reset other selections
+                            handleInstituteChange([
+                              {
+                                value: "allInstitutes",
+                                label: "All Institutes",
+                              },
+                            ]);
+                            setSelectedOptions([
+                              {
+                                value: "allInstitutes",
+                                label: "All Institutes",
+                              },
+                            ]);
+                          } else {
+                            // Handle specific institute selection
+                            handleInstituteChange(selected ? [selected] : []); // Wrap in array
+                            setSelectedOptions(selected ? [selected] : []); // Update state correctly
+                          }
+                        }}
+                        value={selectedOptions} // Ensure selectedOptions is an array
+                        isMulti={false} // Single select
+                        className="basic-single-select"
                         classNamePrefix="select"
                         placeholder="Select Institute(s)"
-                        value={selectedOptions} // track current selected options
-                        required
+                        // required
                         styles={{
                           control: (base) => ({
                             ...base,
@@ -957,19 +1022,9 @@ const MockTestManagement = ({ user }) => {
                               borderColor: "blue",
                             },
                           }),
-                          option: (base, { data }) => ({
+                          option: (base) => ({
                             ...base,
-                            display:
-                              data.value === "selectAll" ||
-                              data.value === "deselectAll"
-                                ? "inline-block"
-                                : "block",
-                            width:
-                              data.value === "selectAll" ||
-                              data.value === "deselectAll"
-                                ? "50%"
-                                : "100%", // Ensure equal width for select/deselect options
-                            textAlign: "center", // Center-align the labels
+                            textAlign: "center",
                           }),
                           menu: (base) => ({
                             ...base,
@@ -1224,24 +1279,19 @@ const MockTestManagement = ({ user }) => {
 
                     <div className="flex flex-col sm:flex-row gap-1 sm:gap-4 mb-1 sm:mb-2">
                       {/* Question Text Area */}
-                      <div className="relative w-full">
-                        <EditableMathField
-                          latex={
-                            newTest.questions[currentQuestionIndex]
-                              ?.questionText || ""
-                          }
-                          onChange={(mathField) => {
-                            const updatedQuestions = [...newTest.questions];
-                            updatedQuestions[
-                              currentQuestionIndex
-                            ].questionText = mathField.latex();
-                            setNewTest((prevState) => ({
-                              ...prevState,
-                              questions: updatedQuestions,
-                            }));
-                          }}
-                          className="border p-1 sm:p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 text-xs sm:text-base"
-                          required // Added required
+                      <div className="w-full">
+                        <div
+                          ref={renderRef}
+                          className="p-2 mb-2 border rounded bg-gray-100 whitespace-pre-wrap"
+                        >
+                          {text}
+                        </div>
+                        <textarea
+                          value={text}
+                          onChange={handleTextChange}
+                          className="w-full p-2 border rounded"
+                          placeholder="Enter text or LaTeX expressions (use $ for inline, $$ for block)"
+                          rows={4}
                         />
                       </div>
 
