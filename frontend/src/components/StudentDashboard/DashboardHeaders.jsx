@@ -163,10 +163,19 @@ const DashboardHeader = ({ toggleSidebar }) => {
             className="flex items-center space-x-2"
             onClick={() => toggleDropdown("user")}
           >
-            <span className="font-semibold text-gray-700">{user.name}</span>
-            <div className="w-10 h-10 rounded-full bg-slate-500 text-white flex items-center justify-center">
-              {user.name?.charAt(0).toUpperCase()}
-            </div>
+          {user.pic &&
+                  user.pic !==
+                    "/media/uploads/questions/option_4_uFtm5qj.png" ? (
+                    <img
+                      src={`${config.apiUrl}${user.pic}`}
+                      alt="Avatar"
+                      className="w-10 h-10 rounded-full"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-[#007bff] flex items-center justify-center text-white font-semibold">
+                      {user.name ? user.name.charAt(0).toUpperCase() : ""}
+                    </div>
+                  )}
           </div>
 
           {openDropdown === "user" && (

@@ -45,6 +45,8 @@ const Login = () => {
           user,
           token,
           id,
+          pic,
+          gender,
           name,
           institute_name,
           expiry, // Added expiry
@@ -59,6 +61,8 @@ const Login = () => {
           token,
           id,
           name,
+          pic,
+          gender,
           institute_name,
           id_auth, // Added id_auth to the object
         };
@@ -74,7 +78,6 @@ const Login = () => {
 
         console.log("Expiry, Plan Taken, and id_auth stored in localStorage");
 
-        // Navigation logic
         if (type === "owner") {
           navigate("/super-admin");
           setTimeout(() => window.location.reload(), 0);

@@ -364,19 +364,23 @@ const Instructions = () => {
       </div>
 
       <div className="w-full lg:w-1/4 mt-8 lg:mt-0 flex flex-col items-center bg-gray-100 p-4 rounded-lg shadow-md">
-        {user.pic ? (
-          <img
-            src={`${config.apiUrl}${user.pic}`}
-            alt="Avatar"
-            className="w-10 h-10 rounded-full object-cover"
-          />
-        ) : (
-          user.name ? user.name.charAt(0).toUpperCase() : "G"
-        )}
-        <h3 className="text-lg sm:text-xl font-semibold text-gray-700">
-          {user.name}
-        </h3>
-      </div>
+  {user.pic ? (
+    <img
+      src={`${config.apiUrl}${user.pic}`}
+      alt="Avatar"
+      className="w-16 h-16 rounded-full object-cover" // Larger size and circular image
+    />
+  ) : (
+    <div className="w-16 h-16 rounded-full bg-blue-500 flex items-center justify-center text-white text-2xl font-bold">
+      {/* First character of the name or default "G" */}
+      {user.name ? user.name.charAt(0).toUpperCase() : "G"}
+    </div>
+  )}
+  <h3 className="text-lg sm:text-xl font-semibold text-gray-700 mt-4">
+    {user.name}
+  </h3>
+</div>
+
     </div>
   );
 };

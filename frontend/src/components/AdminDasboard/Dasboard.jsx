@@ -11,7 +11,8 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState([]);
   const [leaderboard, setLeaderboard] = useState([]);
-
+  const [modalVisible, setModalVisible] = useState(false); // Modal visibility state
+  const [selectedPlan, setSelectedPlan] = useState(null); // Track selected plan
 
   const user = JSON.parse(localStorage.getItem("user")); // Fetch user from localStorage
   const token = user.token;
@@ -23,10 +24,8 @@ const Dashboard = () => {
     ? new Date(planExpiryDate) < new Date()
     : false;
 
-
   const institueName = user.institute_name;
-  console.log("user",user,institueName)
-
+  console.log("user", user, institueName);
 
   const fetchPerformanceData = async () => {
     try {
@@ -84,6 +83,16 @@ const Dashboard = () => {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
+
+  const handleRenewClick = () => {
+    setModalVisible(true); // Show modal when renewal is clicked
+  };
+
+  const handlePlanSelect = (plan) => {
+    setSelectedPlan(plan); // Set the selected plan
+    setModalVisible(false); // Close the modal after selection
+    alert(`Selected Plan: ${plan.name}`);
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -146,13 +155,21 @@ const Dashboard = () => {
                   </p>
                 </div>
                 {isPlanExpired && (
-                  <p className="text-red-500 mt-2 text-sm">
-                    Your subscription has expired. Please renew to continue.
-                  </p>
+                  <>
+                    <p className="text-red-500 mt-2 text-sm">
+                      Your subscription has expired. Please renew to continue.
+                    </p>
+                    <button
+                      onClick={handleRenewClick}
+                      className="mt-4 py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                    >
+                      Renew Plan
+                    </button>
+                  </>
                 )}
               </div>
 
-              {/* Card for Total Students */}
+              {/* Other Stats Cards */}
               <div className="bg-white shadow-md rounded-lg p-3">
                 <h2 className="text-base md:text-lg">Total Students</h2>
                 <p className="text-xl md:text-2xl font-bold">
@@ -160,7 +177,6 @@ const Dashboard = () => {
                 </p>
               </div>
 
-              {/* Card for Active Tests */}
               <div className="bg-white shadow-md rounded-lg p-3">
                 <h2 className="text-base md:text-lg">Active Tests</h2>
                 <p className="text-xl md:text-2xl font-bold">
@@ -174,7 +190,6 @@ const Dashboard = () => {
               <h2 className="text-2xl md:text-2xl font-semibold mb-3 text-gray-800">
                 Leaderboard
               </h2>
-
               {/* Responsive Table */}
               <div className="overflow-x-auto rounded-lg">
                 <table className="min-w-full leading-normal border border-gray-300 rounded-lg overflow-hidden">
@@ -241,6 +256,47 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
+
+      {/* Modal for plan selection */}
+      {modalVisible && (
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-50 z-10">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+            <h2 className="text-2xl font-semibold mb-4">Select a Plan</h2>
+            <div className="grid grid-cols-2 gap-4">
+              <div
+                onClick={() => handlePlanSelect({ name: "Basic Plan", price: 500 })}
+                className={`cursor-pointer p-4 border border-gray-300 rounded-lg text-center hover:bg-gray-400 ${
+                  selectedPlan && selectedPlan.name === "Basic Plan"
+                    ? "bg-blue-100"
+                    : ""
+                }`}
+              >
+                <p className="text-lg font-semibold">Basic</p>
+                <p className="text-gray-600">₹500</p>
+              </div>
+              <div
+                onClick={() => handlePlanSelect({ name: "Standard Plan", price: 1000 })}
+                className={`cursor-pointer p-4 border border-gray-300 rounded-lg text-center hover:bg-gray-400 ${
+                  selectedPlan && selectedPlan.name === "Standard Plan"
+                    ? "bg-blue-100"
+                    : ""
+                }`}
+              >
+                <p className="text-lg font-semibold">Standard</p>
+                <p className="text-gray-600">₹1000</p>
+              </div>
+            </div>
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={() => setModalVisible(false)}
+                className="bg-gray-500 text-white px-4 py-2 rounded-md"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -18,7 +18,7 @@ import Dashboard from "./components/AdminDasboard/Dasboard.jsx";
 import MockDemo from "./components/Home/Mock/mock-demo.jsx";
 import StudentPerformance from "./components/AdminDasboard/StudentPerformance.jsx";
 import SuperAdminDashboard from "./components/SuperAdminDashboard/SuperAdminDashboard.jsx";
-import AdminDashboard from "./components/AdminDasboard/AdminDasboard.jsx";
+// import AdminDashboard from "./components/AdminDasboard/AdminDasboard.jsx";
 import Dashboards from "./components/StudentDashboard/Dashboards.jsx";
 import Performances from "./components/StudentDashboard/Performances.jsx";
 import StudentPerformances from "./components/StudentDashboard/StudentPerformances.jsx";
@@ -37,7 +37,6 @@ import ExamDesktop from "./components/Home/FreeMock/ExamDesktop.jsx";
 import ExamMobile from "./components/Home/FreeMock/ExamMobile.jsx";
 import Analysis from "./components/Home/FreeMock/Analysis.jsx";
 import GuestInstruction from "./components/Home/FreeMock/GuestInstruction.jsx";
-import TestTime from "./components/SuperAdminDashboard/TestTime.jsx";
 import ChapterScore from "./components/Home/Mock/ChapterScore.jsx";
 import ChapterPerformance from "./components/StudentDashboard/SubjectPerformance.jsx";
 import ChapterWise from "./components/StudentDashboard/ChapterWise.jsx";
@@ -51,6 +50,7 @@ import NoticeOwner from "./components/SuperAdminDashboard/NoticeOwner.jsx";
 import NoticeAdmin from "./components/AdminDasboard/NoticeAdmin.jsx";
 
 import Announcement from "./components/AdminDasboard/Announcement.jsx";
+import TestTime from "./components/AdminDasboard/TestTime.jsx";
 
 
 

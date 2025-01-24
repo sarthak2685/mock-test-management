@@ -26,6 +26,10 @@ const StudentManagement = ({ user }) => {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const S = JSON.parse(localStorage.getItem("user"));
   const token = S.token;
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentStudent, setCurrentStudent] = useState(null);
+  const [newPassword, setNewPassword] = useState("");
+
 
   const toggleSidebar = () => {
     setIsCollapsed((prev) => !prev);
@@ -174,6 +178,12 @@ const StudentManagement = ({ user }) => {
       setError("Failed to add students. Please try again.");
     }
   };
+  const openPasswordModal = (student) => {
+    setCurrentStudent(student);
+    setNewPassword("");
+    setIsModalOpen(true);
+  };
+
 
   const handleRemoveStudent = async (id) => {
     try {
@@ -193,37 +203,57 @@ const StudentManagement = ({ user }) => {
     }
   };
 
-  const handleChangePassword = async (id) => {
-    const newPassword = prompt("Enter new password:");
-    if (newPassword) {
-      // Update student password via API
-      try {
-        await fetch(`${config.apiUrl}/admin-student-crud/${id}`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ password: newPassword }),
-        });
+  const handlePasswordChange = async () => {
+    if (!newPassword) {
+      alert("Please enter a new password.");
+      return;
+    }
 
-        setStudents(
-          students.map((student) =>
-            student.id === id ? { ...student, password: newPassword } : student
-          )
-        );
-      } catch (error) {
-        console.error("Error updating password:", error);
-        setError("Failed to update password.");
+    try {
+      const response = await fetch(`${config.apiUrl}/reset-password-from-dashboard/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          types: "student",
+          mobile_no: currentStudent.mobile_no,
+          new_password: newPassword,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to reset password.");
       }
+
+      setStudents(
+        students.map((student) =>
+          student.id === currentStudent.id ? { ...student, password: newPassword } : student
+        )
+      );
+
+      alert("Password updated successfully.");
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error("Error updating password:", error);
+      alert("Failed to update password.");
     }
   };
 
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setCurrentStudent(null);
+    setNewPassword("");
+  };
+
+
+
   const filteredStudents = Array.isArray(students)
     ? students.filter(
-        (student) =>
-          student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          student.username.toLowerCase().includes(searchTerm.toLowerCase())
-      )
+      (student) =>
+        student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        student.username.toLowerCase().includes(searchTerm.toLowerCase())
+    )
     : [];
 
   const indexOfLastStudent = currentPage * studentsPerPage;
@@ -277,9 +307,8 @@ const StudentManagement = ({ user }) => {
 
         {/* Main Content */}
         <div
-          className={`flex-grow transition-all duration-300 ease-in-out ${
-            isCollapsed ? "ml-0" : "ml-64"
-          }`}
+          className={`flex-grow transition-all duration-300 ease-in-out ${isCollapsed ? "ml-0" : "ml-64"
+            }`}
         >
           <DashboardHeader
             user={user || { name: "Guest" }}
@@ -390,16 +419,17 @@ const StudentManagement = ({ user }) => {
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-2 md:mb-4 space-y-2 md:space-y-0">
                 <h2 className="text-2xl font-semibold">Current Students</h2>
                 {/* Search Bar */}
-                <div className="flex items-center w-full md:w-auto space-x-2">
-                  <FaSearch className="mr-1 text-gray-400 hidden md:block" />
+                <div className="relative flex items-center w-full md:w-auto">
+                  <FaSearch className="absolute left-2 text-gray-400" />
                   <input
                     type="text"
                     placeholder="Search..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="border p-1 rounded-lg w-full md:w-auto focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
+                    className="border p-2 pl-8 rounded-lg w-full md:w-auto focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm md:text-base"
                   />
                 </div>
+
               </div>
 
               {/* Students Table */}
@@ -429,9 +459,8 @@ const StudentManagement = ({ user }) => {
                       currentStudents.map((student, index) => (
                         <tr
                           key={student.id}
-                          className={`hover:bg-gray-100 ${
-                            index % 2 === 0 ? "bg-gray-50" : "bg-white"
-                          }`}
+                          className={`hover:bg-gray-100 ${index % 2 === 0 ? "bg-gray-50" : "bg-white"
+                            }`}
                         >
                           <td className="px-2 py-1 md:px-4 md:py-2 text-[9px] md:text-sm">
                             {student.name}
@@ -445,12 +474,43 @@ const StudentManagement = ({ user }) => {
                           </td>
                           <td className="px-2 py-1 md:px-4 md:py-2 text-center">
                             <button
-                              onClick={() => handleChangePassword(student.id)}
+                              onClick={() => openPasswordModal(student)}
                               className="bg-gradient-to-r from-[#007bff] to-[#0056b3] text-white px-2 py-1 md:px-4 md:py-2 rounded-md text-[9px] md:text-sm"
                             >
                               Change
                             </button>
+
+
                           </td>
+                          {isModalOpen && (
+                            <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                              <div className="bg-white p-4 rounded-md w-80 shadow-lg">
+                                <h2 className="text-lg font-semibold mb-4">Change Password</h2>
+                                <input
+                                  type="password"
+                                  placeholder="Enter new password"
+                                  value={newPassword}
+                                  onChange={(e) => setNewPassword(e.target.value)}
+                                  className="w-full border rounded-md px-3 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                />
+                                <div className="flex justify-end space-x-2">
+                                  <button
+                                    onClick={closeModal}
+                                    className="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400"
+                                  >
+                                    Cancel
+                                  </button>
+                                  <button
+                                    onClick={handlePasswordChange}
+                                    className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                                  >
+                                    Save
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
                           <td className="px-2 py-1 md:px-4 md:py-2 text-center">
                             <button
                               onClick={() => handleRemoveStudent(student.id)}
@@ -489,11 +549,10 @@ const StudentManagement = ({ user }) => {
                   {/* Previous Text */}
                   <span
                     onClick={() => currentPage > 1 && paginate(currentPage - 1)}
-                    className={`cursor-pointer text-black hover:text-[#007bbf] ${
-                      currentPage === 1
+                    className={`cursor-pointer text-black hover:text-[#007bbf] ${currentPage === 1
                         ? "text-gray-400 cursor-not-allowed"
                         : ""
-                    }`}
+                      }`}
                   >
                     Previous
                   </span>
@@ -503,15 +562,14 @@ const StudentManagement = ({ user }) => {
                     (pageNumber) => (
                       <React.Fragment key={pageNumber}>
                         {pageNumber === 1 ||
-                        pageNumber === totalPages ||
-                        Math.abs(pageNumber - currentPage) <= 1 ? (
+                          pageNumber === totalPages ||
+                          Math.abs(pageNumber - currentPage) <= 1 ? (
                           <span
                             onClick={() => paginate(pageNumber)}
-                            className={`px-2 py-1 rounded-lg w-6 md:w-8 h-6 md:h-8 flex items-center justify-center cursor-pointer ${
-                              pageNumber === currentPage
+                            className={`px-2 py-1 rounded-lg w-6 md:w-8 h-6 md:h-8 flex items-center justify-center cursor-pointer ${pageNumber === currentPage
                                 ? "bg-[#007bbf] text-white"
                                 : "bg-white text-black hover:bg-blue-600 hover:text-white"
-                            }`}
+                              }`}
                           >
                             {pageNumber}
                           </span>
@@ -528,11 +586,10 @@ const StudentManagement = ({ user }) => {
                     onClick={() =>
                       currentPage < totalPages && paginate(currentPage + 1)
                     }
-                    className={`cursor-pointer text-black hover:text-[#007bbf] ${
-                      currentPage === totalPages
+                    className={`cursor-pointer text-black hover:text-[#007bbf] ${currentPage === totalPages
                         ? "text-gray-400 cursor-not-allowed"
                         : ""
-                    }`}
+                      }`}
                   >
                     Next
                   </span>
