@@ -8,7 +8,7 @@ function Subscription() {
     {
       id: "32d3b528-88b3-4a77-bf17-ecb340c3f64e", // Basic Plan ID
       name: "Basic Plan",
-      price: "₹449",
+      price: "₹1",
       description: "Ideal for institutes with up to 50 students per month.",
       features: [
         {
@@ -29,7 +29,7 @@ function Subscription() {
     {
       id: "c66e89db-f655-41db-9787-9ab3fdcbb7d1", // Standard Plan ID
       name: "Standard Plan",
-      price: "₹699",
+      price: "₹1",
       description: "Perfect for institutes with up to 80 students per month.",
       features: [
         {

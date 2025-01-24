@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { FiUsers, FiBarChart } from "react-icons/fi";
 import { HomeIcon, ArrowLeftOnRectangleIcon } from "@heroicons/react/24/solid";
 import { FaTimes } from "react-icons/fa"; // Importing Font Awesome close icon
-import { HiUserGroup, HiClock } from "react-icons/hi"; // Importing icons for other sections
+import { HiUserGroup } from "react-icons/hi"; // Importing icons for other sections
 import { HiOutlineBell } from "react-icons/hi"; // Notice Board icon
 
 const Sidebar = ({ isCollapsed, toggleSidebar }) => {
@@ -85,17 +85,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
         </NavLink>
 
         {/* Test Time Section */}
-        <NavLink
-          to="/test-time"
-          className={({ isActive }) =>
-            `flex items-center py-2 px-4 mt-4 rounded hover:bg-blue-700 ${
-              isActive ? "bg-blue-700" : ""
-            }`
-          }
-        >
-          <HiClock className="mr-2" />
-          <span className="block">{isCollapsed ? "" : "Test Time"}</span>
-        </NavLink>
+       
 
         {/* Notice Board Section */}
         <NavLink

@@ -198,8 +198,8 @@ const AdminList = () => {
   }, []); // Run once when the component mounts
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <div className="flex flex-row flex-grow">
+    <div className="">
+      <div className="">
         <Sidebar
           isCollapsed={isCollapsed}
           toggleSidebar={toggleSidebar}
@@ -324,7 +324,7 @@ const AdminList = () => {
             </button>
 
             {/* Modal Title */}
-            <h2 className="text-xl sm:text-2xl font-bold mb-4 text-center text-blue-700 tracking-tight sm:text-3xl">
+            <h2 className="text-xl  font-bold mb-4 text-center text-blue-700 tracking-tight sm:text-3xl">
               <MdSubscriptions className="inline-block mr-2 text-lg sm:text-2xl" />
               Update Subscription
             </h2>

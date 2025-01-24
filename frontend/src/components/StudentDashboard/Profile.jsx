@@ -3,6 +3,8 @@ import Sidebar from "./Sidebar/Sidebarr";
 import DashboardHeader from "./DashboardHeaders";
 import config from "../../config";
 import AvatarSelector from "../Avatar"; // Import your AvatarSelector
+import { toast,ToastContainer } from "react-toastify"; // Import toast from react-toastify
+import "react-toastify/dist/ReactToastify.css";
 
 
 const Profile = () => {
@@ -108,14 +110,14 @@ const Profile = () => {
       if (response.ok) {
         const updatedUser = await response.json();
         localStorage.setItem("user", JSON.stringify(updatedUser));
-        alert("Profile updated successfully!");
+        toast.success("Profile updated successfully!");
       } else {
         const errorData = await response.json();
-        alert("Failed to update profile: " + (errorData?.pic?.[0] || "Unknown error"));
+        toast.error("Failed to update profile: " + (errorData?.pic?.[0] || "Unknown error"));
       }
     } catch (error) {
       console.error("Error updating profile:", error);
-      alert("An error occurred. Please try again.");
+      toast.error("An error occurred. Please try again.");
     }
   };
 
@@ -123,6 +125,8 @@ const Profile = () => {
  
 
   return (
+    <>
+          <ToastContainer />
     <div className="flex flex-col min-h-screen bg-gray-50">
                 <DashboardHeader user={S} />
 
@@ -216,6 +220,8 @@ const Profile = () => {
         </div>
       </div>
     </div>
+    </>
+
   );
 };
 

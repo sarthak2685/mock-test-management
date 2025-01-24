@@ -145,11 +145,19 @@ const Dashboard = () => {
                       : "N/A"}
                   </p>
                 </div>
-                {isPlanExpired && (
-                  <p className="text-red-500 mt-2 text-sm">
-                    Your subscription has expired. Please renew to continue.
-                  </p>
-                )}
+                        {isPlanExpired && (
+            <>
+              <p className="text-red-500 mt-2 text-sm">
+                Your subscription has expired. Please renew to continue.
+              </p>
+              <button
+                onClick={() => alert("Renewal process started")}
+                className="mt-4 py-2 px-4 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+              >
+                Renew Plan
+              </button>
+            </>
+          )}
               </div>
 
               {/* Card for Total Students */}

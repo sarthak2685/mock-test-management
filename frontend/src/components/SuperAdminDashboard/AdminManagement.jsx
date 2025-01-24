@@ -35,6 +35,10 @@ const AdminManagement = ({ user }) => {
   const [isCollapsed, setIsCollapsed] = useState(true); // Sidebar collapse state
   const S = JSON.parse(localStorage.getItem("user"));
   const token = S.token;
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentAdmin, setCurrentAdmin] = useState(null);
+  const [newPassword, setNewPassword] = useState("");
+
 
   const toggleSidebar = () => {
     setIsCollapsed((prev) => !prev);
@@ -249,25 +253,56 @@ const AdminManagement = ({ user }) => {
       setError("Failed to delete admin. Please try again.");
     }
   };
-
-  const handleChangePassword = async (id) => {
-    const newPassword = prompt("Enter new password:");
-    if (newPassword) {
-      try {
-        await axios.put(`${config.apiUrl}/vendor-admin-crud/${id}`, {
-          password: newPassword,
-        });
-        setAdmins(
-          admins.map((admin) =>
-            admin.id === id ? { ...admin, password: newPassword } : admin
-          )
-        );
-      } catch (error) {
-        console.error("Error changing password:", error);
+  const openPasswordModal = (admin) => {
+    setCurrentAdmin(admin); // Set the admin details in state
+    setNewPassword(""); // Clear previous password input
+    setIsModalOpen(true); // Open the modal
+  };
+  
+  const handlePasswordChange = async () => {
+    if (!newPassword) {
+      alert("Please enter a new password.");
+      return;
+    }
+  
+    try {
+      const response = await fetch(`${config.apiUrl}/reset-password-from-dashboard/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          types: "admin", // Admin type
+          mobile_no: currentAdmin.mobile_no, // Mobile number from currentAdmin
+          new_password: newPassword, // The new password
+        }),
+      });
+  
+      if (!response.ok) {
+        throw new Error("Failed to reset password.");
       }
+  
+      setAdmins(
+        admins.map((admin) =>
+          admin.id === currentAdmin.id ? { ...admin, password: newPassword } : admin
+        )
+      );
+  
+      alert("Password updated successfully.");
+      closeModal();
+    } catch (error) {
+      console.error("Error updating password:", error);
+      alert("Failed to update password.");
     }
   };
-
+  
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setCurrentAdmin(null);
+    setNewPassword("");
+  };
+  
+  
   const filteredAdmins = (Array.isArray(admins) ? admins : []).filter(
     (admin) =>
       (admin.name &&
@@ -307,8 +342,7 @@ const AdminManagement = ({ user }) => {
   console.log("Admin", currentAdmins);
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <div className="flex flex-row flex-grow">
+      <div className="">
         <Sidebar
           isCollapsed={isCollapsed}
           toggleSidebar={toggleSidebar}
@@ -470,18 +504,19 @@ const AdminManagement = ({ user }) => {
                   Current Admins
                 </h2>
                 {/* Search Bar */}
-                <div className="flex items-center w-full md:w-auto space-x-2">
-                  <FaSearch className="mr-1 text-gray-400 hidden md:block" />
-                  <input
-                    type="text"
-                    placeholder="Search..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="border p-1 rounded-lg w-full md:w-auto focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs md:text-base"
-                  />
-                </div>
+                <div className="relative w-full md:w-auto">
+  <FaSearch className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
+  <input
+    type="text"
+    placeholder="Search..."
+    value={searchTerm}
+    onChange={(e) => setSearchTerm(e.target.value)}
+    className="border p-2 pl-8 rounded-lg w-full md:w-auto focus:outline-none focus:ring-2 focus:ring-blue-500 text-xs md:text-base"
+  />
+</div>
+
               </div>
-              <div className="overflow-x-auto md:overflow-visible">
+              <div className="overflow-x-auto ">
                 <table className="min-w-full text-[8px] md:text-base rounded-lg">
                   <thead className="bg-gradient-to-r from-[#007bff] to-[#0056b3] text-white">
                     <tr>
@@ -533,13 +568,46 @@ const AdminManagement = ({ user }) => {
                             {admin.email_id}
                           </td>
                           <td className="px-1 py-1 md:px-4 md:py-2 text-center">
-                            <button
-                              onClick={() => handleChangePassword(admin.id)}
-                              className="bg-gradient-to-r from-[#007bff] to-[#0056b3] text-white px-2 py-1 rounded-md text-[8px] md:text-sm"
-                            >
-                              Change
-                            </button>
-                          </td>
+  <button
+    onClick={() => openPasswordModal(admin)}
+    className="bg-gradient-to-r from-[#007bff] to-[#0056b3] text-white px-2 py-1 rounded-md text-[8px] md:text-sm"
+  >
+    Change
+  </button>
+</td>
+
+
+{isModalOpen && (
+  <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+    <div className="bg-white p-6 rounded-md w-80 shadow-lg">
+      <h2 className="text-lg font-semibold mb-4">Change Admin Password</h2>
+      <input
+        type="password"
+        placeholder="Enter new password"
+        value={newPassword}
+        onChange={(e) => setNewPassword(e.target.value)}
+        className="w-full border rounded-md px-3 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+      <div className="flex justify-end space-x-2">
+        <button
+          onClick={closeModal}
+          className="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handlePasswordChange}
+          className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+        >
+          Save
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+
+
                           <td className="px-1 py-1 md:px-4 md:py-2 text-center">
                             <button
                               onClick={() => handleRemoveAdmin(admin.id)}
@@ -628,7 +696,6 @@ const AdminManagement = ({ user }) => {
           </div>
         </div>
       </div>
-    </div>
   );
 };
 

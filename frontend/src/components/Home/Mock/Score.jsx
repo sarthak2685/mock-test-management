@@ -247,7 +247,7 @@ const Score = () => {
       );
 
       // Save the PDF
-      doc.save("score-report.pdf");
+      doc.save(`${testName}-report.pdf`);
     } catch (error) {
       console.error("Error generating PDF:", error.message);
       alert("Failed to generate the PDF. Please try again.");
