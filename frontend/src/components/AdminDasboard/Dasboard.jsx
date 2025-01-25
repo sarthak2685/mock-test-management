@@ -4,6 +4,7 @@ import Sidebar from "./Sidebar/SideBars"; // Importing the updated Sidebar
 import { FaTrophy } from "react-icons/fa"; // Icons for leaderboard
 import { AiOutlineClockCircle } from "react-icons/ai"; // Icon for expiry date
 import config from "../../config";
+import axios from "axios";
 
 const Dashboard = () => {
   const [isCollapsed, setIsCollapsed] = useState(false); // Sidebar collapse state
@@ -16,13 +17,6 @@ const Dashboard = () => {
 
   const user = JSON.parse(localStorage.getItem("user")); // Fetch user from localStorage
   const token = user.token;
-
-  // Retrieving subscription plan and expiry date from localStorage
-  const subscriptionPlan = localStorage.getItem("plan_taken") || "Basic Plan";
-  const planExpiryDate = localStorage.getItem("expiry");
-  const isPlanExpired = planExpiryDate
-    ? new Date(planExpiryDate) < new Date()
-    : false;
 
   const institueName = user.institute_name;
   console.log("user", user, institueName);
@@ -93,6 +87,128 @@ const Dashboard = () => {
     setModalVisible(false); // Close the modal after selection
     alert(`Selected Plan: ${plan.name}`);
   };
+
+  const [plans, setPlans] = useState([]);
+  // const [selectedPlan, setSelectedPlan] = useState(null);
+
+  // Fetch plans from the API
+  useEffect(() => {
+    if (modalVisible) {
+      const fetchPlans = async () => {
+        try {
+          const response = await fetch(`${config.apiUrl}/licences`, {
+            method: "GET",
+            headers: {
+              Authorization: `Token ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
+          const data = await response.json();
+          setPlans(data); // Assuming the API response is an array of plans
+        } catch (error) {
+          console.error("Failed to fetch plans:", error);
+        }
+      };
+      fetchPlans();
+    }
+  }, [modalVisible, config.apiUrl, token]);
+
+  const [modalMessage, setModalMessage] = useState(""); // Added
+  const [isPaymentSuccess, setIsPaymentSuccess] = useState(false); // Added
+  const [isModalOpen, setIsModalOpen] = useState(false); // Added
+
+  const handlePayment = async () => {
+    try {
+      // Create Razorpay order
+      const { data: order } = await axios.post(
+        `${config.apiUrl}/create-order/`,
+        {
+          amount: parseInt(selectedPlan.licence_price) * 100, // Amount in paisa
+        }
+      );
+
+      const options = {
+        key: "rzp_live_D3C0vsHhEkuMCH", // Replace with Razorpay key ID
+        amount: order.amount,
+        currency: order.currency,
+        name: "Subscription Payment",
+        description: `Plan: ${selectedPlan.name}`,
+        order_id: order.id,
+        handler: async (response) => {
+          try {
+            // Verify payment
+            const verifyResponse = await axios.post(
+              `${config.apiUrl}/verify-payment/`,
+              response
+            );
+
+            if (verifyResponse.data.status === "Payment Verified") {
+              // Update the admin's plan in the backend
+              const updatePlanResponse = await axios.put(
+                `${config.apiUrl}/vendor-admin-crud/?id=${user.id}`,
+                {
+                  licence: selectedPlan.id,
+                  email_id: user?.email_id || "",
+                  institute_name: user?.institute_name || "",
+                  mobile_no: user?.mobile_no || "",
+                  name: user?.name || "",
+                  password_encoded: user?.password_encoded || "",
+                }
+              );
+
+              if (updatePlanResponse.status === 200) {
+                setModalMessage(
+                  `Payment Successful! Plan updated to ${selectedPlan.name}.`
+                );
+                setIsPaymentSuccess(true);
+                setIsModalOpen(true); // Show the modal with success message
+
+                // Store the updated values in localStorage
+                localStorage.setItem("plan_taken", selectedPlan.name);
+                localStorage.setItem("expiry", updatePlanResponse.data.expiry);
+
+                // Close the plan selection modal and reload the page after 3 seconds
+                setTimeout(() => {
+                  setIsModalOpen(false);
+                  setModalVisible(false); // Close the plan selection modal
+                  // window.location.reload(); // Reload the page
+                }, 3000);
+              } else {
+                throw new Error("Plan update failed");
+              }
+            } else {
+              setModalMessage("Payment verification failed. Please try again.");
+              setIsPaymentSuccess(false);
+              setIsModalOpen(true); // Show the modal with failure message
+            }
+          } catch (error) {
+            console.error("Verification error:", error);
+            setModalMessage("Something went wrong during verification.");
+            setIsPaymentSuccess(false);
+            setIsModalOpen(true); // Show the modal with error message
+          }
+        },
+        theme: {
+          color: "#3399cc",
+        },
+      };
+
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
+    } catch (error) {
+      console.error("Payment error:", error);
+      setModalMessage("Something went wrong! Please try again.");
+      setIsPaymentSuccess(false);
+      setIsModalOpen(true); // Show the modal with error message
+    }
+  };
+
+  // Retrieving subscription plan and expiry date from localStorage
+  const subscriptionPlan = localStorage.getItem("plan_taken") || "Basic Plan";
+  const planExpiryDate = localStorage.getItem("expiry");
+  const isPlanExpired = planExpiryDate
+    ? new Date(planExpiryDate) < new Date()
+    : false;
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -259,36 +375,95 @@ const Dashboard = () => {
 
       {/* Modal for plan selection */}
       {modalVisible && (
-        <div className="fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-50 z-10">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-            <h2 className="text-2xl font-semibold mb-4">Select a Plan</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div
-                onClick={() => handlePlanSelect({ name: "Basic Plan", price: 500 })}
-                className={`cursor-pointer p-4 border border-gray-300 rounded-lg text-center hover:bg-gray-400 ${
-                  selectedPlan && selectedPlan.name === "Basic Plan"
-                    ? "bg-blue-100"
-                    : ""
-                }`}
-              >
-                <p className="text-lg font-semibold">Basic</p>
-                <p className="text-gray-600">₹500</p>
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-10">
+          <div className="bg-white p-10 rounded-3xl shadow-2xl w-full sm:w-[900px] max-w-[90%]">
+            <h2 className="text-4xl font-bold mb-8 text-center text-gray-800">
+              Select a Plan
+            </h2>
+            {plans.length > 0 ? (
+              <div className="flex flex-wrap justify-center gap-10">
+                {plans.map((plan) => (
+                  <div
+                    key={plan.id}
+                    className={`w-full sm:w-[280px] p-8 border-2 rounded-3xl text-center transform transition-all duration-300 ease-in-out ${
+                      selectedPlan && selectedPlan.id === plan.id
+                        ? "shadow-xl scale-105"
+                        : "hover:shadow-lg"
+                    } ${
+                      plan.id % 3 === 0
+                        ? "bg-gradient-to-r from-pink-200 via-pink-300 to-pink-400"
+                        : ""
+                    } 
+                 ${
+                   plan.id % 3 === 1
+                     ? "bg-gradient-to-r from-yellow-200 via-yellow-300 to-yellow-400"
+                     : ""
+                 } 
+                 ${
+                   plan.id % 3 === 2
+                     ? "bg-gradient-to-r from-teal-200 via-teal-300 to-teal-400"
+                     : ""
+                 }`}
+                  >
+                    <p className="text-2xl font-semibold text-gray-800">
+                      {plan.name}
+                    </p>
+                    <p className="text-lg text-gray-600 mt-3">
+                      ₹{plan.licence_price}
+                    </p>
+                    <button
+                      onClick={() => setSelectedPlan(plan)}
+                      className={`mt-5 px-8 py-3 rounded-xl font-semibold transition-all duration-300 ${
+                        selectedPlan && selectedPlan.id === plan.id
+                          ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                          : "bg-gray-500 text-white hover:bg-gray-600"
+                      }`}
+                    >
+                      {selectedPlan && selectedPlan.id === plan.id
+                        ? "Selected"
+                        : "Select"}
+                    </button>
+                  </div>
+                ))}
               </div>
-              <div
-                onClick={() => handlePlanSelect({ name: "Standard Plan", price: 1000 })}
-                className={`cursor-pointer p-4 border border-gray-300 rounded-lg text-center hover:bg-gray-400 ${
-                  selectedPlan && selectedPlan.name === "Standard Plan"
-                    ? "bg-blue-100"
-                    : ""
-                }`}
-              >
-                <p className="text-lg font-semibold">Standard</p>
-                <p className="text-gray-600">₹1000</p>
-              </div>
-            </div>
-            <div className="mt-4 flex justify-end">
+            ) : (
+              <p className="text-center text-gray-600">Loading plans...</p>
+            )}
+            <div className="mt-8 flex justify-between items-center gap-10">
+              {selectedPlan && (
+                <button
+                  onClick={handlePayment}
+                  className="bg-green-600 text-white px-8 py-4 rounded-xl hover:bg-green-700 focus:outline-none transition-all duration-300"
+                >
+                  Pay Now
+                </button>
+              )}
               <button
                 onClick={() => setModalVisible(false)}
+                className="bg-gray-600 text-white px-8 py-4 rounded-xl hover:bg-gray-700 focus:outline-none transition-all duration-300"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success or Error Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center bg-gray-500 bg-opacity-50 z-20">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-80">
+            <h3
+              className={`text-xl font-semibold mb-4 ${
+                isPaymentSuccess ? "text-green-500" : "text-red-500"
+              }`}
+            >
+              {isPaymentSuccess ? "Success!" : "Error!"}
+            </h3>
+            <p className="text-gray-700">{modalMessage}</p>
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={() => setIsModalOpen(false)}
                 className="bg-gray-500 text-white px-4 py-2 rounded-md"
               >
                 Close
