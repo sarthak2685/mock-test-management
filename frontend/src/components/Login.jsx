@@ -52,6 +52,9 @@ const Login = () => {
           expiry, // Added expiry
           plan_taken, // Added plan_taken
           id_auth, // Added id_auth
+          email_id,
+          password_encoded,
+          mobile_no,
         } = response.data.data;
 
         // Consolidate into a single object
@@ -65,6 +68,10 @@ const Login = () => {
           gender,
           institute_name,
           id_auth, // Added id_auth to the object
+          email_id,
+          password_encoded,
+          mobile_no,
+          expiry,
         };
 
         console.log("Data being saved to localStorage: ", userData);
