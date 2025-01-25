@@ -63,11 +63,9 @@ const MockTest = () => {
 
     const fetchTestTimes = async (testNames) => {
       try {
-        const query = testNames
-          .map((name) => `test_name=${encodeURIComponent(name)}`)
-          .join("&");
+       
         const response = await fetch(
-          `${config.apiUrl}/test_time/?${query}&institute_name=${institueName}`,
+          `${config.apiUrl}/test_time/?&institute_name=${institueName}`,
           {
             headers: {
               Authorization: `Token ${token}`,
@@ -80,7 +78,8 @@ const MockTest = () => {
         }
         const data = await response.json();
         const mappedTestTimes = data.data.reduce((acc, test) => {
-          acc[test.test_name] = {
+          const testName = test.test_name.split('(')[0].trim();
+          acc[testName] = {
             start_time: new Date(test.start_time),
             end_time: new Date(test.end_time),
           };

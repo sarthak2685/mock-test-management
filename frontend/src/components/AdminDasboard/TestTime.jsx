@@ -101,7 +101,7 @@ const TestTime = () => {
     event.preventDefault();
 
     const payload = {
-      institutes: S.institute_name,
+      institutes: [S.id],
       test_name: testName,
       start_time: startTime,
       end_time: endTime,
