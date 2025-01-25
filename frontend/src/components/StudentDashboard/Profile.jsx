@@ -28,31 +28,55 @@ const Profile = () => {
       customAvatar: null,
     });
   };
+
   const convertImageToBase64 = async (avatarUrl) => {
-    const response = await fetch(avatarUrl);
-    const blob = await response.blob();
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
+    console.log("Fetching URL for Base64 conversion:", avatarUrl);
+
+    try {
+      // Fetch the actual image data
+      const response = await fetch(avatarUrl);
+      if (!response.ok) throw new Error("Failed to fetch image");
+  
+      const blob = await response.blob();
+      if (!blob.type.startsWith("image/")) {
+        throw new Error("Invalid image file"); // Ensure it's an image
+      }
+  
+      // Convert the blob to a Base64 string
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = (err) => reject(err);
+        reader.readAsDataURL(blob);
+      });
+    } catch (error) {
+      console.error("Error converting image to Base64:", error);
+      throw error;
+    }
   };
+  
+  
   // Handle custom avatar file upload
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) { 
+      if (file.size > 5 * 1024 * 1024) {
         alert("File size must be less than 5MB.");
         return;
       }
       const reader = new FileReader();
       reader.onload = () => {
-        setFormData({ ...formData, customAvatar: reader.result, avatar: "" });
+        setFormData((prevData) => ({
+          ...prevData,
+          customAvatar: reader.result, // Base64 string
+          avatar: "",
+        }));
       };
-      reader.readAsDataURL(file);
+      reader.onerror = (err) => console.error("Error reading file:", err);
+      reader.readAsDataURL(file); // Converts the file to Base64
     }
   };
+  
   
 
   const handleChange = (e) => {
@@ -86,9 +110,9 @@ const Profile = () => {
       // Check if the user uploaded a custom avatar image
       if (formData.customAvatar) {
         avatarBase64 = formData.customAvatar;
-      } else if (formData.avatar) {
-        // If a predefined avatar is selected, use its URL in Base64 format
-        avatarBase64 = await convertImageToBase64(formData.avatar);
+      }else if (formData.avatar) {
+        const avatarConfig = JSON.parse(formData.avatar); // Parse the avatar JSON
+        avatarBase64 = await convertImageToBase64(avatarConfig.image); // Pass the image URL
       }
 
       if (avatarBase64) {

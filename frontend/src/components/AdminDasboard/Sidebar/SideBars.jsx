@@ -14,7 +14,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
   // Retrieve subscription days remaining from localStorage
   const user = JSON.parse(localStorage.getItem("user"));
   const subscriptionDays = user?.id_auth || 0;
-  const isSubscriptionExpired = subscriptionDays > 30;
+  const isSubscriptionExpired = subscriptionDays > 10;
 
   const handleLogout = () => {
     // Remove user and subscription details from localStorage

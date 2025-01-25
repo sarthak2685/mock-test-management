@@ -54,7 +54,6 @@ function Navbar() {
                 Contact
               </Link>
             )}
-
             {user ? (
               <div className="relative">
                 <div
