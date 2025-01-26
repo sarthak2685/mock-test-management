@@ -81,6 +81,7 @@ const NoticeOwner = () => {
           sender: S.id, // User ID as sender
           recipient: option.value, // Single Institute ID as recipient
           // recipient: selectedOptions.map((option) => option.value), // Single Institute ID as recipient
+          is_admin: "NOT OK",
         };
 
         try {
