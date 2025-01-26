@@ -29,6 +29,7 @@ const StudentManagement = ({ user }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentStudent, setCurrentStudent] = useState(null);
   const [newPassword, setNewPassword] = useState("");
+  const studentLimit = S.student_limit;
 
   const toggleSidebar = () => {
     setIsCollapsed((prev) => !prev);
@@ -94,11 +95,21 @@ const StudentManagement = ({ user }) => {
     setNewStudents(updatedStudents);
   };
 
+  // const handleAddStudentField = () => {
+  //   setNewStudents([
+  //     ...newStudents,
+  //     { name: "", username: "", password: "", mobile_no: "" },
+  //   ]); // Added mobile_no field
+  // };
   const handleAddStudentField = () => {
-    setNewStudents([
-      ...newStudents,
-      { name: "", username: "", password: "", mobile_no: "" },
-    ]); // Added mobile_no field
+    if (students.length + newStudents.length < studentLimit) {
+      setNewStudents([
+        ...newStudents,
+        { name: "", username: "", password: "", mobile_no: "" },
+      ]);
+    } else {
+      setError(`Student limit exhausted`);
+    }
   };
 
   const handleRemoveStudentField = (index) => {
@@ -170,11 +181,18 @@ const StudentManagement = ({ user }) => {
       window.location.reload();
     } catch (error) {
       // Enhanced error handling
-      console.error(
-        "Error adding students:",
-        error.response ? error.response.data : error
-      );
-      setError("Failed to add students. Please try again.");
+      if (error.response) {
+        if (error.response.status === 404) {
+          setError("Student already exists.");
+        } else {
+          setError(
+            `Failed to add students. Error: ${error.response.data?.message || "Please try again."}`
+          );
+        }
+      } else {
+        console.error("Error adding students:", error);
+        setError("Failed to add students. Please check your connection and try again.");
+      }
     }
   };
   const openPasswordModal = (student) => {
@@ -319,100 +337,94 @@ const StudentManagement = ({ user }) => {
 
           <div className="p-6">
             <h1 className="text-3xl font-bold mb-6">Manage Students</h1>
+            {error && (
+      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <strong className="font-bold">Error:</strong> <span>{error}</span>
+      </div>
+    )}
 
             {/* Add Multiple Students Form */}
             <div className="bg-white p-6 mb-6 shadow-lg rounded-lg">
               <h2 className="text-2xl font-semibold mb-4">Add Students</h2>
-              {newStudents.map((student, index) => (
-                <div
-                  key={index}
-                  className="mb-4 p-4 bg-gray-50 rounded-lg shadow-md"
-                >
-                  <div className="flex justify-between items-center mb-2">
-                    <h3 className="text-lg font-medium">Student {index + 1}</h3>
-                    <button
-                      onClick={() => handleRemoveStudentField(index)}
-                      className="text-red-500 hover:text-red-600 transition"
-                    >
-                      <FaTrash />
-                    </button>
-                  </div>
-                  <div className="flex flex-col space-y-2">
-                    <div className="relative">
-                      <FaUser className="absolute left-3 top-2 text-gray-400" />
-                      <input
-                        type="text"
-                        placeholder="Name"
-                        value={student.name}
-                        onChange={(e) =>
-                          handleStudentChange(index, "name", e.target.value)
-                        }
-                        className="border p-2 pl-10 mb-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        style={{ paddingLeft: "2.5rem" }}
-                      />
-                    </div>
-                    <div className="relative">
-                      <FaUser className="absolute left-3 top-2 text-gray-400" />
-                      <input
-                        type="text"
-                        placeholder="Username"
-                        value={student.username}
-                        onChange={(e) =>
-                          handleStudentChange(index, "username", e.target.value)
-                        }
-                        className="border p-2 pl-10 mb-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        style={{ paddingLeft: "2.5rem" }}
-                      />
-                    </div>
-                    <div className="relative">
-                      <FaKey className="absolute left-3 top-2 text-gray-400" />
-                      <input
-                        type="password"
-                        placeholder="Password"
-                        value={student.password}
-                        onChange={(e) =>
-                          handleStudentChange(index, "password", e.target.value)
-                        }
-                        className="border p-2 pl-10 mb-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        style={{ paddingLeft: "2.5rem" }}
-                      />
-                    </div>
-                    {/* Mobile Number Input */}
-                    <div className="relative">
-                      <FaPhone className="absolute left-3 top-2 text-gray-400" />
-                      <input
-                        type="text"
-                        placeholder="Mobile Number"
-                        value={student.mobile_no}
-                        onChange={(e) =>
-                          handleStudentChange(
-                            index,
-                            "mobile_no",
-                            e.target.value
-                          )
-                        }
-                        className="border p-2 pl-10 mb-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        style={{ paddingLeft: "2.5rem" }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-              <div className="flex flex-col sm:flex-row sm:justify-between items-center gap-4">
-                <button
-                  onClick={handleAddStudentField}
-                  className="bg-gradient-to-r from-[#007bff] to-[#0056b3] text-white px-4 py-2 rounded-md hover:bg-[#0056b3] hover:to-[#004080] transition text-sm w-full sm:w-auto"
-                >
-                  <FaUserPlus className="inline-block mr-2" />
-                  Add Another Student
-                </button>
-                <button
-                  onClick={handleSubmitStudents}
-                  className="bg-gradient-to-r from-[#007bff] to-[#0056b3] text-white px-4 py-2 rounded-md hover:bg-[#0056b3] hover:to-[#004080] transition text-sm w-full sm:w-auto"
-                >
-                  <FaPaperPlane className="inline-block mr-2" />
-                  Submit Students
-                </button>
+              <p className="text-sm text-gray-500 mb-4">
+        Student Limit: {studentLimit}. You can add {studentLimit - students.length} more student(s).
+      </p>
+
+      {newStudents.map((student, index) => (
+        <div
+          key={index}
+          className="mb-4 p-4 bg-gray-50 rounded-lg shadow-md"
+        >
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="text-lg font-medium">Student {students.length + index + 1}</h3>
+            <button
+              onClick={() => handleRemoveStudentField(index)}
+              className="text-red-500 hover:text-red-600 transition"
+            >
+              <FaTrash />
+            </button>
+          </div>
+          <div className="flex flex-col space-y-2">
+            <input
+              type="text"
+              placeholder="Name"
+              value={student.name}
+              onChange={(e) =>
+                handleStudentChange(index, "name", e.target.value)
+              }
+              className="border p-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <input
+              type="text"
+              placeholder="Username"
+              value={student.username}
+              onChange={(e) =>
+                handleStudentChange(index, "username", e.target.value)
+              }
+              className="border p-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={student.password}
+              onChange={(e) =>
+                handleStudentChange(index, "password", e.target.value)
+              }
+              className="border p-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <input
+              type="text"
+              placeholder="Mobile Number"
+              value={student.mobile_no}
+              onChange={(e) =>
+                handleStudentChange(index, "mobile_no", e.target.value)
+              }
+              className="border p-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+      ))}
+
+      <div className="flex flex-col sm:flex-row sm:justify-between items-center gap-4">
+        <button
+          onClick={handleAddStudentField}
+          disabled={students.length + newStudents.length >= studentLimit}
+          className={`bg-gradient-to-r from-[#007bff] to-[#0056b3] text-white px-4 py-2 rounded-md hover:bg-[#0056b3] hover:to-[#004080] transition text-sm w-full sm:w-auto ${
+            students.length + newStudents.length >= studentLimit
+              ? "opacity-50 cursor-not-allowed"
+              : ""
+          }`}
+        >
+          <FaUserPlus className="inline-block mr-2" />
+          Add Another Student
+        </button>
+        <button
+          onClick={handleSubmitStudents}
+          className="bg-gradient-to-r from-[#007bff] to-[#0056b3] text-white px-4 py-2 rounded-md hover:bg-[#0056b3] hover:to-[#004080] transition text-sm w-full sm:w-auto"
+        >
+          <FaPaperPlane className="inline-block mr-2" />
+          Submit Students
+        </button>
               </div>
             </div>
 
