@@ -535,7 +535,6 @@ const MockDemo = () => {
                 Question {currentQuestionIndex + 1}
               </h2>
 
-              {/* Log current question */}
               <p className="text-lg font-medium mb-8">
                 {mockTestData.find(
                   (section) => section.subject === selectedSubject
@@ -551,8 +550,10 @@ const MockDemo = () => {
                         <>
                           {/* Main question */}
                           <StaticMathField>
-                            {currentQuestion?.question ||
-                              "No question available"}
+                            {/* Replace spaces with LaTeX space commands */}
+                            {currentQuestion?.question
+                              ? currentQuestion.question.replace(/ /g, "\\ ")
+                              : "No question available"}
                           </StaticMathField>
                           <br />
 
@@ -570,7 +571,8 @@ const MockDemo = () => {
                               />
                             ) : (
                               <StaticMathField>
-                                {currentQuestion.question2}
+                                {/* Ensure spaces are also handled for question2 */}
+                                {currentQuestion.question2.replace(/ /g, "\\ ")}
                               </StaticMathField>
                             )
                           ) : null}
