@@ -35,10 +35,10 @@ const reach = [
   {
     display: (
       <>
-        <IoCall className="inline-block mr-2" /> +91-9430995928
+        <IoCall className="inline-block mr-2" /> +91-9430995928,7004578419 
       </>
     ),
-    path: "tel:+919430995928", // Correct usage of 'tel:' link
+    path: "tel:+919430995928 ", // Correct usage of 'tel:' link
   },
   {
     display: (

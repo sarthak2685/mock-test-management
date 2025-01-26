@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FiBell } from "react-icons/fi";
-import { FaExclamationTriangle, FaBars } from "react-icons/fa"; // Fix: Import FaBars icon
-import config from "../../config"; // Fix: Import config
+import { FaExclamationTriangle, FaBars } from "react-icons/fa"; // Import FaBars icon
+import config from "../../config"; // Import config
 
 const Header = ({ toggleSidebar }) => {
   const [openDropdown, setOpenDropdown] = useState(null);
   const mailDropdownRef = useRef(null);
   const bellDropdownRef = useRef(null);
   const [bellNotifications, setBellNotifications] = useState([]);
+  const [unseenCount, setUnseenCount] = useState(0); // Track unseen notifications
   const [showAllNotifications, setShowAllNotifications] = useState(false);
 
   // Fetch user data from localStorage
@@ -31,8 +32,11 @@ const Header = ({ toggleSidebar }) => {
 
         if (response.ok) {
           const data = await response.json();
-          console.log("Fetched notifications:", data);
-          setBellNotifications(data); // Assuming the API returns an array of notifications
+          setBellNotifications(data);
+
+          // Assume notifications have an `isSeen` property
+          const unseen = data.filter((notification) => !notification.isSeen).length;
+          setUnseenCount(unseen);
         } else {
           console.error("Failed to fetch notifications");
         }
@@ -46,6 +50,17 @@ const Header = ({ toggleSidebar }) => {
 
   // Toggle dropdowns
   const toggleDropdown = (dropdown) => {
+    if (dropdown === "bell") {
+      // Mark all notifications as seen when opening dropdown
+      setBellNotifications((prevNotifications) =>
+        prevNotifications.map((notification) => ({
+          ...notification,
+          isSeen: true,
+        }))
+      );
+      setUnseenCount(0); // Reset unseen count
+    }
+
     setOpenDropdown((prev) => (prev === dropdown ? null : dropdown));
   };
 
@@ -98,9 +113,11 @@ const Header = ({ toggleSidebar }) => {
             className="text-gray-600 w-6 h-6"
             onClick={() => toggleDropdown("bell")}
           />
-          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1">
-            {bellNotifications.length}
-          </span>
+          {unseenCount > 0 && ( // Show count only if unseen notifications exist
+            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-1">
+              {unseenCount}
+            </span>
+          )}
 
           {openDropdown === "bell" && (
             <div
@@ -128,7 +145,7 @@ const Header = ({ toggleSidebar }) => {
                         <span className="text-xs text-gray-500">
                           Sent by:{" "}
                           {notification.institute
-                            ? notification.institute.institute_name
+                            ? `${notification.institute.institute_name} (${notification.institute.name})`
                             : "Unknown Institute"}
                         </span>
                       </div>

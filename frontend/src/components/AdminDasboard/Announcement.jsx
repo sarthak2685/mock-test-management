@@ -10,6 +10,7 @@ const Announcement = () => {
   const [ampm, setAmpm] = useState("AM"); // AM/PM toggle
   const user = JSON.parse(localStorage.getItem("user"));
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successMessage, setSuccessMessage] = useState(""); // New state for success message
   const token = user.token;
   const id = user.id;
   console.log(user)
@@ -72,7 +73,9 @@ const Announcement = () => {
 
       // Handle success
       const data = await response.json();
-      console.log("Announcement successfully set:", data);
+      setSuccessMessage("Test announcement set successfully!"); 
+      setAnnouncementDate('');
+      setAnnouncementTime('');
     } catch (error) {
       console.error("Error:", error);
     } finally {
@@ -82,18 +85,22 @@ const Announcement = () => {
 
   return (
     <>
-      <Sidebar isCollapsed={isCollapsed} toggleSidebar={toggleSidebar} />
-      <div
+    <Sidebar isCollapsed={isCollapsed} toggleSidebar={toggleSidebar} />
+    <div
         className={`flex-grow transition-all duration-300 ease-in-out ${
           isCollapsed ? "ml-0" : "ml-64"
         }`}
       >
-        <DashboardHeaders toggleSidebar={toggleSidebar} />
-        <div className="container mx-auto p-6 max-w-lg">
+<DashboardHeaders toggleSidebar={toggleSidebar} />
+<div className="container mx-auto p-6 max-w-lg">
           <h2 className="text-2xl font-extrabold text-black mb-4 uppercase text-center">
             Set Next Test Announcement
           </h2>
-
+          {successMessage && (
+            <div className="mb-4 p-4 bg-green-200 text-green-800 border border-green-400 rounded">
+              {successMessage}
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow-md">
             <div className="mb-4">
               <label

@@ -195,17 +195,6 @@ const Profile = () => {
                   />
                 </div>
                 <div>
-                  <label className="font-semibold text-gray-600">Age</label>
-                  <input
-                    type="number"
-                    name="age"
-                    value={formData.age}
-                    onChange={handleChange}
-                    placeholder="Enter your age"
-                    className="border border-gray-300 p-2 rounded w-full"
-                  />
-                </div>
-                <div>
                   <label className="font-semibold text-gray-600">Sex</label>
                   <select
                     name="sex"

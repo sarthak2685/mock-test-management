@@ -4,6 +4,8 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import config from "../config";
 import illustrationImage from "../assets/Login.png";
+import { toast, ToastContainer } from 'react-toastify';
+
 
 const Login = () => {
   const [mobileNumber, setMobileNumber] = useState("");
@@ -17,6 +19,7 @@ const Login = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
+
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
@@ -55,6 +58,7 @@ const Login = () => {
           email_id,
           password_encoded,
           mobile_no,
+          student_limit,
         } = response.data.data;
 
         // Consolidate into a single object
@@ -72,6 +76,7 @@ const Login = () => {
           password_encoded,
           mobile_no,
           expiry,
+          student_limit,
         };
 
         console.log("Data being saved to localStorage: ", userData);
@@ -110,6 +115,7 @@ const Login = () => {
     try {
       await axios.post(`${config.apiUrl}/send-otp/`, { email });
       setOtpSent(true);
+      toast.success("Otp sent successfully")
       setError(null);
     } catch (error) {
       setError("Failed to send OTP. Please try again.");
@@ -129,6 +135,7 @@ const Login = () => {
         new_password: newPassword,
         confirm_password: confirmPassword,
       });
+      toast.success("Your password has been changed successfully!");
       setIsForgotPassword(false);
       setOtpSent(false);
       setEmail("");
@@ -142,6 +149,8 @@ const Login = () => {
   };
 
   return (
+    <>
+    <ToastContainer />
     <div className="flex min-h-screen bg-white items-center justify-center p-6">
       <div className="bg-white shadow-lg border border-gray-100 rounded-lg flex flex-col md:flex-row max-w-4xl w-full">
         <div className="md:w-1/2 p-8 flex flex-col justify-center">
@@ -280,6 +289,7 @@ const Login = () => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 
