@@ -7,6 +7,7 @@ import config from "../../../config";
 // import { FaBrain, FaBook, FaCalculator, FaLanguage } from "react-icons/fa"; // Icons for sections
 import Timer from "../Mock/Timer";
 import UserProfile from "../Mock/UserProfile";
+import { StaticMathField } from "react-mathquill";
 
 const MockChapter = () => {
   const user = {
@@ -494,16 +495,22 @@ const MockChapter = () => {
                         mockTestData[currentSectionIndex]?.questions[
                           currentQuestionIndex
                         ];
-                        const baseUrl = `${config.apiUrl}`;
-                        const defaultFileValue =
+                      const baseUrl = `${config.apiUrl}`;
+                      const defaultFileValue =
                         "/media/uploads/questions/option_4_uFtm5qj.png";
 
                       return (
                         <>
                           {/* Main question */}
                           <span>
-                            {currentQuestion?.question ||
-                              "No question available"}
+                            <StaticMathField>
+                              {/* Replace spaces with LaTeX space commands */}
+                              {currentQuestion?.question
+                                ? currentQuestion.question.replace(/ /g, "\\ ")
+                                : "No question available"}
+                            </StaticMathField>
+                            {/* {currentQuestion?.question ||
+                              "No question available"} */}
                           </span>
                           <br />
 
@@ -538,8 +545,8 @@ const MockChapter = () => {
                       mockTestData[currentSectionIndex]?.questions[
                         currentQuestionIndex
                       ];
-                      const baseUrl = `${config.apiUrl}`;
-                      const defaultFileValue =
+                    const baseUrl = `${config.apiUrl}`;
+                    const defaultFileValue =
                       "/media/uploads/questions/option_4_uFtm5qj.png";
 
                     // Filter files to exclude default values
@@ -547,46 +554,46 @@ const MockChapter = () => {
                       (file) => file && file !== defaultFileValue
                     );
 
-                    // Determine whether to show files or options
-                    const displayItems =
-                      validFiles?.length > 0
-                        ? validFiles
-                        : currentQuestion?.options;
-
-                    // Render the selected items
-                    return displayItems?.map((item, index) =>
-                      item ? (
-                        <label
-                          key={index}
-                          className={`border border-gray-300 rounded-lg p-4 flex items-center justify-center text-center cursor-pointer transition duration-200 transform ${
-                            selectedOption === item
-                              ? "bg-blue-50 border-blue-500 shadow-md"
-                              : "hover:bg-gray-50 hover:shadow-sm"
-                          }`}
-                        >
-                          <input
-                            type="radio"
-                            name="option"
-                            value={item}
-                            checked={selectedOption === item}
-                            onChange={() => handleOptionChange(item)}
-                            className="hidden"
-                          />
-                          {/* Display image if item is a file, otherwise display text */}
-                          {item.startsWith("/media/uploads/") ? (
-                            <img
-                              src={`${config.apiUrl}${item}`}
-                              alt={`Option ${index + 1}`}
-                              className="max-w-full max-h-24 object-contain"
-                            />
-                          ) : (
-                            <span className="text-gray-800 font-medium">
-                              {item}
-                            </span>
-                          )}
-                        </label>
-                      ) : null
+                    // Combine options with files (if available)
+                    const displayItems = currentQuestion?.options?.map(
+                      (option, index) => ({
+                        text: option,
+                        file: validFiles?.[index] || null, // Match file by index if available
+                      })
                     );
+
+                    // Render the combined items
+                    return displayItems?.map((item, index) => (
+                      <label
+                        key={index}
+                        className={`border border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center text-center cursor-pointer transition duration-200 transform ${
+                          selectedOption === item.text
+                            ? "bg-blue-50 border-blue-500 shadow-md"
+                            : "hover:bg-gray-50 hover:shadow-sm"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="option"
+                          value={item.text}
+                          checked={selectedOption === item.text}
+                          onChange={() => handleOptionChange(item.text)}
+                          className="hidden"
+                        />
+                        {/* Display image if file exists */}
+                        {item.file && (
+                          <img
+                            src={`${config.apiUrl}${item.file}`}
+                            alt={`Option ${index + 1}`}
+                            className="max-w-full max-h-24 object-contain mb-2"
+                          />
+                        )}
+                        {/* Display text */}
+                        <span className="text-gray-800 font-medium">
+                          {item.text}
+                        </span>
+                      </label>
+                    ));
                   })()
                 ) : (
                   <p>Loading...</p>

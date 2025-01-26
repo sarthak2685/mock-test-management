@@ -535,6 +535,7 @@ const MockDemo = () => {
                 Question {currentQuestionIndex + 1}
               </h2>
 
+              {/* Log Question */}
               <p className="text-lg font-medium mb-8">
                 {mockTestData.find(
                   (section) => section.subject === selectedSubject
@@ -607,8 +608,12 @@ const MockDemo = () => {
                         ? validFiles
                         : currentQuestion?.options;
 
-                    return displayItems?.map((item, index) =>
-                      item ? (
+                    return displayItems?.map((item, index) => {
+                      const isFile = item.startsWith("/media/uploads/");
+                      const optionText =
+                        currentQuestion?.options[index]?.trim() || null;
+
+                      return item ? (
                         <label
                           key={index}
                           className={`border border-gray-300 rounded-lg p-4 flex items-center justify-center text-center cursor-pointer transition duration-200 transform ${
@@ -625,21 +630,25 @@ const MockDemo = () => {
                             onChange={() => handleOptionChange(item)}
                             className="hidden"
                           />
-                          {/* Show image if item is a valid file, otherwise show text */}
-                          {item.startsWith("/media/uploads/") ? (
-                            <img
-                              src={`${config.apiUrl}${item}`}
-                              alt={`Option ${index + 1}`}
-                              className="max-w-full max-h-24 object-contain"
-                            />
-                          ) : (
-                            <span className="text-gray-800 font-medium">
-                              {item}
-                            </span>
-                          )}
+                          <div className="flex flex-col items-center">
+                            {/* Show image if item is a valid file */}
+                            {isFile && (
+                              <img
+                                src={`${baseUrl}${item}`}
+                                alt={`Option ${index + 1}`}
+                                className="max-w-full max-h-24 object-contain mb-2"
+                              />
+                            )}
+                            {/* Only display text if valid and non-empty */}
+                            {optionText && (
+                              <span className="text-gray-800 font-medium">
+                                {optionText}
+                              </span>
+                            )}
+                          </div>
                         </label>
-                      ) : null
-                    );
+                      ) : null;
+                    });
                   })()
                 ) : (
                   <p>Loading...</p>
