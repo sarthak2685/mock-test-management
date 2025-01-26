@@ -58,7 +58,11 @@ const Instructions = () => {
   const handleNextStep = async () => {
     if (step === 1) {
       // Validate language selection if both Hindi and English are present
-      if (storedDetails?.subjects.includes("Hindi") && storedDetails?.subjects.includes("English") && !language) {
+      if (
+        storedDetails?.subjects.includes("Hindi") &&
+        storedDetails?.subjects.includes("English") &&
+        !language
+      ) {
         setError1("Please select a language before proceeding.");
         return;
       }
@@ -104,7 +108,6 @@ const Instructions = () => {
   const examDuration = duration || 0;
   const positiveMarks = storedDetails?.postiveMarks || 0;
   const negativeMarks = storedDetails?.negativeMarks || 0;
-
 
   const subjectData = subjects.map((subject) => ({
     subject,
@@ -161,7 +164,9 @@ const Instructions = () => {
             {error1 && <p className="text-red-500 text-sm mb-4">{error1}</p>}
 
             <ul className="list-disc list-inside space-y-2 text-gray-700">
-              <li>The total duration of the examination is {examDuration} minutes.</li>
+              <li>
+                The total duration of the examination is {examDuration} minutes.
+              </li>
               <li>
                 The clock will be set at the server. The countdown timer in the
                 top right corner will display the remaining time. When the timer
@@ -246,18 +251,31 @@ const Instructions = () => {
                               value={language}
                               onChange={(e) => {
                                 const selectedLang = e.target.value;
-                                const nonSelectedLang = selectedLang === "English" ? "Hindi" : "English";
+                                const nonSelectedLang =
+                                  selectedLang === "English"
+                                    ? "Hindi"
+                                    : "English";
                                 setLanguage(selectedLang); // Update the language state
-                                localStorage.setItem("selectedLanguage", selectedLang); // Save selected language to localStorage
-                                localStorage.setItem("nonSelectedLanguage", nonSelectedLang); // Save non-selected language to localStorage
+                                localStorage.setItem(
+                                  "selectedLanguage",
+                                  selectedLang
+                                ); // Save selected language to localStorage
+                                localStorage.setItem(
+                                  "nonSelectedLanguage",
+                                  nonSelectedLang
+                                ); // Save non-selected language to localStorage
                                 console.log("selectedLanguage", selectedLang);
-                                console.log("nonSelectedLanguage", nonSelectedLang);
+                                console.log(
+                                  "nonSelectedLanguage",
+                                  nonSelectedLang
+                                );
                               }}
                               className="border border-gray-300 rounded px-2 py-1"
                             >
                               <option value="" disabled>
                                 Select Optional Subject
-                              </option>                  <option value="English">English</option>
+                              </option>{" "}
+                              <option value="English">English</option>
                               <option value="Hindi">Hindi</option>
                             </select>
                           </td>
@@ -273,7 +291,8 @@ const Instructions = () => {
                         </tr>
                       );
                     } else if (
-                      (subject.subject === "Hindi" || subject.subject === "English") &&
+                      (subject.subject === "Hindi" ||
+                        subject.subject === "English") &&
                       subjects.includes("Hindi") &&
                       subjects.includes("English")
                     ) {
@@ -364,23 +383,22 @@ const Instructions = () => {
       </div>
 
       <div className="w-full lg:w-1/4 mt-8 lg:mt-0 flex flex-col items-center bg-gray-100 p-4 rounded-lg shadow-md">
-  {user.pic ? (
-    <img
-      src={`${config.apiUrl}${user.pic}`}
-      alt="Avatar"
-      className="w-16 h-16 rounded-full object-cover" // Larger size and circular image
-    />
-  ) : (
-    <div className="w-16 h-16 rounded-full bg-blue-500 flex items-center justify-center text-white text-2xl font-bold">
-      {/* First character of the name or default "G" */}
-      {user.name ? user.name.charAt(0).toUpperCase() : "G"}
-    </div>
-  )}
-  <h3 className="text-lg sm:text-xl font-semibold text-gray-700 mt-4">
-    {user.name}
-  </h3>
-</div>
-
+        {user.pic &&
+        user.pic !== "/media/uploads/questions/option_4_uFtm5qj.png" ? (
+          <img
+            src={`${config.apiUrl}${user.pic}`}
+            alt="Avatar"
+            className="w-10 h-10 rounded-full"
+          />
+        ) : (
+          <div className="w-10 h-10 rounded-full bg-[#007bff] flex items-center justify-center text-white font-semibold">
+            {user.name ? user.name.charAt(0).toUpperCase() : ""}
+          </div>
+        )}
+        <h3 className="text-lg sm:text-xl font-semibold text-gray-700 mt-4">
+          {user.name}
+        </h3>
+      </div>
     </div>
   );
 };

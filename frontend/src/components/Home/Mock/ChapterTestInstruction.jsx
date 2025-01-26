@@ -29,7 +29,7 @@ const ChapterTestInstructions = () => {
   const [testDuration, setTestDuration] = useState("");
   const [noOfQuestions, setNoOfQuestions] = useState("");
   const [positiveMarks, setPositiveMarks] = useState("");
-  const [negativeMarks, setNegativeMarks] = useState("")
+  const [negativeMarks, setNegativeMarks] = useState("");
 
   useEffect(() => {
     // Get items from localStorage
@@ -46,7 +46,6 @@ const ChapterTestInstructions = () => {
     setPositiveMarks(positiveMarks || 0);
     setNegativeMarks(negativeMarks || 0);
   }, []);
-
 
   // const handleOptionalSubjectChange = (e) => {
   //   const selectedSubject = e.target.value;
@@ -99,8 +98,6 @@ const ChapterTestInstructions = () => {
     examId: "1",
   };
 
- 
-
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-screen-3xl mx-auto bg-white shadow-md rounded-lg flex flex-col lg:flex-row">
       {/* Instructions Section */}
@@ -137,7 +134,9 @@ const ChapterTestInstructions = () => {
 
             {/* General Instructions */}
             <ul className="list-disc list-inside space-y-2 text-gray-700">
-              <li>The total duration of the examination is {testDuration} minutes.</li>
+              <li>
+                The total duration of the examination is {testDuration} minutes.
+              </li>
               <li>
                 The clock will be set at the server. The countdown timer in the
                 top right corner will display the remaining time. When the timer
@@ -219,7 +218,7 @@ const ChapterTestInstructions = () => {
                       {testDuration}
                     </td>
                     <td className="px-2 sm:px-4 py-2 border border-gray-300">
-                    {testDuration} min
+                      {testDuration} min
                     </td>
                   </tr>
                 </tbody>
@@ -297,14 +296,17 @@ const ChapterTestInstructions = () => {
       </div>
       {/* Profile Sidebar */}
       <div className="w-full lg:w-1/4 mt-8 lg:mt-0 flex flex-col items-center bg-gray-100 p-4 rounded-lg shadow-md">
-      {user.pic ? (
+        {user.pic &&
+        user.pic !== "/media/uploads/questions/option_4_uFtm5qj.png" ? (
           <img
             src={`${config.apiUrl}${user.pic}`}
             alt="Avatar"
-            className="w-10 h-10 rounded-full object-cover"
+            className="w-10 h-10 rounded-full"
           />
         ) : (
-          user.name ? user.name.charAt(0).toUpperCase() : "G"
+          <div className="w-10 h-10 rounded-full bg-[#007bff] flex items-center justify-center text-white font-semibold">
+            {user.name ? user.name.charAt(0).toUpperCase() : ""}
+          </div>
         )}
         <h3 className="text-lg sm:text-xl font-semibold text-gray-700">
           {user.name}
