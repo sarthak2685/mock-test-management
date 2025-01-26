@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FaBars, FaTimes, FaChevronDown } from "react-icons/fa";
 import QuestionNavigation from "../Mock/navigation";
 import Timer from "./Timer";
+import { StaticMathField } from "react-mathquill";
 
 // import config from "../../../config";
 
@@ -299,7 +300,13 @@ const MobileQuizLayout = ({
 
               {/* Main Question Content */}
               <p className="my-4 text-gray-700 leading-relaxed">
-                {currentQuestion.question || "No question available"}
+                <StaticMathField>
+                  {/* Replace spaces with LaTeX space commands */}
+                  {currentQuestion?.question
+                    ? currentQuestion.question.replace(/ /g, "\\ ")
+                    : "No question available"}
+                </StaticMathField>
+                {/* {currentQuestion.question || "No question available"} */}
               </p>
 
               {/* Display Additional Question Content */}
@@ -320,49 +327,55 @@ const MobileQuizLayout = ({
               {/* Display Question Files or Options */}
               <div className="space-y-3 grid grid-cols-1 mt-6">
                 {(() => {
-                  const baseUrl = `${config.apiUrl}`;
-                  const validFiles = currentQuestion.files?.filter(
-                    (file) =>
-                      file &&
-                      file !== "/media/uploads/questions/option_4_uFtm5qj.png"
-                  );
-                  const displayItems =
-                    validFiles?.length > 0
-                      ? validFiles
-                      : currentQuestion.options;
+                  const validFiles =
+                    currentQuestion?.files?.filter(
+                      (file) =>
+                        file &&
+                        file !== "/media/uploads/questions/option_4_uFtm5qj.png"
+                    ) || [];
 
-                  return displayItems?.map((item, index) =>
-                    item ? (
-                      <label
-                        key={index}
-                        className={`border border-gray-300 rounded-lg p-4 flex items-center justify-center text-center cursor-pointer transition duration-200 transform ${
-                          selectedOption === item
+                  // Combine files and options into a single array with both `file` and `text`
+                  const displayItems =
+                    validFiles.length > 0
+                      ? validFiles.map((file, index) => ({
+                          file,
+                          text: currentQuestion.options?.[index] || "",
+                        }))
+                      : currentQuestion.options.map((text) => ({ text }));
+
+                  return displayItems?.map((item, index) => (
+                    <label
+                      key={index}
+                      className={`border border-gray-300 rounded-lg p-4 flex items-center justify-center text-center cursor-pointer transition duration-200 transform ${
+                        selectedOption === item.text
                           ? "bg-blue-200 border-blue-800 shadow-md"
                           : "hover:bg-gray-50 hover:shadow-sm"
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="option"
-                          value={item}
-                          checked={selectedOption === item}
-                          onChange={() => handleOptionChange(item)}
-                          className="hidden"
-                        />
-                        {item.startsWith("/media/uploads/") ? (
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="option"
+                        value={item.text}
+                        checked={selectedOption === item.text}
+                        onChange={() => handleOptionChange(item.text)}
+                        className="hidden"
+                      />
+                      <div className="flex flex-col items-center">
+                        {/* Show image if the file exists */}
+                        {item.file && (
                           <img
-                            src={`${config.apiUrl}${item}`}
+                            src={`${config.apiUrl}${item.file}`}
                             alt={`Option ${index + 1}`}
-                            className="max-w-full max-h-24 object-contain"
+                            className="max-w-full max-h-24 object-contain mb-2"
                           />
-                        ) : (
-                          <span className="text-gray-800 font-medium">
-                            {item}
-                          </span>
                         )}
-                      </label>
-                    ) : null
-                  );
+                        {/* Show text */}
+                        <span className="text-gray-800 font-medium">
+                          {item.text}
+                        </span>
+                      </div>
+                    </label>
+                  ));
                 })()}
               </div>
             </div>

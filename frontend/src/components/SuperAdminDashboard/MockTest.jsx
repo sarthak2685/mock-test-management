@@ -726,7 +726,7 @@ const MockTestManagement = ({ user }) => {
           }
 
           // If it's already Base64 or text, return it.
-          return option?.image || option?.text || null;
+          return option?.image || option?.text || ""; // Default to empty string
         })
       );
 
@@ -797,7 +797,7 @@ const MockTestManagement = ({ user }) => {
       currentQuestion.questionText = text; // Update the question text with the textarea content
 
       // Append question text (from textarea)
-      formData.append("question", currentQuestion.questionText || null);
+      formData.append("question", currentQuestion.questionText || "");
 
       // Append question image file as Base64 if available
       if (currentQuestion.image) {
@@ -820,11 +820,11 @@ const MockTestManagement = ({ user }) => {
           const optionTextKey = `option_${index + 1}`;
           const optionImageKey = `file_${index + 1}`;
 
-          if (typeof option === "string") {
-            formData.append(optionTextKey, option); // Directly append the option text
-          } else {
-            formData.append(optionTextKey, option?.text || null); // Append the text if available
-          }
+          // Ensure text is never null; default to an empty string if no value
+          const optionText =
+            typeof option === "string" ? option : option?.text || "";
+
+          formData.append(optionTextKey, optionText); // Append the option text
 
           // Handle option image (Base64 or URL)
           if (option?.image) {
@@ -839,7 +839,7 @@ const MockTestManagement = ({ user }) => {
       );
 
       // Append correct_answer and correct_answer2 fields
-      formData.append("correct_answer", correctAnswer); // It will be null if no text answer
+      formData.append("correct_answer", correctAnswer || ""); // Default to empty string
       if (correctAnswer2) {
         formData.append("correct_answer2", correctAnswer2); // Image (Base64 or URL)
       }

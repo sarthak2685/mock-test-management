@@ -4,6 +4,7 @@ import ChapterNavigation from "../Mock/ChapterNavigation";
 import Timer from "./Timer";
 import config from "../../../config";
 import UserProfile from "../Mock/UserProfile";
+import { StaticMathField } from "react-mathquill";
 
 const ChapterMobile = ({
   currentSectionIndex,
@@ -252,7 +253,14 @@ const ChapterMobile = ({
 
             {/* Main Question Content */}
             <p className="my-4 text-gray-700 leading-relaxed">
-              {currentQuestion.question || "No question available"}
+              {
+                <StaticMathField>
+                  {/* Replace spaces with LaTeX space commands */}
+                  {currentQuestion?.question
+                    ? currentQuestion.question.replace(/ /g, "\\ ")
+                    : "No question available"}
+                </StaticMathField>
+              }
             </p>
 
             {/* Additional Content */}
@@ -276,14 +284,21 @@ const ChapterMobile = ({
                   currentQuestion?.files?.filter(
                     (file) => file && file !== defaultFileValue
                   ) || [];
+
+                // Combine files and options into a single array with both `file` and `text`
                 const displayItems =
-                  validFiles.length > 0 ? validFiles : currentQuestion.options;
+                  validFiles.length > 0
+                    ? validFiles.map((file, index) => ({
+                        file,
+                        text: currentQuestion.options?.[index] || "",
+                      }))
+                    : currentQuestion.options.map((text) => ({ text }));
 
                 return displayItems.map((item, index) => (
                   <label
                     key={index}
-                    className={`option border border-gray-300 rounded-lg p-4 flex items-center justify-center text-center cursor-pointer transition duration-200 transform ${
-                      selectedOption === item
+                    className={`option border border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center text-center cursor-pointer transition duration-200 transform ${
+                      selectedOption === item.text
                         ? "bg-blue-50 border-blue-500 shadow-md"
                         : "hover:bg-gray-50 hover:shadow-sm"
                     } mb-4`}
@@ -291,20 +306,25 @@ const ChapterMobile = ({
                     <input
                       type="radio"
                       name="option"
-                      value={item}
-                      checked={selectedOption === item}
-                      onChange={() => handleOptionChange(item)}
+                      value={item.text}
+                      checked={selectedOption === item.text}
+                      onChange={() => handleOptionChange(item.text)}
                       className="hidden"
                     />
-                    {item.startsWith("/media/uploads/") ? (
-                      <img
-                        src={`${config.apiUrl}${item}`}
-                        alt={`Option ${index + 1}`}
-                        className="max-w-full max-h-24 object-contain"
-                      />
-                    ) : (
-                      <span className="text-gray-800 font-medium">{item}</span>
-                    )}
+                    <div className="flex flex-col items-center">
+                      {/* Show image if the file exists */}
+                      {item.file && (
+                        <img
+                          src={`${config.apiUrl}${item.file}`}
+                          alt={`Option ${index + 1}`}
+                          className="max-w-full max-h-24 object-contain mb-2"
+                        />
+                      )}
+                      {/* Show text */}
+                      <span className="text-gray-800 font-medium">
+                        {item.text}
+                      </span>
+                    </div>
                   </label>
                 ));
               })()}
