@@ -39,6 +39,40 @@ const RazorpayPayment = () => {
       [name]: value,
     }));
   };
+  useEffect(() => {
+    const checkPhoneNumber = async () => {
+      try {
+        if (formData.mobile_no && /^[0-9]{10}$/.test(formData.mobile_no)) {
+          const response = await axios.get(`${config.apiUrl}/check-number/`, {
+            params: { mobile_no: formData.mobile_no },
+          });
+          // Handle API response
+          setErrors((prevErrors) => ({
+            ...prevErrors,
+            phoneExists: response.data.exists,
+          }));
+        } else {
+          setErrors((prevErrors) => ({ ...prevErrors, phoneExists: false }));
+        }
+      } catch (error) {
+        if (error.response) {
+          const { status, data } = error.response;
+          if (status === 404 && data.message === "EXISTS") {
+            setErrors((prevErrors) => ({
+              ...prevErrors,
+              phoneExists: true,
+            }));
+          }
+        } else {
+          console.error("Error checking phone number:", error);
+        }
+      }
+    };
+  
+    checkPhoneNumber();
+  }, [formData.mobile_no]);
+  
+
 
   useEffect(() => {
     setErrors({
@@ -98,7 +132,12 @@ const RazorpayPayment = () => {
         handler: async (response) => {
           const verifyResponse = await axios.post(
             `${config.apiUrl}/verify-payment/`,
-            response
+            response,
+            {
+              params: {
+                email: formData.email_id, // Include email as a query parameter
+              },
+            }
           );
 
           if (verifyResponse.data.status === "Payment Verified") {
@@ -226,6 +265,11 @@ const RazorpayPayment = () => {
               {errors.invalidPhone && (
                 <p className="text-sm text-red-500">
                   Please enter a valid 10-digit phone number.
+                </p>
+              )}
+               {errors.phoneExists && (
+                <p className="text-sm text-red-500">
+                  Phone number already exists.
                 </p>
               )}
             </div>

@@ -11,6 +11,7 @@ const TestTime = () => {
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [testOptions, setTestOptions] = useState([]);
+  const [successMessage, setSuccessMessage] = useState("");
 
   const S = JSON.parse(localStorage.getItem("user"));
   const token = S.token;
@@ -124,7 +125,7 @@ const TestTime = () => {
       const result = await response.json();
       console.log("Test saved successfully:", result);
 
-      alert("Test saved successfully!");
+      setSuccessMessage("Test Time set successfully!"); 
 
       // Clear the form data
       setTestName("");
@@ -132,7 +133,6 @@ const TestTime = () => {
       setEndTime("");
     } catch (error) {
       console.error("Error saving test:", error);
-      alert("Failed to save test. Please try again.");
     }
   };
 
@@ -156,6 +156,11 @@ const TestTime = () => {
             <h1 className="text-xl md:text-3xl font-bold mb-4 text-left">
               TestTime Setup
             </h1>
+            {successMessage && (
+            <div className="mb-4 p-4 bg-green-200 text-green-800 border border-green-400 rounded">
+              {successMessage}
+            </div>
+          )}
 
             <div className="bg-white shadow-lg rounded-lg p-6">
               <form onSubmit={handleSubmit}>

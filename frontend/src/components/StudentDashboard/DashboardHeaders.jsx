@@ -165,7 +165,7 @@ const DashboardHeader = ({ toggleSidebar }) => {
           >
           {user.pic &&
                   user.pic !==
-                    "/media/pic/2025/01/25/option_4_uFtm5qj.png.jpeg" ? (
+                    "/media/uploads/questions/option_4_uFtm5qj.png" ? (
                     <img
                       src={`${config.apiUrl}${user.pic}`}
                       alt="Avatar"
