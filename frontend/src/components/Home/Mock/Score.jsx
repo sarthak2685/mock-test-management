@@ -25,8 +25,10 @@ const Score = () => {
   const endTime = localStorage.getItem("end_time") || "N/A";
   const [leaderboardData, setLeaderboardData] = useState([]);
   const navigate = useNavigate();
+  const optional = localStorage.getItem("nonSelectedLanguage");
+  console.log("Setting", optional);
 
-  const queryParams = `student_id=${studentId}&test_name=${testName}&start_time=${startTime}&exam_id=${examId}&end_time=${endTime}`;
+  const queryParams = `student_id=${studentId}&test_name=${testName}&start_time=${startTime}&exam_id=${examId}&end_time=${endTime}&optional=${optional}`;
   const apiUrl = `${config.apiUrl}/get-analysis/?${queryParams}`;
 
   // Fetch analysis data
@@ -113,10 +115,12 @@ const Score = () => {
         }
         return text;
       };
-      
+
       // Transform API data to fit PDF format
       const data = {
-        section: `${sanitizeText(apiData[0]?.exam_name)} - ${sanitizeText(apiData[0]?.subject_name)}`,
+        section: `${sanitizeText(apiData[0]?.exam_name)} - ${sanitizeText(
+          apiData[0]?.subject_name
+        )}`,
         questions: apiData.map((q) => ({
           question: sanitizeText(q.question),
           options: Object.values(q.options).map(sanitizeText), // Sanitize options
@@ -124,7 +128,6 @@ const Score = () => {
           markedAnswer: sanitizeText(q.selected_answer),
         })),
       };
-      
 
       const doc = new jsPDF();
 
