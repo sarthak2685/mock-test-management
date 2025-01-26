@@ -26,10 +26,13 @@ const Score = () => {
   const [leaderboardData, setLeaderboardData] = useState([]);
   const navigate = useNavigate();
   const optional = localStorage.getItem("nonSelectedLanguage");
-  console.log("Setting", optional);
+  const reportRef = useRef(); // Added this
+  const averageMarksData = analysisData?.average_marks_by_subject || []; // Added this
+
 
   const queryParams = `student_id=${studentId}&test_name=${testName}&start_time=${startTime}&exam_id=${examId}&end_time=${endTime}&optional=${optional}`;
   const apiUrl = `${config.apiUrl}/get-analysis/?${queryParams}`;
+  
 
   // Fetch analysis data
   useEffect(() => {
@@ -47,7 +50,6 @@ const Score = () => {
           throw new Error("Failed to fetch data");
         }
         const data = await response.json();
-        console.log("hero", data);
         setAnalysisData(data);
         setLeaderboardData(data.leaderboard || []);
       } catch (err) {
@@ -58,19 +60,6 @@ const Score = () => {
     };
     fetchData();
   }, [apiUrl]);
-
-  const sectionData = Object.keys(
-    analysisData?.data_2?.subject_summary || {}
-  ).map((subject) => {
-    const summary = analysisData.data_2.subject_summary[subject];
-    return {
-      name: subject,
-      correct: summary.correct,
-      wrong: summary.incorrect,
-      unattempted: analysisData.data_2.unattempted_questions_count || 0,
-      marks: summary.marks,
-    };
-  });
 
   const handleChange = () => {
     localStorage.removeItem("submittedData");
@@ -87,175 +76,196 @@ const Score = () => {
     navigate("/");
   };
 
-  const reportRef = useRef();
+  const sectionData =
+  analysisData?.data_2?.subject_summary &&
+  Object.keys(analysisData.data_2.subject_summary).map((subject) => {
+    const summary = analysisData.data_2.subject_summary[subject];
+    return {
+      name: subject,
+      correct: summary.correct,
+      wrong: summary.incorrect,
+      unattempted: analysisData.data_2.unattempted_questions_count || 0,
+      marks: summary.marks,
+    };
+  });
+
+
   const handlePDFDownload = async () => {
     const apiUrl = `${config.apiUrl}/analysis-report/?student_id=${studentId}&exam_id=${examId}&test_name=${testName}`;
 
     try {
-      const response = await fetch(apiUrl, {
-        method: "GET",
-        headers: {
-          Authorization: `Token ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("API Error:", errorText);
-        throw new Error("Failed to fetch report data");
-      }
-
-      const apiData = await response.json();
-
-      // Utility to sanitize text
-      const sanitizeText = (text) => {
-        if (typeof text === "string") {
-          return text.replace(/\\/g, ""); // Remove all backslashes
-        }
-        return text;
-      };
-
-      // Transform API data to fit PDF format
-      const data = {
-        section: `${sanitizeText(apiData[0]?.exam_name)} - ${sanitizeText(
-          apiData[0]?.subject_name
-        )}`,
-        questions: apiData.map((q) => ({
-          question: sanitizeText(q.question),
-          options: Object.values(q.options).map(sanitizeText), // Sanitize options
-          correctAnswer: sanitizeText(q.correct_answer),
-          markedAnswer: sanitizeText(q.selected_answer),
-        })),
-      };
-
-      const doc = new jsPDF();
-
-      // Define reusable colors
-      const titleColor = [50, 50, 50];
-      const sectionColor = [80, 80, 80];
-      const questionColor = [0, 102, 204];
-      const correctAnswerColor = [34, 139, 34]; // Green
-      const markedAnswerCorrectColor = [34, 139, 34];
-      const markedAnswerIncorrectColor = [255, 51, 51]; // Bright red for incorrect answers
-      const borderColor = [200, 200, 200]; // Light grey for borders
-      const cardFillColor = [248, 249, 250]; // Light background color for the card
-
-      // Title
-      doc.setFontSize(22);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(...titleColor);
-      doc.text("Score Report", 20, 15);
-
-      let y = 30; // Starting position for content
-
-      // Section Title
-      if (data.section) {
-        doc.setFontSize(16);
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(...sectionColor);
-        doc.text(`Section: ${data.section}`, 20, y);
-        y += 12; // Space after section title
-      }
-
-      // Loop through questions
-      data.questions.forEach((question, index) => {
-        const questionId = index + 1; // Numbering for questions
-
-        // Card border around question content (rounded corners, shadow effect)
-        const cardWidth = 180;
-        const questionWidth = 140;
-        const questionText = `Question ${questionId}: ${question.question}`;
-        const wrappedQuestion = doc.splitTextToSize(
-          questionText,
-          questionWidth
-        );
-
-        const options = question.options.map(
-          (option, idx) => `${String.fromCharCode(65 + idx)}) ${option}`
-        );
-        const correctAnswerText = `Correct Answer: ${question.correctAnswer}`;
-        const markedAnswerText = `Marked Answer: ${
-          question.markedAnswer || "Not Answered"
-        }`;
-
-        // Calculate the height of the question and options dynamically
-        const wrappedHeight = wrappedQuestion.length * 8;
-        const optionsHeight = options.length > 2 ? 16 : 8;
-        const totalHeight = wrappedHeight + optionsHeight + 20;
-
-        // Draw the card border with rounded corners and shadow effect
-        doc.setDrawColor(...borderColor);
-        doc.setLineWidth(0.5);
-        doc.setFillColor(...cardFillColor);
-        doc.roundedRect(15, y, cardWidth, totalHeight, 5, 5, "FD");
-
-        // Question Title
-        doc.setFontSize(14);
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(...questionColor);
-        doc.text(wrappedQuestion, 25, y + 10);
-
-        // Space before options
-        let optionYOffset = y + 10 + wrappedHeight;
-
-        // Options (wrap the options text for better fitting)
-        doc.setFontSize(12);
-        doc.setFont("helvetica", "normal");
-        doc.setTextColor(40, 40, 40);
-        const columnSpacing = 80;
-        options.forEach((opt, idx) => {
-          const wrappedOption = doc.splitTextToSize(opt, questionWidth);
-          const xOffset = idx % 2 === 0 ? 25 : 25 + columnSpacing;
-          const yOffset = optionYOffset + Math.floor(idx / 2) * 8;
-          doc.text(wrappedOption, xOffset, yOffset);
+        const response = await fetch(apiUrl, {
+            method: "GET",
+            headers: {
+                Authorization: `Token ${token}`,
+                "Content-Type": "application/json",
+            },
         });
 
-        // Correct and Marked Answers side by side
-        const answerYOffset =
-          optionYOffset + Math.ceil(options.length / 2) * 8 + 3;
-
-        // Correct Answer
-        doc.setFontSize(12);
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(...correctAnswerColor);
-        doc.text(correctAnswerText, 25, answerYOffset);
-
-        // Marked Answer (Green if correct, red if incorrect)
-        const markedAnswerColor =
-          question.markedAnswer === question.correctAnswer
-            ? markedAnswerCorrectColor
-            : markedAnswerIncorrectColor;
-        doc.setTextColor(...markedAnswerColor);
-        doc.text(markedAnswerText, 105, answerYOffset);
-
-        y += totalHeight + 8;
-
-        // Page break if necessary (check remaining space on page)
-        if (y + totalHeight > 270) {
-          doc.addPage();
-          y = 20; // Reset y for the new page
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error("API Error:", errorText);
+            throw new Error("Failed to fetch report data");
         }
-      });
 
-      // Add Footer with page number
-      doc.setFontSize(10);
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor(150, 150, 150); // Light grey for page numbers
-      const totalPages = doc.internal.getNumberOfPages();
-      doc.text(
-        `Page ${doc.internal.getCurrentPageInfo().pageNumber} of ${totalPages}`,
-        180,
-        290
-      );
+        const apiData = await response.json();
 
-      // Save the PDF
-      doc.save(`${testName}-report.pdf`);
+        const sanitizeText = (text) =>
+            typeof text === "string" ? text.replace(/\\/g, "") : text;
+
+        const data = {
+            examName:`${sanitizeText(apiData[0]?.exam_name)}`,
+            section: `${sanitizeText(apiData[0]?.subject_name)}`,
+            questions: apiData.map((q, index) => ({
+              questionNumber: index + 1, // Generate question number on the frontend
+                question: sanitizeText(q.question),
+                questionImage: q.question_1 || null,
+                options: [1, 2, 3, 4].map((idx) => ({
+                    text: sanitizeText(q.options[`Option ${idx}`] || ''),
+                    image: q.options[`Option_${idx}`] || null,
+                })),
+                correctAnswer: sanitizeText(q.correct_answer),
+                markedAnswer: sanitizeText(q.selected_answer),
+            })),
+        };
+
+        const doc = new jsPDF();
+        const titleColor = [50, 50, 50];
+        const questionColor = [0, 102, 204];
+        const correctAnswerColor = [34, 139, 34];
+        const markedAnswerColor = [255, 51, 51];
+        const optionTextColor = [0, 0, 0];
+
+
+        doc.setFontSize(20);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(...titleColor);
+        doc.text("Score Report", 20, 15);
+
+        let y = 25;
+        if (data.examName) {
+          doc.setFontSize(14);
+          doc.setFont("helvetica", "bold");
+          doc.text(`Exam Name: ${data.examName}`, 20, y);
+          y += 10;
+      }
+
+        if (data.section) {
+            doc.setFontSize(14);
+            doc.setFont("helvetica", "bold");
+            doc.text(`Section: ${data.section}`, 20, y);
+            y += 10;
+        }
+
+        // Loop through questions
+        for (const question of data.questions) {
+            const cardMargin = 8;
+            const cardWidth = 180;
+            let cardHeight = 0;
+            const borderRadius = 8;
+
+            const wrappedQuestion = doc.splitTextToSize(`QUESTION ${question.questionNumber}: ${question.question}`, cardWidth - 2 * cardMargin);
+            cardHeight += wrappedQuestion.length * 7 + 12;
+
+            if (question.questionImage && question.questionImage.startsWith("/media/uploads/")) {
+                cardHeight += 40; // Adjust image height
+            }
+
+            const optionHeight = 18; // Adjusted for text and image alignment
+            const imageHeight = 20;
+
+            let optionsHeight = 0;
+            for (let idx = 0; idx < 4; idx++) {
+                const option = question.options[idx];
+                let optionCurrentHeight = optionHeight;
+                if (option.image && option.image.startsWith("/media/uploads/")) {
+                    optionCurrentHeight += imageHeight + 5; // Spacing between text and image
+                }
+                optionsHeight += optionCurrentHeight;
+            }
+
+            cardHeight += optionsHeight;
+
+            doc.setFillColor(240, 240, 240);
+            doc.setDrawColor(150, 150, 150);
+            doc.setLineWidth(0.5);
+            doc.roundedRect(15, y, cardWidth, cardHeight, borderRadius, borderRadius, 'FD');
+
+            doc.setTextColor(...questionColor);
+            doc.setFontSize(12);
+            doc.setFont("helvetica", "bold");
+
+            doc.text(wrappedQuestion, 20, y + cardMargin);
+            y += wrappedQuestion.length * 7 + 12;
+
+            if (question.questionImage && question.questionImage.startsWith("/media/uploads/")) {
+                const imageUrl = `${config.apiUrl}${question.questionImage}`;
+                doc.addImage(imageUrl, "JPEG", 20, y, 40, 40);
+                y += 40;
+            }
+
+            const optionX1 = 20;
+            const optionX2 = 110; // Second column start position
+            let optionY = y + 5;
+
+            for (let idx = 0; idx < 4; idx++) {
+                const option = question.options[idx];
+                const columnX = idx % 2 === 0 ? optionX1 : optionX2; // Alternate columns
+                const optionText = `${String.fromCharCode(65 + idx)}) ${option.text}`;
+                const optionColumnY = optionY + Math.floor(idx / 2) * optionHeight * 2; // Adjust Y for rows
+
+                // Render option text
+                doc.setTextColor(...optionTextColor);
+                doc.text(optionText, columnX, optionColumnY);
+
+                // If there is an image for the option, place it below the text
+                if (option.image && option.image.startsWith("/media/uploads/")) {
+                    const imageUrl = `${config.apiUrl}${option.image}`;
+                    doc.addImage(imageUrl, "JPEG", columnX, optionColumnY + 5, 20, 20);
+                }
+            }
+
+            optionY += optionsHeight / 2; // Adjust Y for next card
+
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "bold");
+
+            const correctAnswerText = `Correct Answer: ${question.correctAnswer}`;
+            const markedAnswerText = `Marked Answer: ${question.markedAnswer || "Not Answered"}`;
+
+            doc.setTextColor(...correctAnswerColor);
+            doc.text(correctAnswerText, 20, optionY + 10);
+            doc.setTextColor(...markedAnswerColor);
+            doc.text(markedAnswerText, 110, optionY + 10);
+
+            optionY += 20; // Adjusted space between cards
+
+            if (optionY + 30 > 270) {
+                doc.addPage();
+                optionY = 20;
+            }
+        }
+
+        const totalPages = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= totalPages; i++) {
+            doc.setPage(i);
+            doc.setFontSize(8);
+            doc.setFont("helvetica", "normal");
+            doc.setTextColor(150, 150, 150);
+            doc.text(`Page ${i} of ${totalPages}`, 180, 290);
+        }
+
+        doc.save(`${testName}-report.pdf`);
     } catch (error) {
-      console.error("Error generating PDF:", error.message);
-      alert("Failed to generate the PDF. Please try again.");
+        console.error("Error generating PDF:", error.message);
+        alert("Failed to generate the PDF. Please try again.");
     }
-  };
+};
+
+
+
+
+  
 
   const parseDate = (str) => {
     const formattedStr = str
@@ -267,13 +277,9 @@ const Score = () => {
     return new Date(formattedStr);
   };
 
-  // Convert the start and end times to Date objects
   const startDate = parseDate(startTime);
   const endDate = parseDate(endTime);
-
-  // Calculate the difference in milliseconds and convert to seconds
   const diffInSeconds = Math.floor((endDate - startDate) / 1000);
-  const averageMarksData = analysisData?.average_marks_by_subject || [];
 
   const renderContent = () => {
     switch (activeTab) {
