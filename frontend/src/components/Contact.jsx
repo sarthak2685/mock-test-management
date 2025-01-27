@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
-import config from '../config';
+import React, { useState } from "react";
+import { ToastContainer, toast } from "react-toastify";
+import config from "../config";
+import "react-toastify/dist/ReactToastify.css";
 
 const ContactForm = () => {
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    email: '',
-    phoneNumber: '',
-    message: '',
+    firstName: "",
+    lastName: "",
+    email: "",
+    phoneNumber: "",
+    message: "",
   });
 
   const handleChange = (e) => {
@@ -28,9 +30,9 @@ const ContactForm = () => {
 
     try {
       const response = await fetch(url, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json', // Only Content-Type header is required now
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(payload),
       });
@@ -39,20 +41,40 @@ const ContactForm = () => {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
-      alert('Your ticket has been submitted successfully!');
-      console.log('Response:', data);
+      await response.json();
+
+      // Success toast
+      toast.success("Your ticket has been submitted successfully!", {
+        position: "top-center",
+        autoClose: 3000,
+      });
+
+      // Reset form fields after successful submission
+      setFormData({
+        firstName: "",
+        lastName: "",
+        email: "",
+        phoneNumber: "",
+        message: "",
+      });
     } catch (error) {
-      console.error('Failed to submit the form:', error);
-      alert('Something went wrong. Please try again.');
+      console.error("Failed to submit the form:", error);
+      toast.error("Something went wrong. Please try again.", {
+        position: "top-center",
+        autoClose: 3000,
+      });
     }
   };
+
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-gray-50">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-black">Need Help? Open a Ticket</h1>
+        <h1 className="text-3xl font-bold text-black">
+          Need Help? Open a Ticket
+        </h1>
         <p className="text-gray-600 mt-2">
-          Submit Your Support Ticket. We will be with you as soon as we are able.
+          Submit Your Support Ticket. We will be with you as soon as we are
+          able.
         </p>
       </div>
 
@@ -62,7 +84,10 @@ const ContactForm = () => {
         <form className="relative z-10 space-y-6" onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-gray-700 text-sm font-semibold mb-1" htmlFor="firstName">
+              <label
+                className="block text-gray-700 text-sm font-semibold mb-1"
+                htmlFor="firstName"
+              >
                 First Name
               </label>
               <input
@@ -77,7 +102,10 @@ const ContactForm = () => {
             </div>
 
             <div>
-              <label className="block text-gray-700 text-sm font-semibold mb-1" htmlFor="lastName">
+              <label
+                className="block text-gray-700 text-sm font-semibold mb-1"
+                htmlFor="lastName"
+              >
                 Last Name
               </label>
               <input
@@ -94,7 +122,10 @@ const ContactForm = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-gray-700 text-sm font-semibold mb-1" htmlFor="email">
+              <label
+                className="block text-gray-700 text-sm font-semibold mb-1"
+                htmlFor="email"
+              >
                 Business Email
               </label>
               <input
@@ -109,7 +140,10 @@ const ContactForm = () => {
             </div>
 
             <div>
-              <label className="block text-gray-700 text-sm font-semibold mb-1" htmlFor="phoneNumber">
+              <label
+                className="block text-gray-700 text-sm font-semibold mb-1"
+                htmlFor="phoneNumber"
+              >
                 Phone Number
               </label>
               <input
@@ -124,7 +158,10 @@ const ContactForm = () => {
           </div>
 
           <div>
-            <label className="block text-gray-700 text-sm font-semibold mb-1" htmlFor="message">
+            <label
+              className="block text-gray-700 text-sm font-semibold mb-1"
+              htmlFor="message"
+            >
               What are you looking for?
             </label>
             <textarea
@@ -148,6 +185,9 @@ const ContactForm = () => {
           </div>
         </form>
       </div>
+
+      {/* ToastContainer to display toasts */}
+      <ToastContainer />
     </div>
   );
 };

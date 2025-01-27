@@ -13,7 +13,7 @@ const Announcement = () => {
   const [successMessage, setSuccessMessage] = useState(""); // New state for success message
   const token = user.token;
   const id = user.id;
-  console.log(user)
+  console.log(user);
 
   const toggleSidebar = () => {
     setIsCollapsed((prev) => !prev); // Toggle sidebar collapse state
@@ -39,11 +39,15 @@ const Announcement = () => {
 
   const handleTimeChange = (e) => {
     const time24Hr = e.target.value; // Time in 24-hour format (e.g., 14:30)
-    const [hours, minutes] = time24Hr.split(":").map((item) => parseInt(item, 10));
+    const [hours, minutes] = time24Hr
+      .split(":")
+      .map((item) => parseInt(item, 10));
     const isAm = hours < 12;
     const hours12 = hours % 12 || 12; // Convert to 12-hour format
-    const formattedTime = `${hours12}:${minutes < 10 ? "0" + minutes : minutes} ${isAm ? "AM" : "PM"}`;
-    
+    const formattedTime = `${hours12}:${
+      minutes < 10 ? "0" + minutes : minutes
+    } ${isAm ? "AM" : "PM"}`;
+
     setAnnouncementTime(formattedTime); // Save the formatted time (12-hour format)
   };
 
@@ -54,18 +58,21 @@ const Announcement = () => {
     const payload = {
       date: announcementDate,
       time: announcementTime,
-      institute: id, 
+      institute: id,
     };
 
     try {
-      const response = await fetch(`${config.apiUrl}/exam-dates/?institute=${user.institute_name}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Token ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        `${config.apiUrl}/exam-dates/?institute=${user.institute_name}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Token ${token}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Error setting announcement");
@@ -73,9 +80,9 @@ const Announcement = () => {
 
       // Handle success
       const data = await response.json();
-      setSuccessMessage("Test announcement set successfully!"); 
-      setAnnouncementDate('');
-      setAnnouncementTime('');
+      setSuccessMessage("Test announcement set successfully!");
+      setAnnouncementDate("");
+      setAnnouncementTime("");
     } catch (error) {
       console.error("Error:", error);
     } finally {
@@ -85,14 +92,14 @@ const Announcement = () => {
 
   return (
     <>
-    <Sidebar isCollapsed={isCollapsed} toggleSidebar={toggleSidebar} />
-    <div
+      <Sidebar isCollapsed={isCollapsed} toggleSidebar={toggleSidebar} />
+      <div
         className={`flex-grow transition-all duration-300 ease-in-out ${
           isCollapsed ? "ml-0" : "ml-64"
         }`}
       >
-<DashboardHeaders toggleSidebar={toggleSidebar} />
-<div className="container mx-auto p-6 max-w-lg">
+        <DashboardHeaders toggleSidebar={toggleSidebar} />
+        <div className="container mx-auto p-6 max-w-lg">
           <h2 className="text-2xl font-extrabold text-black mb-4 uppercase text-center">
             Set Next Test Announcement
           </h2>
@@ -101,7 +108,10 @@ const Announcement = () => {
               {successMessage}
             </div>
           )}
-          <form onSubmit={handleSubmit} className="bg-white p-6 rounded shadow-md">
+          <form
+            onSubmit={handleSubmit}
+            className="bg-white p-6 rounded shadow-md"
+          >
             <div className="mb-4">
               <label
                 htmlFor="announcementDate"
@@ -124,7 +134,7 @@ const Announcement = () => {
                 htmlFor="announcementTime"
                 className="block text-sm font-medium text-gray-700"
               >
-                Time 
+                Time
               </label>
               <input
                 type="time"
