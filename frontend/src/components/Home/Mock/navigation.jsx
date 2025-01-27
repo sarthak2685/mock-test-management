@@ -2,6 +2,9 @@ import React, { useState, useEffect, useRef } from "react";
 import { RiInformation2Line } from "react-icons/ri";
 import Timer from "../Mock/Timer"; // Assuming Timer is a separate component
 import config from "../../../config";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 
 const InstructionsModal = ({ isVisible, onClose }) => {
   const [optionalSubject, setOptionalSubject] = useState(
@@ -289,6 +292,8 @@ const QuestionNavigation = ({
 
   const SubjectId = localStorage.getItem("selectedSubjectId");
   const Test = localStorage.getItem("selectedTestName");
+  const [tabSwitchCount, setTabSwitchCount] = useState(0);
+
 
   
 
@@ -408,8 +413,72 @@ const QuestionNavigation = ({
       handleSubmit();
     }
   };
+  const handleTabSwitch = () => {
+    if (document.hidden) {
+      setTabSwitchCount((prev) => {
+        const newCount = prev + 1;
+
+        if (newCount < 4) {
+          toast.warn(
+            `Warning ${newCount}: Tab switching is not allowed. ${
+              4 - newCount
+            } more and the test will auto-submit.`
+          );
+        } else if (newCount === 4) {
+          toast.error("You switched tabs too many times. Submitting the test.");
+          handleSubmit();
+        }
+
+        return newCount;
+      });
+    }
+  };
+
+  const enableFullScreen = () => {
+    const elem = document.documentElement; // The root element
+    if (elem.requestFullscreen) {
+      elem.requestFullscreen();
+    } else if (elem.mozRequestFullScreen) {
+      elem.mozRequestFullScreen(); // For Firefox
+    } else if (elem.webkitRequestFullscreen) {
+      elem.webkitRequestFullscreen(); // For Chrome, Safari, and Opera
+    } else if (elem.msRequestFullscreen) {
+      elem.msRequestFullscreen(); // For IE/Edge
+    }
+  };
+
+  const monitorFullScreen = () => {
+    if (!document.fullscreenElement) {
+      toast.error("You exited full-screen mode. The test will now be submitted.");
+      handleSubmit();
+    }
+  };
+
+  useEffect(() => {
+    // Add event listeners
+    document.addEventListener("visibilitychange", handleTabSwitch);
+    document.addEventListener("fullscreenchange", monitorFullScreen);
+
+    return () => {
+      // Clean up event listeners
+      document.removeEventListener("visibilitychange", handleTabSwitch);
+      document.removeEventListener("fullscreenchange", monitorFullScreen);
+    };
+  }, []);
+
+
+  useEffect(() => {
+    document.addEventListener("visibilitychange", handleTabSwitch);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleTabSwitch);
+    };
+  }, []);
+
 
   return (
+    <>
+    <ToastContainer />
     <div className="bg-white p-7 rounded-lg shadow-lg">
       {/* Header Section */}
       <div className="mb-8 flex justify-between items-center">
@@ -513,6 +582,7 @@ const QuestionNavigation = ({
         Submit Test
       </button>
     </div>
+    </>
   );
 };
 

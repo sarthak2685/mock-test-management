@@ -11,6 +11,8 @@ const Profile = () => {
   const S = JSON.parse(localStorage.getItem("user"));
   const token = S.token;
   console.log("Profile",S)
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
 
   const [formData, setFormData] = useState({
     name: S.name || "",
@@ -20,6 +22,9 @@ const Profile = () => {
     mobile: S.mobile || "",
     customAvatar: "",
   });
+  const toggleSidebar = () => {
+    setIsCollapsed((prev) => !prev);
+  };
 
   const handleAvatarSelect = (avatarConfig) => {
     setFormData({
@@ -152,11 +157,18 @@ const Profile = () => {
     <>
           <ToastContainer />
     <div className="flex flex-col min-h-screen bg-gray-50">
-                <DashboardHeader user={S} />
+    <Sidebar
+          isCollapsed={isCollapsed}
+          toggleSidebar={toggleSidebar}
+          className="hidden md:block"
+        />
 
-      <div className="flex flex-row flex-grow">
-        <Sidebar />
-        <div className="flex-grow ml-64 p-4">
+        <div
+          className={`flex-grow transition-all duration-300 ease-in-out ${isCollapsed ? "ml-0" : "ml-64"
+            }`}
+        >
+          <DashboardHeader user={S} toggleSidebar={toggleSidebar} />      
+           <div className="flex-grow ml-0  p-4">
 
           <div className="max-w-screen-lg mx-auto bg-white p-6 shadow-lg rounded-lg">
             <h2 className="text-2xl font-bold mb-6">Update Profile</h2>

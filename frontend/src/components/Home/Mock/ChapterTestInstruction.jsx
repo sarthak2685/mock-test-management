@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import config from "../../../config";
+import { toast } from "react-toastify";
 
 const ChapterTestInstructions = () => {
   const [isChecked, setIsChecked] = useState(false);
@@ -77,13 +78,39 @@ const ChapterTestInstructions = () => {
           .replace(", ", "_")
           .replace(/\//g, "-");
       };
-
-      // Store formatted start time when transitioning to step 2
-      const startTimeFormatted = formatDateTime(new Date());
-      localStorage.setItem("start_time", startTimeFormatted);
-      navigate("/chapter-exam");
+  
+      // Enable full-screen mode
+      const enableFullScreen = () => {
+        const elem = document.documentElement; // The root element
+        if (elem.requestFullscreen) {
+          return elem.requestFullscreen();
+        } else if (elem.mozRequestFullScreen) {
+          return elem.mozRequestFullScreen();
+        } else if (elem.webkitRequestFullscreen) {
+          return elem.webkitRequestFullscreen();
+        } else if (elem.msRequestFullscreen) {
+          return elem.msRequestFullscreen();
+        } else {
+          return Promise.reject(
+            new Error("Full-screen mode is not supported in your browser.")
+          );
+        }
+      };
+  
+      enableFullScreen()
+        .then(() => {
+          // Store formatted start time when transitioning to step 2
+          const startTimeFormatted = formatDateTime(new Date());
+          localStorage.setItem("start_time", startTimeFormatted);
+          navigate("/chapter-exam"); // Navigate to the exam page
+        })
+        .catch((err) => {
+          toast.error("Failed to enter full-screen mode.");
+          console.error("Error enabling full-screen mode:", err);
+        });
     }
   };
+  
 
   const handlePreviousStep = () => {
     if (step > 1) setStep(step - 1);
@@ -257,6 +284,12 @@ const ChapterTestInstructions = () => {
               <li>{negativeMarks} negative marking for incorrect answers.</li>
               <li>No penalty for un-attempted questions.</li>
             </ul>
+            <h2 className="text-base font-semibold text-blue-600 mt-4">
+              <span className="text-black font-bold">Note:</span> Test will be auto submitted, if you will switch the tab more than 3 times.
+            </h2>
+            <h2 className="text-base  font-semibold text-blue-600 mt-2">
+              <span className="text-black font-bold">Note:</span> Test will be auto submitted, if you will exit full screen.
+            </h2>
             <div className="mt-6">
               <label className="flex items-center space-x-3">
                 <input

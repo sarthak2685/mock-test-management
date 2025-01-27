@@ -174,7 +174,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
           <hr className="my-4 border-t border-white opacity-50" />
         </nav>
 
-        <div className="mt-auto flex flex-col">
+        <div className="mt-auto flex flex-col mb-20 md:mb-0">
           <NavLink
             to="/help"
             className={({ isActive }) =>
