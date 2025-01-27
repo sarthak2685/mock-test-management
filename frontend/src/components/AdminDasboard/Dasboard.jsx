@@ -139,7 +139,12 @@ const Dashboard = () => {
             // Verify payment
             const verifyResponse = await axios.post(
               `${config.apiUrl}/verify-payment/`,
-              response
+              response,
+              {
+                params: {
+                  email: user?.email_id, // Include email as a query parameter
+                },
+              }
             );
 
             if (verifyResponse.data.status === "Payment Verified") {
