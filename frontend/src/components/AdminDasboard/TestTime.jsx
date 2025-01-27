@@ -1,20 +1,21 @@
 import React, { useState, useEffect, useRef } from "react";
 import Select from "react-select";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import config from "../../config";
 import DashboardHeader from "./DashboardHeader";
 import Sidebar from "./Sidebar/SideBars";
 
 const TestTime = () => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(window.innerWidth < 768);
   const [user, setUser] = useState(null);
   const [testName, setTestName] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
   const [testOptions, setTestOptions] = useState([]);
-  const [successMessage, setSuccessMessage] = useState("");
 
   const S = JSON.parse(localStorage.getItem("user"));
-  const token = S.token;
+  const token = S?.token;
 
   const startTimeRef = useRef(null);
   const endTimeRef = useRef(null);
@@ -22,14 +23,13 @@ const TestTime = () => {
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) {
-      const parsedUser = JSON.parse(storedUser);
-      setUser(parsedUser);
+      setUser(JSON.parse(storedUser));
     }
   }, []);
 
   const fetchTests = async () => {
     try {
-      const selectedInstituteNames = S.institute_name;
+      const selectedInstituteNames = S?.institute_name;
 
       const queryParams = new URLSearchParams({
         student_id: "3738837e-c8bd-458d-9152-634378b01060",
@@ -51,7 +51,6 @@ const TestTime = () => {
       }
 
       const data = await response.json();
-
       const uniqueTestNames = [
         ...new Set(
           data.test_names.map(
@@ -59,7 +58,7 @@ const TestTime = () => {
           )
         ),
       ];
-      
+
       const testOptionsFormatted = uniqueTestNames.map((name) => ({
         value: name,
         label: name,
@@ -72,7 +71,9 @@ const TestTime = () => {
   };
 
   useEffect(() => {
-    fetchTests();
+    if (token) {
+      fetchTests();
+    }
   }, [token]);
 
   const toggleSidebar = () => {
@@ -83,26 +84,20 @@ const TestTime = () => {
     const handleResize = () => {
       setIsCollapsed(window.innerWidth < 768);
     };
-    handleResize();
     window.addEventListener("resize", handleResize);
     return () => {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
 
-  const handleStartTimeClick = () => {
-    startTimeRef.current.focus();
-  };
-
-  const handleEndTimeClick = () => {
-    endTimeRef.current.focus();
-  };
+  const handleStartTimeClick = () => startTimeRef.current.focus();
+  const handleEndTimeClick = () => endTimeRef.current.focus();
 
   const handleSubmit = async (event) => {
     event.preventDefault();
 
     const payload = {
-      institutes: [S.id],
+      institutes: [S?.id],
       test_name: testName,
       start_time: startTime,
       end_time: endTime,
@@ -122,22 +117,21 @@ const TestTime = () => {
         throw new Error(`Failed to save test: ${response.statusText}`);
       }
 
-      const result = await response.json();
-      console.log("Test saved successfully:", result);
+      toast.success("Test Time set successfully!");
 
-      setSuccessMessage("Test Time set successfully!"); 
-
-      // Clear the form data
+      // Clear all fields
       setTestName("");
       setStartTime("");
       setEndTime("");
     } catch (error) {
       console.error("Error saving test:", error);
+      toast.error("Failed to save test.");
     }
   };
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
+      <ToastContainer position="top-right" autoClose={3000} />
       <div className="flex flex-row flex-grow">
         <Sidebar
           isCollapsed={isCollapsed}
@@ -156,11 +150,6 @@ const TestTime = () => {
             <h1 className="text-xl md:text-3xl font-bold mb-4 text-left">
               TestTime Setup
             </h1>
-            {successMessage && (
-            <div className="mb-4 p-4 bg-green-200 text-green-800 border border-green-400 rounded">
-              {successMessage}
-            </div>
-          )}
 
             <div className="bg-white shadow-lg rounded-lg p-6">
               <form onSubmit={handleSubmit}>
@@ -168,14 +157,20 @@ const TestTime = () => {
                   <div className="flex flex-col">
                     <label
                       htmlFor="testName"
-                      className="text-lg sm:text-xl md:text-xl font-semibold text-gray-700 mb-2"
+                      className="text-lg font-semibold text-gray-700 mb-2"
                     >
                       Test Name
                     </label>
                     <Select
                       options={testOptions}
-                      value={testOptions.find((option) => option.value === testName)}
-                      onChange={(selected) => setTestName(selected?.value || "")}
+                      value={
+                        testOptions.find(
+                          (option) => option.value === testName
+                        ) || null
+                      }
+                      onChange={(selected) =>
+                        setTestName(selected?.value || "")
+                      }
                       placeholder="Search and select a test"
                       isClearable
                       className="mt-1"
@@ -194,7 +189,7 @@ const TestTime = () => {
                   <div className="flex flex-col">
                     <label
                       htmlFor="startTime"
-                      className="text-lg sm:text-xl md:text-xl font-semibold text-gray-700 mb-2"
+                      className="text-lg font-semibold text-gray-700 mb-2"
                     >
                       Start Time
                     </label>
@@ -213,7 +208,7 @@ const TestTime = () => {
                   <div className="flex flex-col">
                     <label
                       htmlFor="endTime"
-                      className="text-lg sm:text-xl md:text-xl font-semibold text-gray-700 mb-2"
+                      className="text-lg font-semibold text-gray-700 mb-2"
                     >
                       End Time
                     </label>
