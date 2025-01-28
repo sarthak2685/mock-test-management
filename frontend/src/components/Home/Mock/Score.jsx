@@ -75,16 +75,16 @@ const Score = () => {
     localStorage.removeItem("selectedTestDetails");
     navigate("/");
   };
-
   const sectionData =
   analysisData?.data_2?.subject_summary &&
   Object.keys(analysisData.data_2.subject_summary).map((subject) => {
     const summary = analysisData.data_2.subject_summary[subject];
+    const Unattempted_data = analysisData.data_2;
     return {
       name: subject,
       correct: summary.correct,
       wrong: summary.incorrect,
-      unattempted: analysisData.data_2.unattempted_questions_count || 0,
+      unattempted: Unattempted_data.total_questions - Unattempted_data.attempted_questions,
       marks: summary.marks,
     };
   });

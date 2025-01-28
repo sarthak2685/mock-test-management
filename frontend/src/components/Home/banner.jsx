@@ -143,7 +143,7 @@ function Banner() {
         ref={bannerRef}
         className="bg-white py-16 md:py-16 relative overflow-hidden"
       >
-        <div className="container mx-auto px-4 md:pr-4 md:pl-24 flex flex-col-reverse md:flex-row items-center">
+        <div className="container mx-auto max-w-7xl sm:px-6 lg:px-6 py-8 bg-white  flex flex-col-reverse md:flex-row items-center">
           <div
             className={`w-full md:w-1/2 text-center md:text-left mb-8 md:mb-0 relative z-10 ${
               isVisible ? "animate-slideInBounce" : ""
