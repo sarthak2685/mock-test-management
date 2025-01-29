@@ -28,6 +28,7 @@ const AdminManagement = ({ user }) => {
       subscriptionPlan: "",
     },
   ]);
+const [errors, setErrors] = useState({ phoneExists: "" });
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -113,6 +114,44 @@ const AdminManagement = ({ user }) => {
 
     fetchAdmins();
   }, [token]);
+
+  useEffect(() => {
+    const checkPhoneNumber = async () => {
+      try {
+        // Find the first admin with a valid 10-digit phone number
+        const adminWithPhone = newAdmins.find(admin => /^[0-9]{10}$/.test(admin.phone));
+  
+        if (adminWithPhone) {
+          const response = await axios.get(`${config.apiUrl}/check-number/`, {
+            params: { phone: adminWithPhone.phone },
+          });
+  
+          setErrors((prevErrors) => ({
+            ...prevErrors,
+            phoneExists: response.data.exists ? "Phone number already exists" : "",
+          }));
+        } else {
+          setErrors((prevErrors) => ({ ...prevErrors, phoneExists: "" }));
+        }
+      } catch (error) {
+        if (error.response) {
+          const { status, data } = error.response;
+          if (status === 404 && data.message === "EXISTS") {
+            setErrors((prevErrors) => ({
+              ...prevErrors,
+              phoneExists: "Phone number already exists",
+            }));
+          }
+        } else {
+          console.error("Error checking phone number:", error);
+        }
+      }
+    };
+  
+    checkPhoneNumber();
+  }, [newAdmins]); // Dependency array should include newAdmins to watch for changes in any admin's phone number.
+  
+  
 
   useEffect(() => {
     const handleResize = () => {
@@ -412,31 +451,20 @@ const AdminManagement = ({ user }) => {
                       />
                     </div>
                     <div className="relative">
-                      <FaKey className="absolute left-3 top-3 text-gray-400 sm:left-2 sm:top-2 sm:text-xs lg:left-3 lg:top-3 lg:text-sm" />
-                      <input
-                        type="password"
-                        placeholder="Password"
-                        value={admin.password}
-                        onChange={(e) =>
-                          handleAdminChange(index, "password", e.target.value)
-                        }
-                        className="border p-2 pl-10 mb-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 sm:p-1 sm:pl-8 sm:mb-1 sm:text-xs lg:p-2 lg:pl-10 lg:mb-2 lg:text-sm"
-                      />
-                    </div>
-                    <div className="relative">
-                      <FaPhoneAlt className="absolute left-3 top-3 text-gray-400 sm:left-2 sm:top-2 sm:text-xs lg:left-3 lg:top-3 lg:text-sm" />
-                      <input
-                        type="tel"
-                        placeholder="Phone Number"
-                        value={admin.phone}
-                        onChange={(e) => {
-                          if (/^\d*$/.test(e.target.value)) {
-                            handleAdminChange(index, "phone", e.target.value);
-                          }
-                        }}
-                        className="border p-2 pl-10 mb-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 sm:p-1 sm:pl-8 sm:mb-1 sm:text-xs lg:p-2 lg:pl-10 lg:mb-2 lg:text-sm"
-                      />
-                    </div>
+  <FaPhoneAlt className="absolute left-3 top-3 text-gray-400 sm:left-2 sm:top-2 sm:text-xs lg:left-3 lg:top-3 lg:text-sm" />
+  <input
+    type="tel"
+    placeholder="Phone Number"
+    value={admin.phone}
+    onChange={(e) => {
+      if (/^\d*$/.test(e.target.value)) {
+        handleAdminChange(index, "phone", e.target.value);
+      }
+    }}
+    className={`border p-2 pl-10 mb-2 w-full rounded-lg focus:outline-none focus:ring-2 ${errors.phoneExists ? "border-red-500 focus:ring-red-500" : "focus:ring-blue-500"} sm:p-1 sm:pl-8 sm:mb-1 sm:text-xs lg:p-2 lg:pl-10 lg:mb-2 lg:text-sm`}
+  />
+  {errors.phoneExists && <p className="text-red-500 text-sm mt-1">{errors.phoneExists}</p>}
+</div>
                     <div className="relative">
                       <FaEnvelope className="absolute left-3 top-3 text-gray-400 sm:left-2 sm:top-2 sm:text-xs lg:left-3 lg:top-3 lg:text-sm" />
                       <input
@@ -449,6 +477,20 @@ const AdminManagement = ({ user }) => {
                         className="border p-2 pl-10 mb-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 sm:p-1 sm:pl-8 sm:mb-1 sm:text-xs lg:p-2 lg:pl-10 lg:mb-2 lg:text-sm"
                       />
                     </div>
+                    <div className="relative">
+                      <FaKey className="absolute left-3 top-3 text-gray-400 sm:left-2 sm:top-2 sm:text-xs lg:left-3 lg:top-3 lg:text-sm" />
+                      <input
+                        type="password"
+                        placeholder="Password"
+                        value={admin.password}
+                        onChange={(e) =>
+                          handleAdminChange(index, "password", e.target.value)
+                        }
+                        className="border p-2 pl-10 mb-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 sm:p-1 sm:pl-8 sm:mb-1 sm:text-xs lg:p-2 lg:pl-10 lg:mb-2 lg:text-sm"
+                      />
+                    </div>
+                   
+                   
 
                     {/* Subscription Plan Dropdown */}
                     <div className="relative">

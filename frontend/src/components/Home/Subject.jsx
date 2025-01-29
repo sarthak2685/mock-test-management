@@ -48,7 +48,6 @@ const Subject = () => {
     fetchSubjects();
   }, []);
 
-  // Scroll animation for the count
   useEffect(() => {
     const handleScroll = (entries) => {
       entries.forEach((entry) => {
@@ -84,12 +83,14 @@ const Subject = () => {
 
   const handleCardClick = (subjectName, subjectId) => {
     localStorage.setItem("selectedSubjectId", subjectId);
+  
     if (user && user.type === "student") {
-      navigate(`/chapters/${subjectName}`);
+      navigate(`/chapters/${encodeURIComponent(subjectName)}`);
     } else {
       navigate("/login");
     }
   };
+  
 
   return (
     <div ref={ref} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
