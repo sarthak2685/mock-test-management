@@ -642,7 +642,7 @@ const MockDemo = () => {
                             {/* Only display text if valid and non-empty */}
                             {optionText && (
                               <span className="text-gray-800 font-medium">
-                                {optionText}
+                                <StaticMathField>{optionText}</StaticMathField>
                               </span>
                             )}
                           </div>

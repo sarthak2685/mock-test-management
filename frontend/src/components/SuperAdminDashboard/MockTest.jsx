@@ -597,8 +597,8 @@ const MockTestManagement = ({ user }) => {
         );
 
         // Add the "ALL Chapter" option at the beginning
-        const allOption = { name: "ALL Chapter", id: "all" };
-        setChapters([allOption, ...filteredChapters]);
+        // const allOption = { name: "ALL Chapter", id: "all" };
+        setChapters([...filteredChapters]);
       } else {
         console.error("Unexpected response format:", result);
       }
@@ -936,6 +936,59 @@ const MockTestManagement = ({ user }) => {
 
   const handleTextChange = (e) => {
     setText(e.target.value);
+  };
+
+  const optionMathJaxRefs = useRef([]);
+
+  const currentOptions =
+    newTest?.questions?.[currentQuestionIndex]?.options || [];
+
+  useEffect(() => {
+    if (!window.MathJax) {
+      const script = document.createElement("script");
+      script.src =
+        "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML";
+      script.async = true;
+      document.body.appendChild(script);
+
+      script.onload = () => {
+        configureOptionMathJax();
+      };
+
+      return () => {
+        document.body.removeChild(script);
+      };
+    } else {
+      configureOptionMathJax();
+    }
+  }, []);
+
+  const configureOptionMathJax = () => {
+    window.MathJax.Hub.Config({
+      tex2jax: {
+        inlineMath: [["$", "$"]],
+        displayMath: [["$$", "$$"]],
+        processEscapes: true,
+      },
+    });
+
+    renderOptionEquations();
+  };
+
+  useEffect(() => {
+    if (window.MathJax) {
+      renderOptionEquations();
+    }
+  }, [currentOptions]);
+
+  const renderOptionEquations = () => {
+    if (window.MathJax && optionMathJaxRefs.current) {
+      optionMathJaxRefs.current.forEach((ref) => {
+        if (ref) {
+          window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub, ref]);
+        }
+      });
+    }
   };
 
   return (
@@ -1403,81 +1456,88 @@ const MockTestManagement = ({ user }) => {
 
                     {/* Options Input */}
                     <div className="flex flex-col sm:flex-row gap-1 sm:gap-4 mb-1 sm:mb-2">
-                      {newTest.questions[currentQuestionIndex].options.map(
-                        (option, optionIndex) => (
-                          <div key={optionIndex} className="flex-grow">
-                            <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 ease-in-out">
-                              {/* Option Input Field (Text) */}
+                      {currentOptions.map((option, optionIndex) => (
+                        <div key={optionIndex} className="flex-grow">
+                          <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 ease-in-out">
+                            {/* Preview Area with MathJax rendering */}
+                            <div
+                              ref={(el) =>
+                                (optionMathJaxRefs.current[optionIndex] = el)
+                              }
+                              className="p-2 mb-2 border rounded bg-gray-100 whitespace-pre-wrap min-h-[40px] text-sm"
+                            >
+                              {option?.text || ""}
+                            </div>
+
+                            {/* Option Input Field */}
+                            <textarea
+                              placeholder={`Option ${
+                                optionIndex + 1
+                              } (use $ for mathematical expressions)`}
+                              value={option?.text || ""}
+                              onChange={(e) =>
+                                handleOptionTextChange(
+                                  currentQuestionIndex,
+                                  optionIndex,
+                                  e.target.value
+                                )
+                              }
+                              className="border p-1 sm:p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 text-xs sm:text-base"
+                              required
+                              rows={3}
+                            />
+
+                            {/* Image Upload Section */}
+                            <div className="mt-2">
                               <input
-                                type="text"
-                                placeholder={`Option ${optionIndex + 1}`}
-                                value={option.text || ""}
+                                type="file"
+                                ref={(el) =>
+                                  (optionFileInputRefs.current[optionIndex] =
+                                    el)
+                                }
+                                accept="image/png"
                                 onChange={(e) =>
-                                  handleOptionTextChange(
+                                  handleImageUploadOption(
+                                    e,
                                     currentQuestionIndex,
-                                    optionIndex,
-                                    e.target.value
+                                    optionIndex
                                   )
                                 }
                                 className="border p-1 sm:p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 text-xs sm:text-base"
-                                required // Added required
                               />
 
-                              {/* Image Upload for Each Option */}
-                              <div className="mt-2">
-                                <input
-                                  type="file"
-                                  ref={(el) =>
-                                    (optionFileInputRefs.current[optionIndex] =
-                                      el)
-                                  } // Attach dynamic ref
-                                  accept="image/png"
-                                  onChange={(e) =>
-                                    handleImageUploadOption(
-                                      e,
-                                      currentQuestionIndex,
-                                      optionIndex
-                                    )
-                                  }
-                                  className="border p-1 sm:p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 text-xs sm:text-base"
-                                  // required // Added required
-                                />
-
-                                {option.image && (
-                                  <div className="relative mt-2">
-                                    <img
-                                      src={option.image}
-                                      alt={`Option ${optionIndex + 1}`}
-                                      className="w-16 h-16 object-cover rounded-lg cursor-pointer"
-                                      onClick={() => openModal(option.image)}
-                                    />
-                                    <button
-                                      onClick={() => {
-                                        deleteOptionImage(
-                                          currentQuestionIndex,
+                              {option?.image && (
+                                <div className="relative mt-2">
+                                  <img
+                                    src={option.image}
+                                    alt={`Option ${optionIndex + 1}`}
+                                    className="w-16 h-16 object-cover rounded-lg cursor-pointer"
+                                  />
+                                  <button
+                                    onClick={() => {
+                                      deleteOptionImage(
+                                        currentQuestionIndex,
+                                        optionIndex
+                                      );
+                                      if (
+                                        optionFileInputRefs.current[optionIndex]
+                                      ) {
+                                        optionFileInputRefs.current[
                                           optionIndex
-                                        );
-                                        if (
-                                          optionFileInputRefs.current[
-                                            optionIndex
-                                          ]
-                                        ) {
-                                          optionFileInputRefs.current[
-                                            optionIndex
-                                          ].value = null; // Reset file input
-                                        }
-                                      }}
-                                      className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full focus:outline-none text-xs sm:text-sm"
-                                    >
-                                      <FaTrashAlt />
-                                    </button>
-                                  </div>
-                                )}
-                              </div>
+                                        ].value = null;
+                                      }
+                                    }}
+                                    className="absolute top-1 right-1 bg-red-500 text-white w-6 h-6 rounded-full focus:outline-none text-xs sm:text-sm flex items-center justify-center hover:bg-red-600"
+                                    aria-label="Delete image"
+                                  >
+                                    ×
+                                  </button>
+                                </div>
+                              )}
                             </div>
                           </div>
-                        )
-                      )}
+                        </div>
+                      ))}
                     </div>
 
                     {/* Correct Answer Dropdown */}

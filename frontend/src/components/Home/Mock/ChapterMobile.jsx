@@ -280,6 +280,16 @@ const ChapterMobile = ({
             {/* Options or Files */}
             <div className="options-container my-10">
               {(() => {
+                const currentQuestion =
+                  mockTestData[currentSectionIndex]?.questions[
+                    currentQuestionIndex
+                  ];
+
+                const baseUrl = `${config.apiUrl}`;
+                const defaultFileValue =
+                  "/media/uploads/questions/option_4_uFtm5qj.png";
+
+                // Check for valid files excluding the default placeholder
                 const validFiles =
                   currentQuestion?.files?.filter(
                     (file) => file && file !== defaultFileValue
@@ -292,38 +302,42 @@ const ChapterMobile = ({
                         file,
                         text: currentQuestion.options?.[index] || "",
                       }))
-                    : currentQuestion.options.map((text) => ({ text }));
+                    : currentQuestion?.options?.map((text) => ({ text })) || [];
 
                 return displayItems.map((item, index) => (
                   <label
                     key={index}
                     className={`option border border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center text-center cursor-pointer transition duration-200 transform ${
-                      selectedOption === item.text
-                        ? "bg-blue-50 border-blue-500 shadow-md"
+                      selectedOption === (item.file || item.text)
+                        ? "bg-blue-200 border-blue-800 shadow-md"
                         : "hover:bg-gray-50 hover:shadow-sm"
                     } mb-4`}
                   >
                     <input
                       type="radio"
                       name="option"
-                      value={item.text}
-                      checked={selectedOption === item.text}
-                      onChange={() => handleOptionChange(item.text)}
+                      value={item.file || item.text}
+                      checked={selectedOption === (item.file || item.text)}
+                      onChange={() =>
+                        handleOptionChange(item.file || item.text)
+                      }
                       className="hidden"
                     />
                     <div className="flex flex-col items-center">
-                      {/* Show image if the file exists */}
+                      {/* Display image if the file exists */}
                       {item.file && (
                         <img
-                          src={`${config.apiUrl}${item.file}`}
+                          src={`${baseUrl}${item.file}`}
                           alt={`Option ${index + 1}`}
                           className="max-w-full max-h-24 object-contain mb-2"
                         />
                       )}
-                      {/* Show text */}
-                      <span className="text-gray-800 font-medium">
-                        {item.text}
-                      </span>
+                      {/* Display text wrapped in StaticMathField */}
+                      {item.text && (
+                        <StaticMathField className="text-gray-800 font-medium">
+                          {item.text}
+                        </StaticMathField>
+                      )}
                     </div>
                   </label>
                 ));

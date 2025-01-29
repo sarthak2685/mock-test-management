@@ -484,7 +484,6 @@ const MockChapter = () => {
               <h2 className="text-3xl font-bold text-blue-600 mb-6">
                 Question {currentQuestionIndex + 1}
               </h2>
-
               {/* Log current question */}
               <p className="text-lg font-medium mb-8">
                 {mockTestData[currentSectionIndex]?.questions[
@@ -545,55 +544,63 @@ const MockChapter = () => {
                       mockTestData[currentSectionIndex]?.questions[
                         currentQuestionIndex
                       ];
+
                     const baseUrl = `${config.apiUrl}`;
                     const defaultFileValue =
                       "/media/uploads/questions/option_4_uFtm5qj.png";
 
-                    // Filter files to exclude default values
+                    // Check if valid files exist, excluding the default placeholder
                     const validFiles = currentQuestion?.files?.filter(
                       (file) => file && file !== defaultFileValue
                     );
 
-                    // Combine options with files (if available)
-                    const displayItems = currentQuestion?.options?.map(
-                      (option, index) => ({
-                        text: option,
-                        file: validFiles?.[index] || null, // Match file by index if available
-                      })
-                    );
+                    // Use options if no valid files exist
+                    const displayItems =
+                      validFiles?.length > 0
+                        ? validFiles
+                        : currentQuestion?.options;
 
-                    // Render the combined items
-                    return displayItems?.map((item, index) => (
-                      <label
-                        key={index}
-                        className={`border border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center text-center cursor-pointer transition duration-200 transform ${
-                          selectedOption === item.text
-                            ? "bg-blue-50 border-blue-500 shadow-md"
-                            : "hover:bg-gray-50 hover:shadow-sm"
-                        }`}
-                      >
-                        <input
-                          type="radio"
-                          name="option"
-                          value={item.text}
-                          checked={selectedOption === item.text}
-                          onChange={() => handleOptionChange(item.text)}
-                          className="hidden"
-                        />
-                        {/* Display image if file exists */}
-                        {item.file && (
-                          <img
-                            src={`${config.apiUrl}${item.file}`}
-                            alt={`Option ${index + 1}`}
-                            className="max-w-full max-h-24 object-contain mb-2"
+                    return displayItems?.map((item, index) => {
+                      const isFile = item.startsWith("/media/uploads/");
+                      const optionText =
+                        currentQuestion?.options?.[index]?.trim() || null;
+
+                      return item ? (
+                        <label
+                          key={index}
+                          className={`border border-gray-300 rounded-lg p-4 flex items-center justify-center text-center cursor-pointer transition duration-200 transform ${
+                            selectedOption === item
+                              ? "bg-blue-200 border-blue-800 shadow-md"
+                              : "hover:bg-gray-50 hover:shadow-sm"
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="option"
+                            value={item}
+                            checked={selectedOption === item}
+                            onChange={() => handleOptionChange(item)}
+                            className="hidden"
                           />
-                        )}
-                        {/* Display text */}
-                        <span className="text-gray-800 font-medium">
-                          {item.text}
-                        </span>
-                      </label>
-                    ));
+                          <div className="flex flex-col items-center">
+                            {/* Show image if item is a valid file */}
+                            {isFile && (
+                              <img
+                                src={`${baseUrl}${item}`}
+                                alt={`Option ${index + 1}`}
+                                className="max-w-full max-h-24 object-contain mb-2"
+                              />
+                            )}
+                            {/* Only display text if valid and non-empty */}
+                            {optionText && (
+                              <StaticMathField className="text-gray-800 font-medium">
+                                {optionText.replace(/^\['?|'\]$/g, "")}
+                              </StaticMathField>
+                            )}
+                          </div>
+                        </label>
+                      ) : null;
+                    });
                   })()
                 ) : (
                   <p>Loading...</p>
