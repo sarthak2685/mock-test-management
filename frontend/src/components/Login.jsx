@@ -106,7 +106,7 @@ const Login = () => {
         setError("Account Expired. Please Renew");
       }
     } catch (error) {
-      setError("Login failed. Please check your credentials.");
+      setError("Login failed. username or Password is incorrect.");
     }
   };
 

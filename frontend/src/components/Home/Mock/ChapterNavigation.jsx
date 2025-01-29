@@ -270,6 +270,10 @@ const ChapterNavigation = ({
   const [showMarkedOnly, setShowMarkedOnly] = useState(false);
   const [showInstructionsModal, setShowInstructionsModal] = useState(false);
   const prevSectionName = useRef(sectionName);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [redirect, setRedirect] = useState(null);
+  const [confirmSubmit, setConfirmSubmit] = useState(false);
   const [selectedSubject, setSelectedSubject] = useState(
     localStorage.getItem("selectedOptionalSubject") || ""
   );
@@ -296,6 +300,7 @@ const ChapterNavigation = ({
   console.log("Tim3333e", savedMinutes);
 
   const handleSubmit = async () => {
+   
     try {
       // Log questions and answeredQuestions for debugging
       console.log("Questions:", questions);
@@ -375,34 +380,25 @@ const ChapterNavigation = ({
 
       // Handle the response
       if (response.ok) {
-        const result = await response.json();
-        console.log("Submission successful", result);
-        alert("Submission successful!");
-
-        // Redirect to score page
-        window.location.href = "/scorecard";
+        setModalMessage("Submission successful!");
+        window.location.href("/scorecard");
       } else {
         const errorDetails = await response.json();
-        console.error(
-          "Failed to submit answers:",
-          response.statusText,
-          errorDetails
-        );
-        alert(
-          `Submission failed: ${response.statusText}. Please try again later.`
-        );
+        setModalMessage(`Submission failed: ${response.statusText}. Please try again later.`);
       }
+      setModalOpen(true);
     } catch (error) {
       console.error("Error submitting answers:", error);
-      alert("An unexpected error occurred. Please try again.");
+      setModalMessage("An unexpected error occurred. Please try again.");
+      setModalOpen(true);
     }
   };
 
   // Function that mimics the button click behavior (including the alert)
   const handleAutoSubmit = () => {
-    if (window.confirm("Are you sure you want to submit the test?")) {
-      handleSubmit();
-    }
+    setModalMessage("Test is being submited...");
+    setModalOpen(true);
+    handleSubmit();
   };
 
   const handleTabSwitch = () => {
@@ -471,8 +467,14 @@ const ChapterNavigation = ({
 
   return (
     <>
-    <ToastContainer/>
-    <div className="bg-white p-7 rounded-lg shadow-lg">
+<ToastContainer 
+        position="top-center" 
+        autoClose={3000} 
+        hideProgressBar={false} 
+        closeOnClick 
+        pauseOnHover 
+        draggable 
+      />    <div className="bg-white p-7 rounded-lg shadow-lg">
       {/* Header Section */}
       <div className="mb-8 flex justify-between items-center">
         <button
@@ -569,11 +571,82 @@ const ChapterNavigation = ({
         <Timer totalMinutes={savedMinutes} onTimeUp={handleAutoSubmit} />
       </div>
       <button
-        onClick={handleAutoSubmit}
+       onClick={() => {
+        setModalMessage("Are you sure you want to submit the test?");
+        setModalOpen(true);
+      }}
         className="w-full bg-green-500 text-white py-3 rounded-md font-semibold hover:bg-green-600 transition duration-300 shadow-sm mt-4"
       >
         Submit Test
       </button>
+      {modalOpen && (
+  <div className="modal-overlay">
+    <div className="modal-content">
+      <p>{modalMessage}</p>
+      <div className="modal-buttons">
+        <button
+          className="modal-btn confirm"
+          onClick={() => {
+            setModalOpen(false); // Close modal
+            handleSubmit(); // Submit test
+          }}
+        >
+          Yes
+        </button>
+        <button className="modal-btn cancel" onClick={() => setModalOpen(false)}>
+          No
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+      <style jsx>{`
+        .modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 1000;
+        }
+        .modal-content {
+          background: white;
+          padding: 20px;
+          border-radius: 10px;
+          text-align: center;
+          width: 300px;
+          box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        .modal-buttons {
+          display: flex;
+          justify-content: space-between;
+          margin-top: 10px;
+        }
+        .modal-btn {
+          padding: 8px 16px;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+          font-size: 14px;
+        }
+        .modal-btn.confirm {
+          background: #28a745;
+          color: white;
+        }
+        .modal-btn.cancel {
+          background: #dc3545;
+          color: white;
+        }
+        .modal-btn.close {
+          background: #007bff;
+          color: white;
+          margin-top: 10px;
+        }
+      `}</style>
     </div>
     </>
   );
