@@ -349,8 +349,8 @@ const MockChapter = () => {
         ), // Remove the old entry with the same question ID (if exists)
         {
           question: currentQuestion.id,
-          selected_answer: selectedAnswer, // Assign text if present
-          selected_answer_2: selectedAnswer2, // Assign image if present
+          selected_answer: selectedAnswer || null, // Assign text if present
+          selected_answer_2: selectedAnswer2 || null, // Assign image if present
           student: student_id,
         },
       ];

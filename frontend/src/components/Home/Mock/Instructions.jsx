@@ -100,13 +100,12 @@ const Instructions = () => {
           );
         }
       };
-  
+
       enableFullScreen()
         .then(() => {
-          
           const startTimeFormatted = formatDateTime(new Date());
-      localStorage.setItem("start_time", startTimeFormatted); // Store start time in localStorage
-      navigate("/mock-demo");
+          localStorage.setItem("start_time", startTimeFormatted); // Store start time in localStorage
+          navigate("/mock-demo");
         })
         .catch((err) => {
           toast.error("Failed to enter full-screen mode.");
@@ -114,8 +113,6 @@ const Instructions = () => {
         });
     }
   };
-      
-
 
   const handlePreviousStep = () => {
     if (step > 1) setStep(step - 1);
@@ -374,11 +371,19 @@ const Instructions = () => {
               <li>No penalty for un-attempted questions.</li>
             </ul>
             <h2 className="text-base font-semibold text-blue-600 mt-4">
-              <span className="text-black font-bold">Note:</span> Test will be auto submitted, if you will switch the tab more than 3 times.
+              <span className="text-black font-bold">Note:</span> Test will be
+              auto submitted, if you will switch the tab more than 3 times.
             </h2>
             <h2 className="text-base  font-semibold text-blue-600 mt-2">
-              <span className="text-black font-bold">Note:</span> Test will be auto submitted, if you will exit full screen.
+              <span className="text-black font-bold">Note:</span> Test will be
+              auto submitted, if you will exit full screen.
             </h2>
+            <h2 className="text-base font-semibold text-blue-600 mt-2">
+              <span className="text-black font-bold">Note:</span> Any question
+              where you have selected an option and pressed "Save and Next" will
+              be marked as attempted.
+            </h2>
+
             <div className="mt-6">
               <label className="flex items-center space-x-3">
                 <input
@@ -415,20 +420,20 @@ const Instructions = () => {
         </div>
       </div>
 
-      <div className="w-full lg:w-1/4 mt-8 lg:mt-0 flex flex-col items-center bg-gray-100 p-4 rounded-lg shadow-md">
+      <div className="w-full lg:w-1/3 mt-8 lg:mt-0 flex flex-col items-center bg-gray-100 p-6 rounded-xl shadow-lg">
         {user.pic &&
         user.pic !== "/media/uploads/questions/option_4_uFtm5qj.png" ? (
           <img
             src={`${config.apiUrl}${user.pic}`}
             alt="Avatar"
-            className="w-10 h-10 rounded-full"
+            className="w-20 h-20 rounded-full"
           />
         ) : (
-          <div className="w-10 h-10 rounded-full bg-[#007bff] flex items-center justify-center text-white font-semibold">
+          <div className="w-20 h-20 rounded-full bg-[#007bff] flex items-center justify-center text-white text-2xl font-bold">
             {user.name ? user.name.charAt(0).toUpperCase() : ""}
           </div>
         )}
-        <h3 className="text-lg sm:text-xl font-semibold text-gray-700 mt-4">
+        <h3 className="text-xl sm:text-2xl font-bold text-gray-700 mt-4">
           {user.name}
         </h3>
       </div>

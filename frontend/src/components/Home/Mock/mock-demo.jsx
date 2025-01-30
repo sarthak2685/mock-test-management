@@ -30,6 +30,44 @@ const MockDemo = () => {
   const storedTestName = localStorage.getItem("selectedTestName");
   console.log("hii", storedTestName); // Logs the last stored test name
 
+  // const UserProfile = () => {
+  //   const [user, setUser] = useState({ name: "Unknown User", role: "Student" }); // Default user state with name and role
+  //   useEffect(() => {
+  //     // Fetch user details from local storage
+  //     const storedData = localStorage.getItem("user"); // Assuming JSON object is stored under this key
+  //     if (storedData) {
+  //       try {
+  //         const parsedData = JSON.parse(storedData); // Parse the JSON string
+  //         if (parsedData && parsedData.name) {
+  //           setUser({ name: parsedData.name, role: parsedData.type }); // Set user name and role (assuming type is role)
+  //         }
+  //       } catch (error) {
+  //         console.error("Error parsing stored user data:", error);
+  //         setUser({ name: "Unknown User", role: "Student" }); // Fallback in case of error
+  //       }
+  //     }
+  //   }, []); // Runs once when the component mounts
+
+  //   return (
+  //     <div className="flex items-center space-x-3 px-2 bg-gray-50 rounded-lg shadow-sm">
+  //       {/* Render initials based on user name */}
+  //       <div className="w-12 h-12 p-2 rounded-full bg-blue-500 text-white flex items-center justify-center">
+  //         <span className="text-lg font-semibold">
+  //           {user.name ? user.name.charAt(0).toUpperCase() : "U"}
+  //         </span>{" "}
+  //         {/* Initial of the name */}
+  //       </div>
+
+  //       <div>
+  //         <h2 className="text-lg font-semibold text-gray-700">{user.name}</h2>{" "}
+  //         {/* Display the user's name */}
+  //         <p className="text-sm text-gray-500">{user.role}</p>{" "}
+  //         {/* Display the user's role */}
+  //       </div>
+  //     </div>
+  //   );
+  // };
+
   const [mockTestData, setMockTestData] = useState([]);
   const [timerDuration, setTimerDuration] = useState(0); // State for timer
   const SubjectId = localStorage.getItem("selectedSubjectId");
@@ -604,7 +642,9 @@ const MockDemo = () => {
                             {/* Only display text if valid and non-empty */}
                             {optionText && (
                               <span className="text-gray-800 font-medium">
-                                <StaticMathField>{optionText}</StaticMathField>
+                                <StaticMathField>
+                                  {optionText.replace(/^\['?|'\]$/g, "")}
+                                </StaticMathField>
                               </span>
                             )}
                           </div>
