@@ -513,7 +513,7 @@ const Score = () => {
                           )}
                         </td>
                         <td className="p-3 text-left ">
-                          {participant.student_name}
+                          {participant.student__name}
                         </td>
                         <td className="p-3 text-center">
                           {participant.total_marks}
