@@ -5,7 +5,6 @@ import config from "../../../config";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-
 const InstructionsModal = ({ isVisible, onClose }) => {
   const [optionalSubject, setOptionalSubject] = useState(
     localStorage.getItem("selectedOptionalSubject") || ""
@@ -298,9 +297,6 @@ const QuestionNavigation = ({
   const Test = localStorage.getItem("selectedTestName");
   const [tabSwitchCount, setTabSwitchCount] = useState(0);
 
-
-  
-
   // const [totalMinutes, setTotalMinutes] = useState(() => {
   //   const savedMinutes = localStorage.getItem("totalMinutes");
   //   console.log("timeee", savedMinutes);
@@ -322,7 +318,6 @@ const QuestionNavigation = ({
   };
 
   const handleSubmit = async () => {
-   
     try {
       const user = JSON.parse(localStorage.getItem("user"));
       if (!user) {
@@ -365,10 +360,10 @@ const QuestionNavigation = ({
         // start_time: start_time,
         // end_time: end_time,
       }));
-        // Convert the start and end times to Date objects
+      // Convert the start and end times to Date objects
       const startDate = parseDate(start_time);
       const endDate = parseDate(end_time);
-        
+
       // Calculate the difference in milliseconds and convert to seconds
       const diffInSeconds = Math.floor((endDate - startDate) / 1000);
       // Build query parameters
@@ -392,9 +387,11 @@ const QuestionNavigation = ({
       if (response.ok) {
         setModalMessage("Submission successful!");
         window.location.href = "/score";
-            } else {
+      } else {
         const errorDetails = await response.json();
-        setModalMessage(`Submission failed: ${response.statusText}. Please try again later.`);
+        setModalMessage(
+          `Submission failed: ${response.statusText}. Please try again later.`
+        );
       }
       setModalOpen(true);
     } catch (error) {
@@ -404,21 +401,19 @@ const QuestionNavigation = ({
     }
   };
 
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+
   const handleAutoSubmit = () => {
-    setModalMessage("Test is being submited...");
-    setModalOpen(true);
-    handleSubmit();
+    if (!hasSubmitted) {
+      setHasSubmitted(true); // Ensure it runs only once
+      setModalMessage("Test is being submitted...");
+      setModalOpen(true);
+      handleSubmit();
+    }
   };
 
-  useEffect(() => {
-    const autoSubmitTimer = setTimeout(() => {
-      handleAutoSubmit();
-    }, 60000); // Auto-submit after 1 minute (adjust as needed)
-
-    return () => clearTimeout(autoSubmitTimer);
-  }, []);
   const handleTabSwitch = () => {
-    if (document.hidden) {
+    if (document.hidden && !hasSubmitted) {
       setTabSwitchCount((prev) => {
         const newCount = prev + 1;
 
@@ -430,6 +425,7 @@ const QuestionNavigation = ({
           );
         } else if (newCount === 4) {
           toast.error("You switched tabs too many times. Submitting the test.");
+          setHasSubmitted(true);
           handleSubmit();
         }
 
@@ -452,8 +448,11 @@ const QuestionNavigation = ({
   };
 
   const monitorFullScreen = () => {
-    if (!document.fullscreenElement) {
-      toast.error("You exited full-screen mode. The test will now be submitted.");
+    if (!document.fullscreenElement && !hasSubmitted) {
+      toast.error(
+        "You exited full-screen mode. The test will now be submitted."
+      );
+      setHasSubmitted(true);
       handleSubmit();
     }
   };
@@ -470,7 +469,6 @@ const QuestionNavigation = ({
     };
   }, []);
 
-
   useEffect(() => {
     document.addEventListener("visibilitychange", handleTabSwitch);
 
@@ -479,192 +477,199 @@ const QuestionNavigation = ({
     };
   }, []);
 
-
   return (
     <>
-<ToastContainer 
-        position="top-center" 
-        autoClose={3000} 
-        hideProgressBar={false} 
-        closeOnClick 
-        pauseOnHover 
-        draggable 
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        hideProgressBar={false}
+        closeOnClick
+        pauseOnHover
+        draggable
       />
-          <div className="bg-white p-7 rounded-lg shadow-lg">
-      {/* Header Section */}
-      <div className="mb-8 flex justify-between items-center">
+      <div className="bg-white p-7 rounded-lg shadow-lg">
+        {/* Header Section */}
+        <div className="mb-8 flex justify-between items-center">
+          <button
+            onClick={() => setShowInstructionsModal(true)}
+            className="text-blue-500 hover:text-blue-700 text-xl flex items-center space-x-2"
+          >
+            <RiInformation2Line className="w-6 h-6" />
+            <span>Instructions</span>
+          </button>
+        </div>
+        {/* Instructions Modal */}
+        <InstructionsModal
+          isVisible={showInstructionsModal}
+          onClose={() => setShowInstructionsModal(false)}
+        />
+        {/* Question Status Legend */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex items-center space-x-2 p-2 bg-blue-50 rounded-lg shadow-sm">
+            <span className="w-6 h-6 bg-blue-500 rounded-md"></span>
+            <span className="text-md font-medium text-gray-700">
+              Current Question
+            </span>
+          </div>
+          <div className="flex items-center space-x-2 p-2 bg-green-50 rounded-lg shadow-sm">
+            <span className="w-6 h-6 bg-green-500 rounded-md"></span>
+            <span className="text-md font-medium text-gray-700">Answered</span>
+          </div>
+          <div className="flex items-center space-x-2 p-2 bg-red-50 rounded-lg shadow-sm">
+            <span className="w-6 h-6 bg-red-500 rounded-md"></span>
+            <span className="text-md font-medium text-gray-700">
+              Marked for Review
+            </span>
+          </div>
+          <div className="flex items-center space-x-2 p-2 bg-gray-50 rounded-lg shadow-sm">
+            <span className="w-6 h-6 bg-gray-400 rounded-md"></span>
+            <span className="text-md font-medium text-gray-700">
+              Not Answered
+            </span>
+          </div>
+        </div>
+        {/* Section Title */}
+        <h3 className="text-xl font-semibold text-gray-700 mt-4 mb-4 border-b pb-2">
+          {sectionName}
+        </h3>
+        {/* Show Marked Only Toggle */}
+        <div className="flex justify-between items-center mb-4">
+          <label className="flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showMarkedOnly}
+              onChange={() => setShowMarkedOnly(!showMarkedOnly)}
+              className="form-checkbox text-blue-500 transition duration-200"
+            />
+            <span className="ml-2 text-gray-600">
+              Show Marked Only ({markedForReview.length})
+            </span>
+          </label>
+        </div>
+        {/* Question Navigation Buttons */}
+        <div className="grid grid-cols-5 gap-4">
+          {filteredQuestions.length > 0 ? (
+            filteredQuestions.map((question, i) => (
+              <button
+                key={i}
+                onClick={() => onSelectQuestion(i)}
+                title={
+                  markedForReview.includes(i)
+                    ? "Marked for Review"
+                    : answeredQuestions[i] !== undefined
+                    ? "Answered"
+                    : "Not Answered"
+                }
+                className={`w-10 h-10 flex items-center justify-center rounded-md font-bold transition duration-200 focus:outline-none focus:ring ${
+                  selectedQuestionIndex === i
+                    ? "bg-blue-200 text-blue-700 ring-2 ring-blue-300"
+                    : markedForReview.includes(i)
+                    ? "bg-red-500 text-white"
+                    : answeredQuestions[i] !== undefined
+                    ? "bg-green-500 text-white"
+                    : "bg-gray-200 text-gray-700"
+                }`}
+              >
+                {i + 1}
+              </button>
+            ))
+          ) : (
+            <p className="col-span-5 text-center text-gray-500">
+              No questions available for selected subject
+            </p>
+          )}
+        </div>
+        {/* Submit Button */}
+        <div className="hidden">
+          <Timer totalMinutes={savedMinutes} onTimeUp={handleAutoSubmit} />
+        </div>
         <button
-          onClick={() => setShowInstructionsModal(true)}
-          className="text-blue-500 hover:text-blue-700 text-xl flex items-center space-x-2"
-        >
-          <RiInformation2Line className="w-6 h-6" />
-          <span>Instructions</span>
-        </button>
-      </div>
-      {/* Instructions Modal */}
-      <InstructionsModal
-        isVisible={showInstructionsModal}
-        onClose={() => setShowInstructionsModal(false)}
-      />
-      {/* Question Status Legend */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="flex items-center space-x-2 p-2 bg-blue-50 rounded-lg shadow-sm">
-          <span className="w-6 h-6 bg-blue-500 rounded-md"></span>
-          <span className="text-md font-medium text-gray-700">
-            Current Question
-          </span>
-        </div>
-        <div className="flex items-center space-x-2 p-2 bg-green-50 rounded-lg shadow-sm">
-          <span className="w-6 h-6 bg-green-500 rounded-md"></span>
-          <span className="text-md font-medium text-gray-700">Answered</span>
-        </div>
-        <div className="flex items-center space-x-2 p-2 bg-red-50 rounded-lg shadow-sm">
-          <span className="w-6 h-6 bg-red-500 rounded-md"></span>
-          <span className="text-md font-medium text-gray-700">
-            Marked for Review
-          </span>
-        </div>
-        <div className="flex items-center space-x-2 p-2 bg-gray-50 rounded-lg shadow-sm">
-          <span className="w-6 h-6 bg-gray-400 rounded-md"></span>
-          <span className="text-md font-medium text-gray-700">
-            Not Answered
-          </span>
-        </div>
-      </div>
-      {/* Section Title */}
-      <h3 className="text-xl font-semibold text-gray-700 mt-4 mb-4 border-b pb-2">
-        {sectionName}
-      </h3>
-      {/* Show Marked Only Toggle */}
-      <div className="flex justify-between items-center mb-4">
-        <label className="flex items-center cursor-pointer">
-          <input
-            type="checkbox"
-            checked={showMarkedOnly}
-            onChange={() => setShowMarkedOnly(!showMarkedOnly)}
-            className="form-checkbox text-blue-500 transition duration-200"
-          />
-          <span className="ml-2 text-gray-600">
-            Show Marked Only ({markedForReview.length})
-          </span>
-        </label>
-      </div>
-      {/* Question Navigation Buttons */}
-      <div className="grid grid-cols-5 gap-4">
-        {filteredQuestions.length > 0 ? (
-          filteredQuestions.map((question, i) => (
-            <button
-              key={i}
-              onClick={() => onSelectQuestion(i)}
-              title={
-                markedForReview.includes(i)
-                  ? "Marked for Review"
-                  : answeredQuestions[i] !== undefined
-                  ? "Answered"
-                  : "Not Answered"
-              }
-              className={`w-10 h-10 flex items-center justify-center rounded-md font-bold transition duration-200 focus:outline-none focus:ring ${
-                selectedQuestionIndex === i
-                  ? "bg-blue-200 text-blue-700 ring-2 ring-blue-300"
-                  : markedForReview.includes(i)
-                  ? "bg-red-500 text-white"
-                  : answeredQuestions[i] !== undefined
-                  ? "bg-green-500 text-white"
-                  : "bg-gray-200 text-gray-700"
-              }`}
-            >
-              {i + 1}
-            </button>
-          ))
-        ) : (
-          <p className="col-span-5 text-center text-gray-500">
-            No questions available for selected subject
-          </p>
-        )}
-      </div>
-      {/* Submit Button */}
-      <div className="hidden">
-        <Timer totalMinutes={savedMinutes} onTimeUp={handleAutoSubmit} />
-      </div>
-      <button
-  onClick={() => {
-    setModalMessage("Are you sure you want to submit the test?");
-    setModalOpen(true);
-  }}
-  className="w-full bg-green-500 text-white py-3 rounded-md font-semibold hover:bg-green-600 transition duration-300 shadow-sm mt-4"
->
-  Submit Test
-</button>
-{modalOpen && (
-  <div className="modal-overlay">
-    <div className="modal-content">
-      <p>{modalMessage}</p>
-      <div className="modal-buttons">
-        <button
-          className="modal-btn confirm"
           onClick={() => {
-            setModalOpen(false); // Close modal
-            handleSubmit(); // Submit test
+            setModalMessage("Are you sure you want to submit the test?");
+            setModalOpen(true);
           }}
+          className="w-full bg-green-500 text-white py-3 rounded-md font-semibold hover:bg-green-600 transition duration-300 shadow-sm mt-4"
         >
-          Yes
+          Submit Test
         </button>
-        <button className="modal-btn cancel" onClick={() => setModalOpen(false)}>
-          No
-        </button>
-      </div>
-    </div>
-  </div>
-)}
+        {modalOpen && (
+          <div className="modal-overlay">
+            <div className="modal-content">
+              <p>{modalMessage}</p>
+              {![
+                "Test is being submitted...",
+                "Submission successful!",
+              ].includes(modalMessage) && (
+                <div className="modal-buttons">
+                  <button
+                    className="modal-btn confirm"
+                    onClick={() => {
+                      setModalOpen(false); // Close modal
+                      handleSubmit(); // Submit test
+                    }}
+                  >
+                    Yes
+                  </button>
+                  <button
+                    className="modal-btn cancel"
+                    onClick={() => setModalOpen(false)}
+                  >
+                    No
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
-      <style jsx>{`
-        .modal-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background: rgba(0, 0, 0, 0.5);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 1000;
-        }
-        .modal-content {
-          background: white;
-          padding: 20px;
-          border-radius: 10px;
-          text-align: center;
-          width: 300px;
-          box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-        }
-        .modal-buttons {
-          display: flex;
-          justify-content: space-between;
-          margin-top: 10px;
-        }
-        .modal-btn {
-          padding: 8px 16px;
-          border: none;
-          border-radius: 5px;
-          cursor: pointer;
-          font-size: 14px;
-        }
-        .modal-btn.confirm {
-          background: #28a745;
-          color: white;
-        }
-        .modal-btn.cancel {
-          background: #dc3545;
-          color: white;
-        }
-        .modal-btn.close {
-          background: #007bff;
-          color: white;
-          margin-top: 10px;
-        }
-      `}</style>
-    </div>
+        <style jsx>{`
+          .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+          }
+          .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            width: 300px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+          }
+          .modal-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+          }
+          .modal-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+          }
+          .modal-btn.confirm {
+            background: #28a745;
+            color: white;
+          }
+          .modal-btn.cancel {
+            background: #dc3545;
+            color: white;
+          }
+          .modal-btn.close {
+            background: #007bff;
+            color: white;
+            margin-top: 10px;
+          }
+        `}</style>
+      </div>
     </>
   );
 };
