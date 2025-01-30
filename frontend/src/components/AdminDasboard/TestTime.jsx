@@ -53,11 +53,12 @@ const TestTime = () => {
       const data = await response.json();
       const uniqueTestNames = [
         ...new Set(
-          data.test_names.map(
-            (test) => `${test.test_name} (${test.for_exam__name})`
-          )
+          data.test_names
+            .filter((test) => test.for_exam__name !== null) // Ignore tests with null for_exam__name
+            .map((test) => `${test.test_name} (${test.for_exam__name})`)
         ),
       ];
+      
 
       const testOptionsFormatted = uniqueTestNames.map((name) => ({
         value: name,

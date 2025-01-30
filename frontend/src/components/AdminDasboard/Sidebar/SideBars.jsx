@@ -7,6 +7,8 @@ import { HiOutlineBell, HiClock } from "react-icons/hi"; // Notice Board icon
 import { FiCalendar } from "react-icons/fi";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { FaFileAlt } from "react-icons/fa";
+
 
 const Sidebar = ({ isCollapsed, toggleSidebar }) => {
   // Retrieve subscription days remaining from localStorage
@@ -107,6 +109,25 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
           >
             <FiCalendar className="mr-2" /> {/* Calendar Icon */}
             <span className="block">{isCollapsed ? "" : "Announcement"}</span>
+          </NavLink>
+          <NavLink
+            to="/test-detail"
+            className={({ isActive }) =>
+              `flex items-center py-2 px-4 mt-4 rounded hover:bg-blue-700 ${
+                isActive ? "bg-blue-700" : ""
+              } ${isSubscriptionExpired ? "opacity-50 cursor-not-allowed" : ""}`
+            }
+            onClick={(e) => {
+              if (isSubscriptionExpired) {
+                e.preventDefault();
+                toast.error(
+                  "Your subscription has expired. Please renew to access this feature."
+                );
+              }
+            }}
+          >
+            <FaFileAlt className="mr-2" />
+            <span className="block">{isCollapsed ? "" : "Test Detail"}</span>
           </NavLink>
 
           <NavLink

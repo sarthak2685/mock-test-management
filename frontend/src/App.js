@@ -51,6 +51,7 @@ import NoticeAdmin from "./components/AdminDasboard/NoticeAdmin.jsx";
 
 import Announcement from "./components/AdminDasboard/Announcement.jsx";
 import TestTime from "./components/AdminDasboard/TestTime.jsx";
+import TestDetail from "./components/AdminDasboard/TestDetail.jsx";
 
 
 
@@ -84,6 +85,7 @@ function App() {
           <Route path="/admin-management" element={<AdminManagement />} />
           <Route path="/admins-list" element={<AdminList />} />
           <Route path="/test-time" element={<TestTime />} />
+          <Route path="/test-detail" element={<TestDetail />} />
           <Route
             path="/student-performance/:studentId"
             element={<StudentPerformance />}
