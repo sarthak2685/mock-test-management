@@ -593,9 +593,23 @@ const MockChapter = () => {
                             )}
                             {/* Only display text if valid and non-empty */}
                             {optionText && (
-                              <StaticMathField className="text-gray-800 font-medium">
-                                {optionText.replace(/^\['?|'\]$/g, "")}
-                              </StaticMathField>
+                              <span className="text-gray-800 font-medium">
+                                <StaticMathField>
+                                  {(() => {
+                                    try {
+                                      const parsedText = JSON.parse(optionText);
+                                      return Array.isArray(parsedText)
+                                        ? parsedText[0]
+                                        : parsedText;
+                                    } catch {
+                                      return optionText
+                                        .replace(/^\['?|'\]$/g, "")
+                                        .replace(/\\\\/g, "\\")
+                                        .trim();
+                                    }
+                                  })()}
+                                </StaticMathField>
+                              </span>
                             )}
                           </div>
                         </label>

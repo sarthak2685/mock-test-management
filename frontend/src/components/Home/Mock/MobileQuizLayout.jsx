@@ -378,7 +378,19 @@ const MobileQuizLayout = ({
                         {/* Show text wrapped in StaticMathField */}
                         {item.text && (
                           <StaticMathField className="text-gray-800 font-medium">
-                            {item.text.replace(/^\['?|'\]$/g, "")}
+                            {(() => {
+                              try {
+                                const parsedText = JSON.parse(item.text);
+                                return Array.isArray(parsedText)
+                                  ? parsedText[0]
+                                  : parsedText;
+                              } catch {
+                                return item.text
+                                  .replace(/^\['?|'\]$/g, "")
+                                  .replace(/\\\\/g, "\\")
+                                  .trim();
+                              }
+                            })()}
                           </StaticMathField>
                         )}
                       </div>

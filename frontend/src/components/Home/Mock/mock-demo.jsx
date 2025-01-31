@@ -643,7 +643,19 @@ const MockDemo = () => {
                             {optionText && (
                               <span className="text-gray-800 font-medium">
                                 <StaticMathField>
-                                  {optionText.replace(/^\['?|'\]$/g, "")}
+                                  {(() => {
+                                    try {
+                                      const parsedText = JSON.parse(optionText);
+                                      return Array.isArray(parsedText)
+                                        ? parsedText[0]
+                                        : parsedText;
+                                    } catch {
+                                      return optionText
+                                        .replace(/^\['?|'\]$/g, "")
+                                        .replace(/\\\\/g, "\\")
+                                        .trim();
+                                    }
+                                  })()}
                                 </StaticMathField>
                               </span>
                             )}
