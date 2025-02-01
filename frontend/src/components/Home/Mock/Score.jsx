@@ -79,16 +79,15 @@ const Score = () => {
   analysisData?.data_2?.subject_summary &&
   Object.keys(analysisData.data_2.subject_summary).map((subject) => {
     const summary = analysisData.data_2.subject_summary[subject];
-    const Unattempted_data = analysisData.data_2;
+    console.log("summary", summary);
     return {
       name: subject,
       correct: summary.correct,
       wrong: summary.incorrect,
-      unattempted: Unattempted_data.total_questions - Unattempted_data.attempted_questions,
+      unattempted: summary.unattempted,
       marks: summary.marks,
     };
   });
-
 
   const handlePDFDownload = async () => {
     const apiUrl = `${config.apiUrl}/analysis-report/?student_id=${studentId}&exam_id=${examId}&test_name=${testName}`;

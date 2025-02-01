@@ -123,7 +123,7 @@ const [errors, setErrors] = useState({ phoneExists: "" });
   
         if (adminWithPhone) {
           const response = await axios.get(`${config.apiUrl}/check-number/`, {
-            params: { phone: adminWithPhone.phone },
+            params: { mobile_no: adminWithPhone.phone },
           });
   
           setErrors((prevErrors) => ({
