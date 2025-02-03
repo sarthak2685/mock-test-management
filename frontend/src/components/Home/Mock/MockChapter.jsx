@@ -498,20 +498,30 @@ const MockChapter = () => {
                       const defaultFileValue =
                         "/media/uploads/questions/option_4_uFtm5qj.png";
 
+                      // Replace '\\n' with actual newlines and split into an array
+                      const formattedQuestion =
+                        currentQuestion?.question
+                          .replace(/\\n/g, "\n")
+                          .split("\n") || [];
+
                       return (
                         <>
-                          {/* Main question */}
-                          <span>
-                            <StaticMathField>
-                              {/* Replace spaces with LaTeX space commands */}
-                              {currentQuestion?.question
-                                ? currentQuestion.question.replace(/ /g, "\\ ")
-                                : "No question available"}
-                            </StaticMathField>
-                            {/* {currentQuestion?.question ||
-                              "No question available"} */}
-                          </span>
-                          <br />
+                          {formattedQuestion.map((line, index) => (
+                            <p
+                              key={index}
+                              className="mb-2 flex flex-wrap items-center gap-2"
+                            >
+                              {line.split(/(\$[^$]+\$)/g).map((part, i) =>
+                                /^\$[^$]+\$$/.test(part) ? ( // Check if part is LaTeX
+                                  <StaticMathField key={i}>
+                                    {part.slice(1, -1)}
+                                  </StaticMathField>
+                                ) : (
+                                  <span key={i}>{part}</span>
+                                )
+                              )}
+                            </p>
+                          ))}
 
                           {/* Additional question (question_1), skipping the default value */}
                           {currentQuestion?.question_1 &&
@@ -525,7 +535,9 @@ const MockChapter = () => {
                                 className="max-w-full max-h-24 object-contain mt-4"
                               />
                             ) : (
-                              <span>{currentQuestion.question_1}</span>
+                              <p className="mt-2">
+                                {currentQuestion.question_1}
+                              </p>
                             )
                           ) : null}
                         </>
@@ -591,25 +603,31 @@ const MockChapter = () => {
                                 className="max-w-full max-h-24 object-contain mb-2"
                               />
                             )}
-                            {/* Only display text if valid and non-empty */}
+                            {/* Display text with LaTeX and normal text */}
                             {optionText && (
-                              <span className="text-gray-800 font-medium">
-                                <StaticMathField>
-                                  {(() => {
-                                    try {
-                                      const parsedText = JSON.parse(optionText);
-                                      return Array.isArray(parsedText)
-                                        ? parsedText[0]
-                                        : parsedText;
-                                    } catch {
-                                      return optionText
-                                        .replace(/^\['?|'\]$/g, "")
-                                        .replace(/\\\\/g, "\\")
-                                        .trim();
-                                    }
-                                  })()}
-                                </StaticMathField>
-                              </span>
+                              <div className="text-gray-800 font-medium text-center">
+                                {optionText
+                                  .replace(/\\n/g, "\n")
+                                  .split("\n")
+                                  .map((line, idx) => (
+                                    <p
+                                      key={idx}
+                                      className="flex flex-wrap items-center gap-2"
+                                    >
+                                      {line
+                                        .split(/(\$[^$]+\$)/g)
+                                        .map((part, i) =>
+                                          /^\$[^$]+\$$/.test(part) ? ( // Check if part is LaTeX
+                                            <StaticMathField key={i}>
+                                              {part.slice(1, -1)}
+                                            </StaticMathField>
+                                          ) : (
+                                            <span key={i}>{part}</span>
+                                          )
+                                        )}
+                                    </p>
+                                  ))}
+                              </div>
                             )}
                           </div>
                         </label>

@@ -253,14 +253,27 @@ const ChapterMobile = ({
 
             {/* Main Question Content */}
             <p className="my-4 text-gray-700 leading-relaxed">
-              {
-                <StaticMathField>
-                  {/* Replace spaces with LaTeX space commands */}
-                  {currentQuestion?.question
-                    ? currentQuestion.question.replace(/ /g, "\\ ")
-                    : "No question available"}
-                </StaticMathField>
-              }
+              {currentQuestion?.question
+                ? currentQuestion.question
+                    .replace(/\\n/g, "\n")
+                    .split("\n")
+                    .map((line, index) => (
+                      <p
+                        key={index}
+                        className="flex flex-wrap items-center gap-2"
+                      >
+                        {line.split(/(\$[^$]+\$)/g).map((part, i) =>
+                          /^\$[^$]+\$$/.test(part) ? ( // Check if part is LaTeX
+                            <StaticMathField key={i}>
+                              {part.slice(1, -1)}
+                            </StaticMathField>
+                          ) : (
+                            <span key={i}>{part}</span>
+                          )
+                        )}
+                      </p>
+                    ))
+                : "No question available"}
             </p>
 
             {/* Additional Content */}
@@ -332,23 +345,29 @@ const ChapterMobile = ({
                           className="max-w-full max-h-24 object-contain mb-2"
                         />
                       )}
-                      {/* Display text wrapped in StaticMathField */}
+                      {/* Display text with mixed LaTeX and normal text handling */}
                       {item.text && (
-                        <StaticMathField className="text-gray-800 font-medium">
-                          {(() => {
-                            try {
-                              const parsedText = JSON.parse(item.text);
-                              return Array.isArray(parsedText)
-                                ? parsedText[0]
-                                : parsedText;
-                            } catch {
-                              return item.text
-                                .replace(/^\['?|'\]$/g, "")
-                                .replace(/\\\\/g, "\\")
-                                .trim();
-                            }
-                          })()}
-                        </StaticMathField>
+                        <div className="text-gray-800 font-medium text-center">
+                          {item.text
+                            .replace(/\\n/g, "\n")
+                            .split("\n")
+                            .map((line, idx) => (
+                              <p
+                                key={idx}
+                                className="flex flex-wrap items-center gap-2"
+                              >
+                                {line.split(/(\$[^$]+\$)/g).map((part, i) =>
+                                  /^\$[^$]+\$$/.test(part) ? ( // Check if part is LaTeX
+                                    <StaticMathField key={i}>
+                                      {part.slice(1, -1)}
+                                    </StaticMathField>
+                                  ) : (
+                                    <span key={i}>{part}</span>
+                                  )
+                                )}
+                              </p>
+                            ))}
+                        </div>
                       )}
                     </div>
                   </label>

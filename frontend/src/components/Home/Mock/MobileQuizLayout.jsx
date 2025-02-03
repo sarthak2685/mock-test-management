@@ -300,13 +300,27 @@ const MobileQuizLayout = ({
 
               {/* Main Question Content */}
               <p className="my-4 text-gray-700 leading-relaxed">
-                <StaticMathField>
-                  {/* Replace spaces with LaTeX space commands */}
-                  {currentQuestion?.question
-                    ? currentQuestion.question.replace(/ /g, "\\ ")
-                    : "No question available"}
-                </StaticMathField>
-                {/* {currentQuestion.question || "No question available"} */}
+                {currentQuestion?.question
+                  ? currentQuestion.question
+                      .replace(/\\n/g, "\n")
+                      .split("\n")
+                      .map((line, index) => (
+                        <p
+                          key={index}
+                          className="flex flex-wrap items-center gap-2"
+                        >
+                          {line.split(/(\$[^$]+\$)/g).map((part, i) =>
+                            /^\$[^$]+\$$/.test(part) ? ( // Check if part is LaTeX
+                              <StaticMathField key={i}>
+                                {part.slice(1, -1)}
+                              </StaticMathField>
+                            ) : (
+                              <span key={i}>{part}</span>
+                            )
+                          )}
+                        </p>
+                      ))
+                  : "No question available"}
               </p>
 
               {/* Display Additional Question Content */}
@@ -325,8 +339,13 @@ const MobileQuizLayout = ({
               ) : null}
 
               {/* Display Question Files or Options */}
-              <div className="space-y-3 grid grid-cols-1 mt-6">
+              <div className="options-container my-10">
                 {(() => {
+                  const currentQuestion =
+                    mockTestData[currentSectionIndex]?.questions[
+                      currentQuestionIndex
+                    ];
+
                   const baseUrl = `${config.apiUrl}`;
                   const defaultFileValue =
                     "/media/uploads/questions/option_4_uFtm5qj.png";
@@ -347,14 +366,14 @@ const MobileQuizLayout = ({
                       : currentQuestion?.options?.map((text) => ({ text })) ||
                         [];
 
-                  return displayItems?.map((item, index) => (
+                  return displayItems.map((item, index) => (
                     <label
                       key={index}
-                      className={`border border-gray-300 rounded-lg p-4 flex items-center justify-center text-center cursor-pointer transition duration-200 transform ${
+                      className={`option border border-gray-300 rounded-lg p-4 flex flex-col items-center justify-center text-center cursor-pointer transition duration-200 transform ${
                         selectedOption === (item.file || item.text)
                           ? "bg-blue-200 border-blue-800 shadow-md"
                           : "hover:bg-gray-50 hover:shadow-sm"
-                      }`}
+                      } mb-4`}
                     >
                       <input
                         type="radio"
@@ -367,7 +386,7 @@ const MobileQuizLayout = ({
                         className="hidden"
                       />
                       <div className="flex flex-col items-center">
-                        {/* Show image if the file exists */}
+                        {/* Display image if the file exists */}
                         {item.file && (
                           <img
                             src={`${baseUrl}${item.file}`}
@@ -375,23 +394,29 @@ const MobileQuizLayout = ({
                             className="max-w-full max-h-24 object-contain mb-2"
                           />
                         )}
-                        {/* Show text wrapped in StaticMathField */}
+                        {/* Display text with mixed LaTeX and normal text handling */}
                         {item.text && (
-                          <StaticMathField className="text-gray-800 font-medium">
-                            {(() => {
-                              try {
-                                const parsedText = JSON.parse(item.text);
-                                return Array.isArray(parsedText)
-                                  ? parsedText[0]
-                                  : parsedText;
-                              } catch {
-                                return item.text
-                                  .replace(/^\['?|'\]$/g, "")
-                                  .replace(/\\\\/g, "\\")
-                                  .trim();
-                              }
-                            })()}
-                          </StaticMathField>
+                          <div className="text-gray-800 font-medium text-center">
+                            {item.text
+                              .replace(/\\n/g, "\n")
+                              .split("\n")
+                              .map((line, idx) => (
+                                <p
+                                  key={idx}
+                                  className="flex flex-wrap items-center gap-2"
+                                >
+                                  {line.split(/(\$[^$]+\$)/g).map((part, i) =>
+                                    /^\$[^$]+\$$/.test(part) ? ( // Check if part is LaTeX
+                                      <StaticMathField key={i}>
+                                        {part.slice(1, -1)}
+                                      </StaticMathField>
+                                    ) : (
+                                      <span key={i}>{part}</span>
+                                    )
+                                  )}
+                                </p>
+                              ))}
+                          </div>
                         )}
                       </div>
                     </label>
