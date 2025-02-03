@@ -560,7 +560,7 @@ const ChapterNavigation = ({
                     ? "bg-blue-200 text-blue-700 ring-2 ring-blue-300"
                     : markedForReview.includes(i)
                     ? "bg-red-500 text-white"
-                    : answeredQuestions[i] !== undefined
+                    : answeredQuestions[i] !== undefined && answeredQuestions[i] !== null
                     ? "bg-green-500 text-white"
                     : "bg-gray-200 text-gray-700"
                 }`}
