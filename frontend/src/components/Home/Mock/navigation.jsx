@@ -548,37 +548,40 @@ const QuestionNavigation = ({
         </div>
         {/* Question Navigation Buttons */}
         <div className="grid grid-cols-5 gap-4">
-          {filteredQuestions.length > 0 ? (
-            filteredQuestions.map((question, i) => (
-              <button
-                key={i}
-                onClick={() => onSelectQuestion(i)}
-                title={
-                  markedForReview.includes(i)
-                    ? "Marked for Review"
-                    : answeredQuestions[i] !== undefined
-                    ? "Answered"
-                    : "Not Answered"
-                }
-                className={`w-10 h-10 flex items-center justify-center rounded-md font-bold transition duration-200 focus:outline-none focus:ring ${
-                  selectedQuestionIndex === i
-                    ? "bg-blue-200 text-blue-700 ring-2 ring-blue-300"
-                    : markedForReview.includes(i)
-                    ? "bg-red-500 text-white"
-                    : answeredQuestions[i] !== undefined
-                    ? "bg-green-500 text-white"
-                    : "bg-gray-200 text-gray-700"
-                }`}
-              >
-                {i + 1}
-              </button>
-            ))
-          ) : (
-            <p className="col-span-5 text-center text-gray-500">
-              No questions available for selected subject
-            </p>
-          )}
-        </div>
+  {filteredQuestions.length > 0 ? (
+    filteredQuestions.map((question, i) => {
+      console.log(`Question ${i + 1}:`, answeredQuestions[i]); // Debug
+      return (
+        <button
+          key={i}
+          onClick={() => onSelectQuestion(i)}
+          title={
+            markedForReview.includes(i)
+              ? "Marked for Review"
+              : answeredQuestions[i] !== undefined
+              ? "Answered"
+              : "Not Answered"
+          }
+          className={`w-10 h-10 flex items-center justify-center rounded-md font-bold transition duration-200 focus:outline-none focus:ring ${
+            selectedQuestionIndex === i
+              ? "bg-blue-200 text-blue-700 ring-2 ring-blue-300" // Current question
+              : markedForReview.includes(i)
+              ? "bg-red-500 text-white" // Marked for review
+              : answeredQuestions[i] !== undefined && answeredQuestions[i] !== null
+              ? "bg-green-500 text-white" // Answered
+              : "bg-gray-200 text-gray-700" // Unanswered
+          }`}
+        >
+          {i + 1}
+        </button>
+      );
+    })
+  ) : (
+    <p className="col-span-5 text-center text-gray-500">
+      No questions available for selected subject
+    </p>
+  )}
+</div>
         {/* Submit Button */}
         <div className="hidden">
           <Timer totalMinutes={savedMinutes} onTimeUp={handleAutoSubmit} />
