@@ -18,10 +18,24 @@ const NoticeAdmin = () => {
   const token = S.token;
   const idAuth = S.id_auth;
 
+  // Toggle sidebar on click
   const toggleSidebar = () => {
     setIsCollapsed((prev) => !prev);
   };
 
+  // Handle window resize to collapse the sidebar on smaller screens
+  useEffect(() => {
+    const handleResize = () => {
+      setIsCollapsed(window.innerWidth < 768);
+    };
+    window.addEventListener("resize", handleResize);
+    handleResize(); // Ensure correct state on initial load
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
+  // Fetch students from the API
   const fetchStudents = async () => {
     try {
       const response = await fetch(`${config.apiUrl}/admin-student-crud/`, {
@@ -53,11 +67,9 @@ const NoticeAdmin = () => {
 
   useEffect(() => {
     fetchStudents();
-    // Load saved alerts from localStorage if they exist
-    // const savedAlerts = JSON.parse(localStorage.getItem("sentMessages")) || [];
-    // setAlerts(savedAlerts);
   }, []);
 
+  // Handle student selection change
   const handleStudentChange = (selected) => {
     if (selected.some((option) => option.value === "selectAll")) {
       setSelectedOptions(students);
@@ -68,6 +80,7 @@ const NoticeAdmin = () => {
     }
   };
 
+  // Handle message sending
   const handleSendMessage = async () => {
     if (message.trim()) {
       if (selectedOptions.length === 0) {
@@ -76,7 +89,6 @@ const NoticeAdmin = () => {
         return;
       }
 
-      // Send a message to each selected recipient
       const newAlerts = [];
       for (let option of selectedOptions) {
         const messageData = {
@@ -126,6 +138,7 @@ const NoticeAdmin = () => {
     }
   };
 
+  // Handle message deletion
   const handleDeleteMessage = (index) => {
     const updatedAlerts = alerts.filter((_, i) => i !== index);
     setAlerts(updatedAlerts);
@@ -133,6 +146,7 @@ const NoticeAdmin = () => {
     localStorage.setItem("sentMessages", JSON.stringify(updatedAlerts));
   };
 
+  // Close modal
   const closeModal = () => {
     setIsModalVisible(false);
   };
@@ -142,11 +156,7 @@ const NoticeAdmin = () => {
       {/* Layout Structure */}
       <div className="flex flex-row flex-grow">
         {/* Sidebar */}
-        <Sidebar
-          isCollapsed={isCollapsed}
-          toggleSidebar={toggleSidebar}
-          className="hidden md:block"
-        />
+        <Sidebar isCollapsed={isCollapsed} toggleSidebar={toggleSidebar} />
 
         {/* Main Content */}
         <div

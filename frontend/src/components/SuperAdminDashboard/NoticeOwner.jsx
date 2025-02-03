@@ -126,6 +126,18 @@ const NoticeOwner = () => {
     setIsModalVisible(false);
   };
 
+  // Handle window resize to collapse the sidebar on smaller screens
+  useEffect(() => {
+    const handleResize = () => {
+      setIsCollapsed(window.innerWidth < 768);
+    };
+    window.addEventListener("resize", handleResize);
+    handleResize(); // Ensure correct state on initial load
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
+
   return (
     <div className="flex flex-col min-h-screen">
       {/* Layout Structure */}

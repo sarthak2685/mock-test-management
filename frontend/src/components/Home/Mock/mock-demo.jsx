@@ -535,46 +535,60 @@ const MockDemo = () => {
                 Question {currentQuestionIndex + 1}
               </h2>
 
-              {/* Log Question */}
+              {/* Log current question */}
               <p className="text-lg font-medium mb-8">
-                {mockTestData.find(
-                  (section) => section.subject === selectedSubject
-                )?.questions[currentQuestionIndex]
+                {mockTestData[currentSectionIndex]?.questions[
+                  currentQuestionIndex
+                ]
                   ? (() => {
-                      const currentQuestion = mockTestData.find(
-                        (section) => section.subject === selectedSubject
-                      )?.questions[currentQuestionIndex];
-
+                      const currentQuestion =
+                        mockTestData[currentSectionIndex]?.questions[
+                          currentQuestionIndex
+                        ];
                       const baseUrl = `${config.apiUrl}`;
+                      const defaultFileValue =
+                        "/media/uploads/questions/option_4_uFtm5qj.png";
+
+                      // Replace '\\n' with actual newlines and split into an array
+                      const formattedQuestion =
+                        currentQuestion?.question
+                          .replace(/\\n/g, "\n")
+                          .split("\n") || [];
 
                       return (
                         <>
-                          {/* Main question */}
-                          <StaticMathField>
-                            {/* Replace spaces with LaTeX space commands */}
-                            {currentQuestion?.question
-                              ? currentQuestion.question.replace(/ /g, "\\ ")
-                              : "No question available"}
-                          </StaticMathField>
-                          <br />
+                          {formattedQuestion.map((line, index) => (
+                            <p
+                              key={index}
+                              className="mb-2 flex flex-wrap items-center gap-2"
+                            >
+                              {line.split(/(\$[^$]+\$)/g).map((part, i) =>
+                                /^\$[^$]+\$$/.test(part) ? ( // Check if part is LaTeX
+                                  <StaticMathField key={i}>
+                                    {part.slice(1, -1)}
+                                  </StaticMathField>
+                                ) : (
+                                  <span key={i}>{part}</span>
+                                )
+                              )}
+                            </p>
+                          ))}
 
-                          {/* Display question2 if it is valid (not the default image) */}
-                          {currentQuestion?.question2 &&
-                          currentQuestion?.question2 !==
-                            "/media/uploads/questions/option_4_uFtm5qj.png" ? (
-                            currentQuestion.question2.startsWith(
+                          {/* Additional question (question_1), skipping the default value */}
+                          {currentQuestion?.question_1 &&
+                          currentQuestion.question_1 !== defaultFileValue ? (
+                            currentQuestion.question_1.startsWith(
                               "/media/uploads/"
                             ) ? (
                               <img
-                                src={`${config.apiUrl}${currentQuestion.question2}`}
+                                src={`${config.apiUrl}${currentQuestion.question_1}`}
                                 alt="Additional question"
                                 className="max-w-full max-h-24 object-contain mt-4"
                               />
                             ) : (
-                              <StaticMathField>
-                                {/* Ensure spaces are also handled for question2 */}
-                                {currentQuestion.question2.replace(/ /g, "\\ ")}
-                              </StaticMathField>
+                              <p className="mt-2">
+                                {currentQuestion.question_1}
+                              </p>
                             )
                           ) : null}
                         </>
@@ -585,24 +599,25 @@ const MockDemo = () => {
 
               {/* Log options */}
               <div className="grid grid-cols-2 gap-6 mb-10">
-                {mockTestData.find(
-                  (section) => section.subject === selectedSubject
-                )?.questions[currentQuestionIndex] ? (
+                {mockTestData[currentSectionIndex]?.questions[
+                  currentQuestionIndex
+                ] ? (
                   (() => {
-                    const currentQuestion = mockTestData.find(
-                      (section) => section.subject === selectedSubject
-                    )?.questions[currentQuestionIndex];
+                    const currentQuestion =
+                      mockTestData[currentSectionIndex]?.questions[
+                        currentQuestionIndex
+                      ];
 
                     const baseUrl = `${config.apiUrl}`;
+                    const defaultFileValue =
+                      "/media/uploads/questions/option_4_uFtm5qj.png";
 
-                    // Check if valid files exist, excluding the default value
+                    // Check if valid files exist, excluding the default placeholder
                     const validFiles = currentQuestion?.files?.filter(
-                      (file) =>
-                        file &&
-                        file !== "/media/uploads/questions/option_4_uFtm5qj.png"
+                      (file) => file && file !== defaultFileValue
                     );
 
-                    // Use options if files are invalid or empty
+                    // Use options if no valid files exist
                     const displayItems =
                       validFiles?.length > 0
                         ? validFiles
@@ -611,7 +626,7 @@ const MockDemo = () => {
                     return displayItems?.map((item, index) => {
                       const isFile = item.startsWith("/media/uploads/");
                       const optionText =
-                        currentQuestion?.options[index]?.trim() || null;
+                        currentQuestion?.options?.[index]?.trim() || null;
 
                       return item ? (
                         <label
@@ -639,25 +654,31 @@ const MockDemo = () => {
                                 className="max-w-full max-h-24 object-contain mb-2"
                               />
                             )}
-                            {/* Only display text if valid and non-empty */}
+                            {/* Display text with LaTeX and normal text */}
                             {optionText && (
-                              <span className="text-gray-800 font-medium">
-                                <StaticMathField>
-                                  {(() => {
-                                    try {
-                                      const parsedText = JSON.parse(optionText);
-                                      return Array.isArray(parsedText)
-                                        ? parsedText[0]
-                                        : parsedText;
-                                    } catch {
-                                      return optionText
-                                        .replace(/^\['?|'\]$/g, "")
-                                        .replace(/\\\\/g, "\\")
-                                        .trim();
-                                    }
-                                  })()}
-                                </StaticMathField>
-                              </span>
+                              <div className="text-gray-800 font-medium text-center">
+                                {optionText
+                                  .replace(/\\n/g, "\n")
+                                  .split("\n")
+                                  .map((line, idx) => (
+                                    <p
+                                      key={idx}
+                                      className="flex flex-wrap items-center gap-2"
+                                    >
+                                      {line
+                                        .split(/(\$[^$]+\$)/g)
+                                        .map((part, i) =>
+                                          /^\$[^$]+\$$/.test(part) ? ( // Check if part is LaTeX
+                                            <StaticMathField key={i}>
+                                              {part.slice(1, -1)}
+                                            </StaticMathField>
+                                          ) : (
+                                            <span key={i}>{part}</span>
+                                          )
+                                        )}
+                                    </p>
+                                  ))}
+                              </div>
                             )}
                           </div>
                         </label>

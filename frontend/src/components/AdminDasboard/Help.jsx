@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "./Sidebar/SideBars";
 import DashboardHeader from "./DashboardHeader";
 import config from "../../config";
@@ -69,6 +69,18 @@ const Help = () => {
       console.error("Error sending message:", error);
     }
   };
+
+  // Handle window resize to collapse the sidebar on smaller screens
+  useEffect(() => {
+    const handleResize = () => {
+      setIsCollapsed(window.innerWidth < 768);
+    };
+    window.addEventListener("resize", handleResize);
+    handleResize(); // Ensure correct state on initial load
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-100 to-gray-300">

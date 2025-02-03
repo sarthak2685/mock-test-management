@@ -17,9 +17,10 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
 
   return (
     <aside
-      className={`bg-[#007bff] text-white fixed top-0 left-0 w-64 h-screen p-4 flex flex-col transition-transform duration-300 ${
+      className={`bg-[#007bff] text-white fixed top-0 left-0 w-64 h-screen p-4 flex flex-col transition-transform duration-300 z-50 ${
         isCollapsed ? "-translate-x-full" : "translate-x-0"
       }`}
+      style={{ maxHeight: "100vh", overflowY: "auto" }}
     >
       <div className="flex items-center justify-between p-2 rounded-md mb-7">
         <span className="text-2xl font-bold text-white">Mock Period</span>
@@ -85,7 +86,6 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
         </NavLink>
 
         {/* Test Time Section */}
-       
 
         {/* Notice Board Section */}
         <NavLink
@@ -105,7 +105,7 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
       </nav>
 
       {/* Log out button */}
-      <div className="mt-auto mb-20 md:mb-0">
+      <div className="mt-auto">
         <button
           onClick={handleLogout}
           className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-md flex items-center justify-center"
