@@ -15,35 +15,59 @@ const InstructionsModal = ({ isVisible, onClose }) => {
     localStorage.setItem("selectedOptionalSubject", selectedSubject);
   };
 
-  // Data for subjects and marks
-  const subjectData = [
-    {
-      subject: "GENERAL INTELLIGENCE & REASONING",
-      questions: 25,
-      marks: 50,
-      time: 15,
-    },
-    { subject: "GENERAL AWARENESS", questions: 25, marks: 50, time: 15 },
-    { subject: "QUANTITATIVE APTITUDE", questions: 25, marks: 50, time: 15 },
-  ];
 
-  const optionalSubjectData = {
-    subject: optionalSubject || "Optional Subject",
-    questions: 25,
-    marks: 50,
-    time: 15,
-  };
+  const storedTestName = localStorage.getItem("selectedTestName");
+  console.log("hii", storedTestName); // Logs the last stored test name
+  const SubjectId = localStorage.getItem("selectedSubjectId");
+  const optional = localStorage.getItem("nonSelectedLanguage");
+  console.log("Setting", optional);
+  const storedDetails = JSON.parse(localStorage.getItem("selectedTestDetails"));
+  const duration = JSON.parse(localStorage.getItem("selectedExamDuration"));
+  console.log("storedDetails", storedDetails, duration);
 
-  // Calculate totals
-  const totalQuestions =
-    subjectData.reduce((acc, subject) => acc + subject.questions, 0) +
-    (optionalSubject ? optionalSubjectData.questions : 0);
-  const totalMarks =
-    subjectData.reduce((acc, subject) => acc + subject.marks, 0) +
-    (optionalSubject ? optionalSubjectData.marks : 0);
-  const totalTime =
-    subjectData.reduce((acc, subject) => acc + subject.time, 0) +
-    (optionalSubject ? optionalSubjectData.time : 0);
+  const subjects = storedDetails?.subjects || [];
+  const totalQuestions = storedDetails?.totalQuestions || 0;
+  const totalMarks = storedDetails?.totalMarks || 0;
+  const examDuration = duration || 0;
+  const positiveMarks = storedDetails?.postiveMarks || 0;
+  const negativeMarks = storedDetails?.negativeMarks || 0;
+
+  const subjectData = subjects.map((subject) => ({
+    subject,
+    questions: totalQuestions / subjects.length,
+    marks: totalMarks / subjects.length,
+    time: examDuration / subjects.length, // Assuming equal time distribution
+  }));
+
+  // // Data for subjects and marks
+  // const subjectData = [
+  //   {
+  //     subject: "GENERAL INTELLIGENCE & REASONING",
+  //     questions: 25,
+  //     marks: 50,
+  //     time: 15,
+  //   },
+  //   { subject: "GENERAL AWARENESS", questions: 25, marks: 50, time: 15 },
+  //   { subject: "QUANTITATIVE APTITUDE", questions: 25, marks: 50, time: 15 },
+  // ];
+
+  // const optionalSubjectData = {
+  //   subject: optionalSubject || "Optional Subject",
+  //   questions: 25,
+  //   marks: 50,
+  //   time: 15,
+  // };
+
+  // // Calculate totals
+  // const totalQuestions =
+  //   subjectData.reduce((acc, subject) => acc + subject.questions, 0) +
+  //   (optionalSubject ? optionalSubjectData.questions : 0);
+  // const totalMarks =
+  //   subjectData.reduce((acc, subject) => acc + subject.marks, 0) +
+  //   (optionalSubject ? optionalSubjectData.marks : 0);
+  // const totalTime =
+  //   subjectData.reduce((acc, subject) => acc + subject.time, 0) +
+  //   (optionalSubject ? optionalSubjectData.time : 0);
 
   if (!isVisible) return null;
 
@@ -84,8 +108,8 @@ const InstructionsModal = ({ isVisible, onClose }) => {
             Marking Scheme:
           </h3>
           <ul className="list-disc pl-5 text-gray-700 space-y-2">
-            <li>4 marks for each correct answer.</li>
-            <li>1/4th negative marking for incorrect answers.</li>
+            <li>{positiveMarks} marks for each correct answer.</li>
+            <li>{negativeMarks} negative marking for incorrect answers.</li>
             <li>No penalty for un-attempted questions.</li>
           </ul>
         </div>
@@ -113,23 +137,25 @@ const InstructionsModal = ({ isVisible, onClose }) => {
               </tr>
             </thead>
             <tbody>
-              {subjectData.map((subject, index) => (
-                <tr key={index}>
-                  <td className="px-2 sm:px-4 py-2 border border-gray-300">
-                    {subject.subject}
-                  </td>
-                  <td className="px-2 sm:px-4 py-2 border border-gray-300">
-                    {subject.questions}
-                  </td>
-                  <td className="px-2 sm:px-4 py-2 border border-gray-300">
-                    {subject.marks}
-                  </td>
-                  <td className="px-2 sm:px-4 py-2 border border-gray-300">
-                    {subject.time} min
-                  </td>
-                </tr>
-              ))}
-              <tr>
+            {subjectData
+                .filter((subject) => subject.subject !== optional) // Exclude optional subject
+                .map((subject, index) => (
+                  <tr key={index}>
+                    <td className="px-2 sm:px-4 py-2 border border-gray-300">
+                      {subject.subject}
+                    </td>
+                    <td className="px-2 sm:px-4 py-2 border border-gray-300">
+                      {subject.questions}
+                    </td>
+                    <td className="px-2 sm:px-4 py-2 border border-gray-300">
+                      {subject.marks}
+                    </td>
+                    <td className="px-2 sm:px-4 py-2 border border-gray-300">
+                      {subject.time} min
+                    </td>
+                  </tr>
+                ))}
+              {/* <tr>
                 <td className="px-2 sm:px-4 py-2 border border-gray-300">
                   <select
                     style={{
@@ -172,7 +198,7 @@ const InstructionsModal = ({ isVisible, onClose }) => {
                 <td className="px-4 py-2 border border-gray-300">
                   {totalTime} min
                 </td>
-              </tr>
+              </tr> */}
             </tbody>
           </table>
         </div>
