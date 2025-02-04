@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { FaGraduationCap, FaClipboardList } from "react-icons/fa";
+import { FaGraduationCap, FaClipboardList, FaBook } from "react-icons/fa";
 import config from "../../config";
 import Sidebar from "./Sidebar/SideBars";
 import DashboardHeader from "./DashboardHeader";
 
 function TestDetail() {
-  const [testGroups, setTestGroups] = useState({});
+  const [testGroups, setTestGroups] = useState({}); // Exam Tests
+  const [subjectTestGroups, setSubjectTestGroups] = useState({}); // Subject Tests
   const S = JSON.parse(localStorage.getItem("user"));
   const [isCollapsed, setIsCollapsed] = useState(window.innerWidth < 768);
   const user = S.name;
@@ -25,6 +26,7 @@ function TestDetail() {
     };
   }, []);
 
+  // Fetch Exam Tests
   const fetchTests = async () => {
     try {
       const selectedInstituteNames = S?.institute_name;
@@ -49,7 +51,7 @@ function TestDetail() {
 
       const data = await response.json();
 
-      // Filter and group tests by `for_exam__name`
+      // Group tests by `for_exam__name`
       const groupedTests = data.test_names
         .filter((test) => test.for_exam__name !== null) // Ignore null exams
         .reduce((acc, test) => {
@@ -66,33 +68,91 @@ function TestDetail() {
     }
   };
 
+  // Fetch Subject Tests
+  const fetchSubjectTest = async () => {
+    try {
+      const selectedInstituteNames = S?.institute_name;
+      const queryParams = new URLSearchParams({
+        institute_name: selectedInstituteNames,
+      });
+
+      const response = await fetch(
+        `${config.apiUrl}/get-test-by-subject-name/?${queryParams.toString()}`,
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch subject test data");
+      }
+
+      const data = await response.json();
+      console.log("Subject Test Data:", data);
+
+      // Transform data into { subject: [test1, test2, ...] }
+      const groupedSubjects = data.reduce((acc, subjectObj) => {
+        const [subject, tests] = Object.entries(subjectObj)[0];
+        acc[subject] = [...new Set(tests)]; // Remove duplicate test names
+        return acc;
+      }, {});
+
+      setSubjectTestGroups(groupedSubjects);
+    } catch (error) {
+      console.error("Error fetching subject test data:", error);
+    }
+  };
+
   useEffect(() => {
     fetchTests();
+    fetchSubjectTest();
   }, []);
 
   return (
     <>
-
       <Sidebar
-          isCollapsed={isCollapsed}
-          toggleSidebar={toggleSidebar}
-          className="hidden md:block"
-        />
+        isCollapsed={isCollapsed}
+        toggleSidebar={toggleSidebar}
+        className="hidden md:block"
+      />
 
-        <div
-          className={`flex-grow transition-all duration-300 ease-in-out ${
-            isCollapsed ? "ml-0" : "ml-64"
-          }`}
-        >
-          <DashboardHeader user={user} toggleSidebar={toggleSidebar} />
+      <div
+        className={`flex-grow transition-all duration-300 ease-in-out ${
+          isCollapsed ? "ml-0" : "ml-64"
+        }`}
+      >
+        <DashboardHeader user={user} toggleSidebar={toggleSidebar} />
 
         <div className="test-container">
-          <h2 className="test-title">Available Tests</h2>
+          {/* Exam-based Tests */}
+          <h2 className="test-title">Available Tests by Exam</h2>
           <div className="test-grid">
             {Object.entries(testGroups).map(([exam, tests]) => (
               <div key={exam} className="test-card">
                 <h3 className="exam-title">
                   <FaGraduationCap className="icon" /> {exam}
+                </h3>
+                <ul className="test-list">
+                  {tests.map((test, index) => (
+                    <li key={index} className="test-item">
+                      <FaClipboardList className="icon test-icon" /> {test}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+
+          {/* Subject-based Tests */}
+          <h2 className="test-title mt-4">Available Tests by Subject</h2>
+          <div className="test-grid">
+            {Object.entries(subjectTestGroups).map(([subject, tests]) => (
+              <div key={subject} className="test-card">
+                <h3 className="exam-title">
+                  <FaBook className="icon" /> {subject}
                 </h3>
                 <ul className="test-list">
                   {tests.map((test, index) => (

@@ -264,6 +264,25 @@ const MockChapter = () => {
       return updatedAnswers;
     });
   };
+  useEffect(() => {
+    const handleBeforeUnload = (event) => {
+      event.preventDefault();
+      event.returnValue = "Are you sure you want to refresh?";
+    };
+
+    const handleUnload = () => {
+      localStorage.removeItem("submissionResult");
+      localStorage.removeItem("submittedData");
+      localStorage.removeItem("selectedTestDetails");    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener("unload", handleUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener("unload", handleUnload);
+    };
+  }, []);
 
   const handlePrevious = () => {
     if (currentQuestionIndex > 0) {

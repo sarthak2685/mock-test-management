@@ -334,7 +334,7 @@ const Score = () => {
               <div className="text-center p-4 md:p-6 lg:p-8 bg-gradient-to-r from-indigo-100 to-indigo-50 rounded-xl shadow-lg transform hover:scale-105 transition-all duration-500">
                 <FaTrophy className="text-indigo-600 text-3xl md:text-4xl lg:text-5xl mx-auto mb-2 md:mb-3 lg:mb-4" />
                 <p className="text-sm md:text-lg lg:text-xl text-gray-600 mb-2 md:mb-3 font-medium">
-                  Total Score
+                  Total Mark
                 </p>
                 <p className="text-2xl md:text-3xl lg:text-4xl font-bold text-indigo-600">
                   {analysisData?.total_marks_for_exam || "0"}
@@ -354,7 +354,7 @@ const Score = () => {
                     {analysisData?.total_obtained_marks || "0"}
                   </p>
                   <p className="text-xs md:text-sm lg:text-lg mt-1 md:mt-2 font-medium">
-                    Candidate's Score
+                    Candidate's Mark
                   </p>
                 </div>
               </div>
