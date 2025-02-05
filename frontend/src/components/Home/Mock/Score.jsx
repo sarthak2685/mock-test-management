@@ -73,6 +73,7 @@ const Score = () => {
     localStorage.removeItem("exam_id");
     localStorage.removeItem("selectedExamDuration");
     localStorage.removeItem("selectedTestDetails");
+    localStorage.removeItem("selectedLanguage")
     navigate("/");
   };
   const sectionData =

@@ -72,13 +72,14 @@ const MockDemo = () => {
   const [timerDuration, setTimerDuration] = useState(0); // State for timer
   const SubjectId = localStorage.getItem("selectedSubjectId");
   const optional = localStorage.getItem("nonSelectedLanguage");
-  console.log("Setting", optional);
+  const language = localStorage.getItem("selectedLanguage") || "en";
+  console.log("lang", language);
 
   useEffect(() => {
     const fetchMockTests = async () => {
       try {
         const response = await fetch(
-          `${config.apiUrl}/get-single-exam-details/?exam_id=${SubjectId}&institute_name=${institueName}&optional=${optional}`
+          `${config.apiUrl}/get-single-exam-details/?exam_id=${SubjectId}&institute_name=${institueName}&optional=${optional}&lang=${language}`
         );
 
         if (!response.ok) {
@@ -228,7 +229,6 @@ const MockDemo = () => {
   const [selectedSubject, setSelectedSubject] = useState(
     localStorage.getItem("selectedOptionalSubject") || ""
   );
-
   // Function to handle filtered data (to display only relevant sections)
   // const filteredQuizData = quizData.filter((section) => {
   //   if (selectedSubject) {

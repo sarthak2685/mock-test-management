@@ -7,9 +7,9 @@ const Instructions = () => {
   const [isChecked, setIsChecked] = useState(false);
   const [step, setStep] = useState(1);
   const [language, setLanguage] = useState(
-    localStorage.getItem("selectedLanguage") || ""
+    localStorage.getItem("selectedLanguage") || "en" // Default to English
   );
-  const [optionalSubject, setOptionalSubject] = useState(
+    const [optionalSubject, setOptionalSubject] = useState(
     localStorage.getItem("selectedOptionalSubject") || ""
   );
   const [error1, setError1] = useState("");
@@ -179,9 +179,8 @@ const Instructions = () => {
                   value={language}
                   onChange={handleLanguageChange}
                 >
-                  <option value="">Select Language</option>
-                  <option value="en">English</option>
-                  <option value="hi">Hindi</option>
+                   <option value="en">English</option>
+                   <option value="hi">Hindi</option>
                 </select>
               </div>
             </div>
