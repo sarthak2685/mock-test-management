@@ -343,9 +343,12 @@ const QuestionNavigation = ({
 
   const handleSubmit = async () => {
     try {
+      localStorage.setItem("submissionInProgress", "true"); // Mark submission in progress
+
       const user = JSON.parse(localStorage.getItem("user"));
       if (!user) {
         alert("User data not found. Please log in again.");
+        localStorage.setItem("submissionInProgress", "false");
         return;
       }
 
@@ -353,10 +356,9 @@ const QuestionNavigation = ({
       const exam_id = (SubjectId || "default_exam_id").replace(/ /g, " ");
       const student_id = user.id;
 
-      // Retrieve the formatted start time from localStorage
-      const start_time = localStorage.getItem("start_time") || "N/A";
+      const start_time =
+        localStorage.getItem("start_time") || new Date().toISOString();
 
-      // Record end time before submission
       const end_time = new Intl.DateTimeFormat("en-GB", {
         year: "numeric",
         month: "2-digit",
@@ -378,24 +380,15 @@ const QuestionNavigation = ({
         JSON.parse(localStorage.getItem("submittedData")) || {};
       const payload = Object.values(storedData).flat();
 
-      // Add start_time and end_time to each item in the payload
+      // Enhance payload
       const enhancedPayload = payload.map((item) => ({
         ...item,
-        // start_time: start_time,
-        // end_time: end_time,
       }));
-      // Convert the start and end times to Date objects
-      const startDate = parseDate(start_time);
-      const endDate = parseDate(end_time);
 
-      // Calculate the difference in milliseconds and convert to seconds
-      const diffInSeconds = Math.floor((endDate - startDate) / 1000);
-      // Build query parameters
-      // student_id=${student_id}&test_name=${test_name}&exam_id=${exam_id}
+      console.log("Submitting payload:", enhancedPayload);
 
-      const queryParams = `start_time=${start_time}&end_time=${end_time}`;
+      const queryParams = `student_id=${student_id}&test_name=${test_name}&start_time=${start_time}&exam_id=${exam_id}&end_time=${end_time}`;
 
-      // Submit the data to the server in one request
       const response = await fetch(
         `${config.apiUrl}/submit-answers/?${queryParams}`,
         {
@@ -404,13 +397,18 @@ const QuestionNavigation = ({
             Authorization: `Token ${user.token}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(enhancedPayload), // Send the enhanced payload
+          body: JSON.stringify(enhancedPayload),
         }
       );
 
       if (response.ok) {
+        localStorage.setItem("submissionResult", "true"); // Mark test as submitted
         setModalMessage("Submission successful!");
-        window.location.href = "/score";
+
+        setTimeout(() => {
+          localStorage.setItem("submissionInProgress", "false"); // Reset state
+          window.location.href = "/score"; // Redirect after short delay
+        }, 1000);
       } else {
         const errorDetails = await response.json();
         setModalMessage(
@@ -422,6 +420,8 @@ const QuestionNavigation = ({
       console.error("Error submitting answers:", error);
       setModalMessage("An unexpected error occurred. Please try again.");
       setModalOpen(true);
+    } finally {
+      localStorage.setItem("submissionInProgress", "false"); // Ensure reset
     }
   };
 

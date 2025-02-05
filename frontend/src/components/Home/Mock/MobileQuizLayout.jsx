@@ -167,12 +167,15 @@ const MobileQuizLayout = ({
   //   });
   // };
 
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+
   return (
     <div className="flex flex-col bg-gray-100 min-h-screen relative">
       {/* Main Content */}
       <div className="flex-1 transition-all duration-300">
         {/* Section Navigation Modal */}
-        {showNavigation && (
+        {/* {showNavigation && (
           <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center z-30">
             <div className="bg-white rounded-lg p-6 w-11/12 max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl max-h-3/4 overflow-y-auto shadow-lg">
               <h3 className="text-center text-lg font-semibold mb-4 text-gray-700 relative">
@@ -186,7 +189,6 @@ const MobileQuizLayout = ({
                 </button>
               </h3>
 
-              {/* Custom Dropdown for Section Selection */}
               <div className="relative w-full max-w-xs mx-auto mb-4 dropdown">
                 <button
                   onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -248,20 +250,20 @@ const MobileQuizLayout = ({
               </div>
             </div>
           </div>
-        )}
-        <div className="sticky top-0 bg-white shadow-md p-4 grid grid-cols-3 items-center z-20">
+        )} */}
+        <div className="sticky top-0 bg-white shadow-md p-4 grid grid-cols-1 items-center z-20">
           <div className="grid grid-cols-2 col-span-2 items-center space-x-4 justify-between">
             <UserProfile className="col-span-1" user={user} />
             {mockTestData.length > 0 && (
               <Timer
-                className="col-span-1 items-center"
+                className=",l-3 col-span-1 items-center"
                 totalMinutes={
                   localStorage.getItem("timerDuration", timerDuration) || 0
                 }
               />
             )}
           </div>
-          <div className="flex col-span-1 items-center justify-end space-x-4">
+          {/* <div className="flex col-span-1 items-center justify-end space-x-4">
             <button
               onClick={() => setShowNavigation(!showNavigation)}
               className="text-blue-500"
@@ -273,7 +275,7 @@ const MobileQuizLayout = ({
                 <FaBars className="w-6 h-6" />
               )}
             </button>
-          </div>
+          </div> */}
         </div>
 
         <div className="p-4 flex-1">
@@ -461,6 +463,159 @@ const MobileQuizLayout = ({
                 Save & Next
               </button>
             </div>
+
+            {/*Navigation Button*/}
+            <div className="bg-white rounded-lg p-6 w-11/12 max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl max-h-3/4 overflow-y-auto shadow-lg">
+              <h3 className="text-center text-lg font-semibold mb-4 text-gray-700 relative">
+                Sections
+                {/* <button
+                  className="absolute top-0 right-0 text-gray-500"
+                  onClick={() => setShowNavigation(false)}
+                  aria-label="Close Navigation"
+                >
+                  <FaTimes className="w-6 h-6" />
+                </button> */}
+              </h3>
+
+              {/* Custom Dropdown for Section Selection */}
+              <div className="relative w-full max-w-xs mx-auto mb-4 dropdown">
+                <button
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2 flex justify-between items-center text-gray-700"
+                >
+                  {subjects.length > 0
+                    ? subjects[currentSectionIndex]
+                    : "Select Section"}
+                  <FaChevronDown
+                    className={`transition-transform ${
+                      dropdownOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {dropdownOpen && (
+                  <div className="absolute z-40 w-full bg-white border border-gray-300 rounded-lg mt-1 shadow-lg max-h-60 overflow-y-auto">
+                    {subjects.length > 0 ? (
+                      subjects.map((subject, index) => (
+                        <div
+                          key={index}
+                          onClick={() => {
+                            setCurrentSectionIndex(index);
+                            setDropdownOpen(false);
+                          }}
+                          className={`px-4 py-2 cursor-pointer hover:bg-blue-500 hover:text-white ${
+                            index === currentSectionIndex ? "bg-blue-100" : ""
+                          }`}
+                        >
+                          {subject}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="px-4 py-2 text-gray-500">
+                        No sections available
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex-grow mt-4 overflow-y-auto max-h-96">
+                {currentSection && (
+                  <QuestionNavigation
+                    questions={currentSection.questions}
+                    selectedQuestionIndex={currentQuestionIndex}
+                    onSelectQuestion={(index) => {
+                      setCurrentQuestionIndex(index);
+                      setShowNavigation(false);
+                    }}
+                    onSubmit={handleSubmit}
+                    sectionName={currentSection.section}
+                    answeredQuestions={
+                      answeredQuestions[currentSectionIndex] || []
+                    }
+                    markedForReview={markedForReview[currentSectionIndex] || []}
+                  />
+                )}
+              </div>
+            </div>
+
+            {modalOpen && (
+              <div className="modal-overlay">
+                <div className="modal-content">
+                  <p>{modalMessage}</p>
+                  {![
+                    "Test is being submitted...",
+                    "Submission successful!",
+                  ].includes(modalMessage) && (
+                    <div className="modal-buttons">
+                      <button
+                        className="modal-btn confirm"
+                        onClick={() => {
+                          setModalOpen(false); // Close modal
+                          handleSubmit(); // Submit test
+                        }}
+                      >
+                        Yes
+                      </button>
+                      <button
+                        className="modal-btn cancel"
+                        onClick={() => setModalOpen(false)}
+                      >
+                        No
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <style jsx>{`
+              .modal-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 1000;
+              }
+              .modal-content {
+                background: white;
+                padding: 20px;
+                border-radius: 10px;
+                text-align: center;
+                width: 300px;
+                box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+              }
+              .modal-buttons {
+                display: flex;
+                justify-content: space-between;
+                margin-top: 10px;
+              }
+              .modal-btn {
+                padding: 8px 16px;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 14px;
+              }
+              .modal-btn.confirm {
+                background: #28a745;
+                color: white;
+              }
+              .modal-btn.cancel {
+                background: #dc3545;
+                color: white;
+              }
+              .modal-btn.close {
+                background: #007bff;
+                color: white;
+                margin-top: 10px;
+              }
+            `}</style>
           </div>
         )}
       </div>

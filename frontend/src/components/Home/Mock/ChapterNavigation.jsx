@@ -15,7 +15,6 @@ const InstructionsModal = ({ isVisible, onClose }) => {
     localStorage.setItem("selectedOptionalSubject", selectedSubject);
   };
 
-
   const storedTestName = localStorage.getItem("selectedTestName");
   console.log("hii", storedTestName); // Logs the last stored test name
   const SubjectId = localStorage.getItem("selectedSubjectId");
@@ -137,7 +136,7 @@ const InstructionsModal = ({ isVisible, onClose }) => {
               </tr>
             </thead>
             <tbody>
-            {subjectData
+              {subjectData
                 .filter((subject) => subject.subject !== optional) // Exclude optional subject
                 .map((subject, index) => (
                   <tr key={index}>
@@ -327,18 +326,18 @@ const ChapterNavigation = ({
 
   const handleSubmit = async () => {
     try {
-      // Log questions and answeredQuestions for debugging
+      localStorage.setItem("submissionInProgress", "true"); // Mark submission in progress
+
       console.log("Questions:", questions);
       console.log("Answered Questions:", answeredQuestions);
 
-      // Retrieve user information from localStorage
       const user = JSON.parse(localStorage.getItem("user"));
       if (!user) {
         alert("User data not found. Please log in again.");
+        localStorage.setItem("submissionInProgress", "false");
         return;
       }
 
-      // Extract test_name and exam_id
       const test_name = (
         questions[0]?.test_name || "Default Test Name"
       ).replace(/ /g, " ");
@@ -347,14 +346,10 @@ const ChapterNavigation = ({
         " "
       );
 
-      // Extract student_id
       const student_id = user.id;
-
-      // Retrieve the start time or set a default
       const start_time =
         localStorage.getItem("start_time") || new Date().toISOString();
 
-      // Record the end time
       const end_time = new Intl.DateTimeFormat("en-GB", {
         year: "numeric",
         month: "2-digit",
@@ -368,29 +363,21 @@ const ChapterNavigation = ({
         .replace(", ", "_")
         .replace(/\//g, "-");
 
-      // Retrieve data from localStorage
       const storedData =
         JSON.parse(localStorage.getItem("submittedData")) || {};
       const payload = Object.values(storedData).flat();
 
-      // localStorage.setItem("exam_id", exam_id);
       localStorage.setItem("start_time", start_time);
       localStorage.setItem("end_time", end_time);
 
-      // Enhance payload with additional metadata
       const enhancedPayload = payload.map((item) => ({
         ...item,
-        // start_time,
-        // end_time,
-        // student: student_id,
       }));
 
       console.log("Submitting payload:", enhancedPayload);
 
-      // Build query parameters
       const queryParams = `student_id=${student_id}&test_name=${test_name}&start_time=${start_time}&exam_id=${exam_id}&end_time=${end_time}`;
 
-      // Submit the data to the server in one request
       const response = await fetch(
         `${config.apiUrl}/submit-answers/?${queryParams}`,
         {
@@ -399,14 +386,18 @@ const ChapterNavigation = ({
             Authorization: `Token ${user.token}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(enhancedPayload), // Send the enhanced payload as JSON
+          body: JSON.stringify(enhancedPayload),
         }
       );
 
-      // Handle the response
       if (response.ok) {
+        localStorage.setItem("submissionResult", "true"); // Mark test as submitted
         setModalMessage("Submission successful!");
-        window.location.href = "/scorecard";
+
+        setTimeout(() => {
+          localStorage.setItem("submissionInProgress", "false"); // Reset state
+          window.location.href = "/scorecard"; // Navigate after a short delay
+        }, 1000);
       } else {
         const errorDetails = await response.json();
         setModalMessage(
@@ -418,6 +409,8 @@ const ChapterNavigation = ({
       console.error("Error submitting answers:", error);
       setModalMessage("An unexpected error occurred. Please try again.");
       setModalOpen(true);
+    } finally {
+      localStorage.setItem("submissionInProgress", "false"); // Ensure reset
     }
   };
 
@@ -586,7 +579,8 @@ const ChapterNavigation = ({
                     ? "bg-blue-200 text-blue-700 ring-2 ring-blue-300"
                     : markedForReview.includes(i)
                     ? "bg-red-500 text-white"
-                    : answeredQuestions[i] !== undefined && answeredQuestions[i] !== null
+                    : answeredQuestions[i] !== undefined &&
+                      answeredQuestions[i] !== null
                     ? "bg-green-500 text-white"
                     : "bg-gray-200 text-gray-700"
                 }`}
