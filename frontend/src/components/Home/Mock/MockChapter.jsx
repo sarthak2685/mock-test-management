@@ -266,14 +266,26 @@ const MockChapter = () => {
   };
   useEffect(() => {
     const handleBeforeUnload = (event) => {
+      const isTestSubmitted = localStorage.getItem("submissionResult");
+      const submissionInProgress = localStorage.getItem("submissionInProgress");
+
+      // Prevent warning if submission is in progress or already submitted
+      if (submissionInProgress === "true" || isTestSubmitted) return;
+
       event.preventDefault();
-      event.returnValue = "Are you sure you want to refresh?";
+      event.returnValue = "Are you sure you want to refresh?"; // Standard browser warning
     };
 
     const handleUnload = () => {
-      localStorage.removeItem("submissionResult");
-      localStorage.removeItem("submittedData");
-      localStorage.removeItem("selectedTestDetails");    };
+      const submissionInProgress = localStorage.getItem("submissionInProgress");
+
+      // Only remove data if the test is NOT being submitted
+      if (submissionInProgress !== "true") {
+        localStorage.removeItem("submissionResult");
+        localStorage.removeItem("submittedData");
+        localStorage.removeItem("selectedTestDetails");
+      }
+    };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
     window.addEventListener("unload", handleUnload);
