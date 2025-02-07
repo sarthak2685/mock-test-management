@@ -101,12 +101,14 @@ const MockChapter = () => {
   const [mockTestData, setMockTestData] = useState([]);
   const [timerDuration, setTimerDuration] = useState(0); // State for timer
   const SubjectId = localStorage.getItem("selectedSubjectId");
+  const language = localStorage.getItem("selectedLanguage") || "english";
+  console.log("lang", language);
 
   useEffect(() => {
     const fetchMockTests = async () => {
       try {
         const response = await fetch(
-          `${config.apiUrl}/get-single-exam-details-based-on-subjects/?subject_id=${SubjectId}&institute_name=${institueName}`,
+          `${config.apiUrl}/get-single-exam-details-based-on-subjects/?subject_id=${SubjectId}&institute_name=${institueName}&language=${language}`,
           {
             headers: {
               Authorization: `Token ${token}`,

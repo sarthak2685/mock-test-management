@@ -717,15 +717,11 @@ const MockTestManagement = ({ user }) => {
       const options = await Promise.all(
         currentQuestion.options.map(async (option) => {
           if (typeof option === "string") {
-            return option; // If it's just a string, return it directly.
+            return option;
           }
-
           if (option?.image instanceof File) {
-            // Convert image to Base64 if it's a File object
             return await fileToBase64(option.image);
           }
-
-          // If it's already Base64 or text, return it.
           return option?.image || option?.text || ""; // Default to empty string
         })
       );
@@ -738,28 +734,23 @@ const MockTestManagement = ({ user }) => {
         return option;
       });
 
-      // Handle the correct answer, which can be text or an image (Base64 or File)
       let correctAnswer = null;
       let correctAnswer2 = null;
 
       if (currentQuestion.correctAnswer?.text) {
         correctAnswer = currentQuestion.correctAnswer.text;
       } else if (currentQuestion.correctAnswer?.image instanceof File) {
-        // Convert correct answer image to Base64
         correctAnswer2 = await fileToBase64(
           currentQuestion.correctAnswer.image
         );
       } else if (currentQuestion.correctAnswer?.image) {
-        // If the image is already Base64, just use it
         correctAnswer2 = currentQuestion.correctAnswer.image;
       }
 
-      // Ensure correct answer text length is capped at 100 characters
       if (typeof correctAnswer === "string" && correctAnswer.length > 100) {
         correctAnswer = correctAnswer.slice(0, 100);
       }
 
-      // Prepare the list of subject IDs correctly
       const forExamSubjects =
         newTest.subject === "ALL"
           ? subTopic
@@ -767,25 +758,21 @@ const MockTestManagement = ({ user }) => {
               .map((sub) => sub.id)
           : newTest.selectedSubjects?.filter((id) => id !== "ALL") || [];
 
-      // Create a FormData object
       const formData = new FormData();
       formData.append("test_name", newTest.testName);
       formData.append("exam_duration", newTest.duration);
       formData.append("for_exam", newTest.domain);
 
-      // Append institutes only if "All Institutes" is not selected
       if (!selectedOptions.some((option) => option.value === "allInstitutes")) {
         selectedOptions.forEach((option) =>
           formData.append("institutes", option.value)
         );
       }
 
-      // Append for_exam_subjects_o as array of UUIDs
       forExamSubjects.forEach((id) =>
         formData.append("for_exam_subjects_o", id)
       );
 
-      // Append for_exam_chapter_o as array of UUIDs if present
       if (newTest.chapter?.id) {
         formData.append("for_exam_chapter_o", newTest.chapter.id);
       }
@@ -793,13 +780,9 @@ const MockTestManagement = ({ user }) => {
       formData.append("marks", newTest.correctMark);
       formData.append("negative_marks", newTest.negativeMark);
 
-      // Ensure the question text is set properly with the current textarea content
-      currentQuestion.questionText = text; // Update the question text with the textarea content
-
-      // Append question text (from textarea)
+      currentQuestion.questionText = text;
       formData.append("question", currentQuestion.questionText || "");
 
-      // Append question image file as Base64 if available
       if (currentQuestion.image) {
         if (currentQuestion.image instanceof File) {
           const base64Image = await fileToBase64(currentQuestion.image);
@@ -809,49 +792,47 @@ const MockTestManagement = ({ user }) => {
         }
       }
 
-      // Append subtopic if subject is ALL
       if (newTest.subject === "ALL") {
         formData.append("subtopic", currentQuestion.subtopic);
       }
 
-      // Append both option text and image (if any)
       await Promise.all(
         currentQuestion.options.map(async (option, index) => {
           const optionTextKey = `option_${index + 1}`;
           const optionImageKey = `file_${index + 1}`;
 
-          // Ensure text is never null; default to an empty string if no value
           const optionText =
             typeof option === "string" ? option : option?.text || "";
 
-          formData.append(optionTextKey, optionText); // Append the option text
+          formData.append(optionTextKey, optionText);
 
-          // Handle option image (Base64 or URL)
           if (option?.image) {
             if (option.image instanceof File) {
               const base64Image = await fileToBase64(option.image);
               formData.append(optionImageKey, base64Image);
             } else if (typeof option.image === "string") {
-              formData.append(optionImageKey, option.image); // Append image as URL or Base64
+              formData.append(optionImageKey, option.image);
             }
           }
         })
       );
 
-      // Append correct_answer and correct_answer2 fields
-      formData.append("correct_answer", correctAnswer || ""); // Default to empty string
+      formData.append("correct_answer", correctAnswer || "");
       if (correctAnswer2) {
-        formData.append("correct_answer2", correctAnswer2); // Image (Base64 or URL)
+        formData.append("correct_answer2", correctAnswer2);
       }
 
-      // Send the request using fetch
+      // **New Addition: Append Selected Language from Dropdown**
+      if (newTest.language) {
+        formData.append("language", newTest.language);
+      }
+
       const response = await fetch(
         `${config.apiUrl}/exam-subject-chapter-questions/`,
         {
           method: "POST",
           headers: {
             Authorization: `Token ${token}`,
-            // Do not set 'Content-Type': FormData automatically handles it.
           },
           body: formData,
         }
@@ -1253,7 +1234,7 @@ const MockTestManagement = ({ user }) => {
                     </div>
                   </div>
 
-                  {/* Correct Mark and Negative Mark Inputs in Same Row */}
+                  {/* Correct Mark, Negative Mark, and Language Selection in Same Row */}
                   <div className="flex gap-4 mt-3">
                     {/* Correct Mark Input */}
                     <div className="flex-grow">
@@ -1302,6 +1283,28 @@ const MockTestManagement = ({ user }) => {
                         className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
                         required
                       />
+                    </div>
+
+                    {/* Select Language Dropdown with Placeholder (No Default Selection) */}
+                    <div className="flex-grow">
+                      <select
+                        name="language"
+                        value={newTest.language || ""} // No default selection
+                        onChange={(e) =>
+                          setNewTest((prevTest) => ({
+                            ...prevTest,
+                            language: e.target.value,
+                          }))
+                        }
+                        className="border p-2 w-full rounded-md text-gray-500 focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
+                        required
+                      >
+                        <option value="" disabled hidden>
+                          Select Language
+                        </option>
+                        <option value="english">English</option>
+                        <option value="hindi">Hindi</option>
+                      </select>
                     </div>
                   </div>
                 </div>
