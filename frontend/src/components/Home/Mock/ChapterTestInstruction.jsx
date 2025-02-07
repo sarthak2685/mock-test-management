@@ -7,7 +7,7 @@ const ChapterTestInstructions = () => {
   const [isChecked, setIsChecked] = useState(false);
   const [step, setStep] = useState(1);
   const [language, setLanguage] = useState(
-    localStorage.getItem("selectedLanguage") || ""
+    localStorage.getItem("selectedLanguage") || "english"
   );
   const [optionalSubject, setOptionalSubject] = useState(
     localStorage.getItem("selectedOptionalSubject") || ""
@@ -150,8 +150,8 @@ const ChapterTestInstructions = () => {
                   onChange={handleLanguageChange}
                 >
                   <option value="">Select Language</option>
-                  <option value="en">English</option>
-                  <option value="hi">Hindi</option>
+                  <option value="english">English</option>
+                  <option value="hindi">Hindi</option>
                   {/* Add more languages as needed */}
                 </select>
               </div>

@@ -151,6 +151,7 @@ const AdminList = () => {
         } else {
           console.error("fetchAdmins is not a function");
         }
+        window.location.reload();
       } else {
         console.error("Failed to update subscription plan:", response.data);
       }

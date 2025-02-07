@@ -7,9 +7,9 @@ const Instructions = () => {
   const [isChecked, setIsChecked] = useState(false);
   const [step, setStep] = useState(1);
   const [language, setLanguage] = useState(
-    localStorage.getItem("selectedLanguage") || "en" // Default to English
+    localStorage.getItem("selectedLanguage") || "english" // Default to English
   );
-    const [optionalSubject, setOptionalSubject] = useState(
+  const [optionalSubject, setOptionalSubject] = useState(
     localStorage.getItem("selectedOptionalSubject") || ""
   );
   const [error1, setError1] = useState("");
@@ -179,8 +179,8 @@ const Instructions = () => {
                   value={language}
                   onChange={handleLanguageChange}
                 >
-                   <option value="en">English</option>
-                   <option value="hi">Hindi</option>
+                  <option value="english">English</option>
+                  <option value="hindi">Hindi</option>
                 </select>
               </div>
             </div>
@@ -379,8 +379,8 @@ const Instructions = () => {
             </h2>
             <h2 className="text-base font-semibold text-blue-600 mt-2">
               <span className="text-black font-bold">Note:</span> Any question
-              where you have selected or not Selected an option and pressed "Save and Next" will
-              be marked as attempted.
+              where you have selected or not Selected an option and pressed
+              "Save and Next" will be marked as attempted.
             </h2>
 
             <div className="mt-6">
