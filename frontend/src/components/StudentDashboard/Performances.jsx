@@ -14,19 +14,22 @@ const Performances = ({ user }) => {
   const toggleSidebar = () => {
     setIsCollapsed((prev) => !prev); // Toggle sidebar collapse state
   };
-  const userInfo = JSON.parse(localStorage.getItem("user"))
+  const userInfo = JSON.parse(localStorage.getItem("user"));
   const id = userInfo.id;
   const S = JSON.parse(localStorage.getItem("user"));
   const token = S.token;
   const institute = userInfo.institute_name;
   const fetchPerformanceData = async () => {
     try {
-      const response = await fetch(`${config.apiUrl}/student_performance_single/?student_id=${id}&institute_name=${institute}`, {
-        headers: {
-          Authorization: `Token ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `${config.apiUrl}/student_performance_single/?student_id=${id}&institute_name=${institute}`,
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`Error: ${response.status} ${response.statusText}`);
@@ -80,7 +83,6 @@ const Performances = ({ user }) => {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
-  console.log("User Info: ", userInfo);
 
   // Handler to navigate to the test details page
   const handleTestClick = (test, category) => {
@@ -98,44 +100,54 @@ const Performances = ({ user }) => {
 
         {/* Main Performance Content */}
         <div
-          className={`flex-grow transition-all duration-300 ease-in-out ${isCollapsed ? "ml-0" : "ml-64"}`}
+          className={`flex-grow transition-all duration-300 ease-in-out ${
+            isCollapsed ? "ml-0" : "ml-64"
+          }`}
         >
           {/* Header */}
-          <DashboardHeader user={user || { name: "Guest" }} toggleSidebar={toggleSidebar} />
+          <DashboardHeader
+            user={user || { name: "Guest" }}
+            toggleSidebar={toggleSidebar}
+          />
 
           <div className="p-4">
             {/* Adjusted heading to 3xl and bold, left-aligned */}
             <h2 className="text-3xl md:text-3xl font-bold mb-2 text-left text-[1.6rem] sm:text-3xl">
-              {userInfo?.name || ''}'s Performance
+              {userInfo?.name || ""}'s Performance
             </h2>
 
             {/* Mock Tests List */}
             <div className="bg-white shadow-md rounded-lg p-4">
-  <h3 className="text-2xl font-semibold mb-4">Mock Tests</h3>
-  {/* Iterate over exam categories */}
-  {mockTests.map((examCategory, index) => (
-  <div key={index} className="mb-6">
-    <h4 className="text-xl font-bold mb-4">{examCategory.category}</h4>
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-      {examCategory.tests.map((test, idx) => (
-        <div
-          key={`${examCategory.category}-${idx}`}
-          className="relative bg-gradient-to-b from-white to-gray-100 border border-gray-200 rounded-lg p-6 shadow-lg hover:shadow-xl hover:scale-105 transition-all cursor-pointer w-44"
-          onClick={() => handleTestClick(test, examCategory.category)}
-        >
-          <div className="absolute -top-3 -right-3 bg-blue-500 text-white text-xs font-semibold px-3 py-1 rounded-full shadow">
-            {test.rank !== "N/A" ? `Rank: ${test.rank}` : "Unranked"}
-          </div>
-          <h4 className="text-lg font-semibold text-gray-800">{test.name}</h4>
-          
-        </div>
-      ))}
-    </div>
-  </div>
-))}
-   
-</div>
-
+              <h3 className="text-2xl font-semibold mb-4">Mock Tests</h3>
+              {/* Iterate over exam categories */}
+              {mockTests.map((examCategory, index) => (
+                <div key={index} className="mb-6">
+                  <h4 className="text-xl font-bold mb-4">
+                    {examCategory.category}
+                  </h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+                    {examCategory.tests.map((test, idx) => (
+                      <div
+                        key={`${examCategory.category}-${idx}`}
+                        className="relative bg-gradient-to-b from-white to-gray-100 border border-gray-200 rounded-lg p-6 shadow-lg hover:shadow-xl hover:scale-105 transition-all cursor-pointer w-44"
+                        onClick={() =>
+                          handleTestClick(test, examCategory.category)
+                        }
+                      >
+                        <div className="absolute -top-3 -right-3 bg-blue-500 text-white text-xs font-semibold px-3 py-1 rounded-full shadow">
+                          {test.rank !== "N/A"
+                            ? `Rank: ${test.rank}`
+                            : "Unranked"}
+                        </div>
+                        <h4 className="text-lg font-semibold text-gray-800">
+                          {test.name}
+                        </h4>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>

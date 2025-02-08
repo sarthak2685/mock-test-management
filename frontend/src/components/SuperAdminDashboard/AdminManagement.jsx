@@ -63,8 +63,6 @@ const AdminManagement = ({ user }) => {
       });
       const result = await response.json();
 
-      // console.log("Request",result)
-
       if (Array.isArray(result)) {
         setSubscriptionPlans(result);
       } else {
@@ -98,7 +96,6 @@ const AdminManagement = ({ user }) => {
         }
 
         const result = await response.json();
-        console.log("Fetched Data:", result);
 
         // Check if result.data is an array before setting state
         if (Array.isArray(result.data)) {
@@ -274,7 +271,6 @@ const AdminManagement = ({ user }) => {
   };
 
   const handleRemoveAdmin = async (id) => {
-    console.log("Admin ID:", id); // Add this line
     if (!id) {
       console.error("ID is undefined");
       setError("Invalid admin ID.");
@@ -366,7 +362,6 @@ const AdminManagement = ({ user }) => {
   const totalPages = Math.ceil(filteredAdmins.length / adminsPerPage);
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
-  console.log("hero", subscriptionPlans);
 
   const handleExport = () => {
     const csvContent =
@@ -385,7 +380,6 @@ const AdminManagement = ({ user }) => {
     link.click();
     document.body.removeChild(link);
   };
-  console.log("Admin", currentAdmins);
 
   return (
     <div className="">

@@ -15,7 +15,6 @@ function Home() {
 
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("user")); // Fetch user data from localStorage
-    console.log(userData);
 
     if (userData) {
       setUser(userData);

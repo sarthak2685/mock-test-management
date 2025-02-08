@@ -240,12 +240,6 @@ const MockTestManagement = ({ user }) => {
       subtopic: currentQuestion.subtopic,
       image: currentQuestion.image,
     };
-    console.log(questionText);
-
-    console.log(
-      `Saved Question Data for Question ${currentQuestionIndex + 1}:`,
-      savedQuestions[currentQuestionIndex]
-    );
 
     // Reset the file inputs for the current question's options
     optionFileInputRefs.current.forEach((input) => {
@@ -443,8 +437,6 @@ const MockTestManagement = ({ user }) => {
       });
       const result = await response.json();
 
-      console.log("Request", result);
-
       if (Array.isArray(result)) {
         setDomains(result);
       } else {
@@ -486,7 +478,6 @@ const MockTestManagement = ({ user }) => {
 
       if (result.data && Array.isArray(result.data)) {
         const RES = result.data;
-        console.log("Subjects fetched:", RES);
 
         // Conditionally add 'ALL Subjects' only if newTest.domain is available
         if (newTest.domain) {
@@ -510,8 +501,6 @@ const MockTestManagement = ({ user }) => {
     fetchSubjects();
   }, []);
 
-  console.log("Subjects", subjects);
-
   const [subTopic, setSubTopic] = useState([]);
 
   const fetchSubtopic = async () => {
@@ -521,7 +510,6 @@ const MockTestManagement = ({ user }) => {
     }
 
     if (!newTest.domain) {
-      console.log("No domain ID selected, unable to fetch Subtopics.");
       setSubTopic([]); // Clear subtopics if no domain ID is selected
       return;
     }
@@ -539,8 +527,6 @@ const MockTestManagement = ({ user }) => {
       });
 
       const result = await response.json();
-
-      console.log("Subtopics fetched:", result);
 
       if (Array.isArray(result)) {
         // Filter subtopics where for_exam matches newTest.domain
@@ -588,7 +574,6 @@ const MockTestManagement = ({ user }) => {
       });
 
       const result = await response.json();
-      console.log("Request Chapter", result);
 
       if (Array.isArray(result)) {
         // Filter chapters where for_exam_subject matches newTest.subject
@@ -631,7 +616,6 @@ const MockTestManagement = ({ user }) => {
       }
 
       const result = await response.json();
-      console.log("Fetched Data:", result);
 
       // Assuming result.data contains the list of institutes with institute_name and id
       if (Array.isArray(result.data)) {
@@ -840,7 +824,6 @@ const MockTestManagement = ({ user }) => {
 
       if (response.ok) {
         const data = await response.json();
-        console.log("Test submitted successfully:", data);
         handleSaveAndNext();
       } else {
         const errorData = await response.json();

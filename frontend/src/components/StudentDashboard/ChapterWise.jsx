@@ -30,15 +30,15 @@ function ChapterWise() {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const [performanceData, setPerformanceData] = useState(null); // To hold performance data
   const [loading, setLoading] = useState(true);
-  const { subjectName, chapterName, user,mockName } = useParams(); // Extract state from location
-  const [loggedInUser, setLoggedInUser] = useState(JSON.parse(localStorage.getItem("user"))); // useState for loggedInUser
+  const { subjectName, chapterName, user, mockName } = useParams(); // Extract state from location
+  const [loggedInUser, setLoggedInUser] = useState(
+    JSON.parse(localStorage.getItem("user"))
+  ); // useState for loggedInUser
   const token = loggedInUser?.token;
   const userInfo = JSON.parse(localStorage.getItem("user"));
   const id = userInfo.id;
   const institute = userInfo.institute_name;
   const navigate = useNavigate();
-
-  console.log("hero", subjectName, chapterName);
 
   // If no exam or test is provided, navigate away
   useEffect(() => {
@@ -65,11 +65,12 @@ function ChapterWise() {
 
           const subjectData = data.analysis[subjectName];
           const chapterData = subjectData?.[mockName]?.chapters[chapterName];
-          console.log("kkk",chapterData);
           if (chapterData) {
             setPerformanceData(chapterData);
           } else {
-            console.error(`Chapter "${chapterName}" not found for subject "${subjectName}".`);
+            console.error(
+              `Chapter "${chapterName}" not found for subject "${subjectName}".`
+            );
           }
         } catch (error) {
           console.error("Error fetching performance data:", error);
@@ -90,7 +91,8 @@ function ChapterWise() {
         data: performanceData
           ? [
               performanceData.question_stats.attempted,
-              (performanceData.question_stats.total_questions-performanceData.question_stats.attempted),
+              performanceData.question_stats.total_questions -
+                performanceData.question_stats.attempted,
             ]
           : [0, 0],
         backgroundColor: ["#36A2EB", "#FF6384"],
@@ -169,7 +171,10 @@ function ChapterWise() {
               <h3 className="text-xs sm:text-sm font-semibold mb-1 text-center">
                 Attempted vs Unattempted
               </h3>
-              <h3 className="text-xs sm:text-sm  mb-1 text-center">(Total questions: {performanceData?.question_stats.total_questions})</h3>
+              <h3 className="text-xs sm:text-sm  mb-1 text-center">
+                (Total questions:{" "}
+                {performanceData?.question_stats.total_questions})
+              </h3>
               <div className="h-32 sm:h-40 lg:h-72 w-full sm:w-[80%] lg:w-[60%] mx-auto">
                 <Pie data={pieData} options={{ maintainAspectRatio: false }} />
               </div>
