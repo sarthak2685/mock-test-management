@@ -5,6 +5,7 @@ import { HomeIcon, ArrowLeftOnRectangleIcon } from "@heroicons/react/24/solid";
 import { FaTimes } from "react-icons/fa"; // Importing Font Awesome close icon
 import { HiUserGroup } from "react-icons/hi"; // Importing icons for other sections
 import { HiOutlineBell } from "react-icons/hi"; // Notice Board icon
+import { HiOutlineClipboardList } from "react-icons/hi";
 
 const Sidebar = ({ isCollapsed, toggleSidebar }) => {
   const navigate = useNavigate();
@@ -98,6 +99,17 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
         >
           <HiOutlineBell className="mr-2" /> {/* Notice Board icon */}
           <span className="block">{isCollapsed ? "" : "Notice Board"}</span>
+        </NavLink>
+        <NavLink
+          to="/test-list"
+          className={({ isActive }) =>
+            `flex items-center py-2 px-4 mt-4 rounded hover:bg-blue-700 ${
+              isActive ? "bg-blue-700" : ""
+            }`
+          }
+        >
+          <HiOutlineClipboardList className="mr-2" /> {/* Notice Board icon */}
+          <span className="block">{isCollapsed ? "" : "Test List"}</span>
         </NavLink>
 
         {/* Separator Line */}

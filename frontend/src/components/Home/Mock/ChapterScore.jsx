@@ -28,7 +28,8 @@ const ChapterScore = () => {
   const [sectionData, setSectionsData] = useState([]);
   const [examMarks, setExamMarks] = useState([]);
 
-  const queryParams = `student_id=${studentId}&test_name=${testName}&start_time=${startTime}&end_time=${endTime}`;
+  const language = localStorage.getItem("selectedLanguage") || "english";
+  const queryParams = `student_id=${studentId}&test_name=${testName}&start_time=${startTime}&end_time=${endTime}&language=${language}`;
   const apiUrl = `${config.apiUrl}/get-chapter-analysis/?${queryParams}`;
 
   // Fetch analysis data
@@ -47,7 +48,6 @@ const ChapterScore = () => {
           throw new Error("Failed to fetch data");
         }
         const data = await response.json();
-        console.log("hero", data.data);
         setExamMarks(data);
         setAnalysisData(data.data);
         setSectionsData(data.average_marks);

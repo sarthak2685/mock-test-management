@@ -52,6 +52,7 @@ import NoticeAdmin from "./components/AdminDasboard/NoticeAdmin.jsx";
 import Announcement from "./components/AdminDasboard/Announcement.jsx";
 import TestTime from "./components/AdminDasboard/TestTime.jsx";
 import TestDetail from "./components/AdminDasboard/TestDetail.jsx";
+import TestList from "./components/SuperAdminDashboard/TestList.jsx";
 
 
 
@@ -132,6 +133,7 @@ function App() {
           <Route path="/notice-admin" element={<NoticeAdmin />} />
 
           <Route path="/announcement" element={<Announcement />} />
+          <Route path="/test-list" element={<TestList />} />
 
 
         </Routes>

@@ -28,9 +28,11 @@ const Score = () => {
   const optional = localStorage.getItem("nonSelectedLanguage");
   const reportRef = useRef(); // Added this
   const averageMarksData = analysisData?.average_marks_by_subject || []; // Added this
+  const language = localStorage.getItem("selectedLanguage") || "english";
 
 
-  const queryParams = `student_id=${studentId}&test_name=${testName}&start_time=${startTime}&exam_id=${examId}&end_time=${endTime}&optional=${optional}`;
+
+  const queryParams = `student_id=${studentId}&test_name=${testName}&start_time=${startTime}&exam_id=${examId}&end_time=${endTime}&optional=${optional}&language=${language}`;
   const apiUrl = `${config.apiUrl}/get-analysis/?${queryParams}`;
   
 
@@ -80,7 +82,6 @@ const Score = () => {
   analysisData?.data_2?.subject_summary &&
   Object.keys(analysisData.data_2.subject_summary).map((subject) => {
     const summary = analysisData.data_2.subject_summary[subject];
-    console.log("summary", summary);
     return {
       name: subject,
       correct: summary.correct,

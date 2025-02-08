@@ -25,7 +25,28 @@ function Navbar() {
 
   const handleLogout = () => {
     logout();
-    navigate("/login");
+    navigate("/login"); localStorage.removeItem("submittedData");
+    localStorage.removeItem("selectedExamDuration");
+    localStorage.removeItem("timerDuration");
+    localStorage.removeItem("start_time");
+    localStorage.removeItem("submissionResult");
+    localStorage.removeItem("testDuration");
+    localStorage.removeItem("end_time");
+    localStorage.removeItem("selectedTestName");
+    localStorage.removeItem("exam_id");
+    localStorage.removeItem("selectedExamDuration");
+    localStorage.removeItem("selectedTestDetails");
+    localStorage.removeItem("selectedLanguage")
+    localStorage.removeItem("submittedData");
+    localStorage.removeItem("selectedExamDuration");
+    localStorage.removeItem("timerDuration");
+    localStorage.removeItem("start_time");
+    localStorage.removeItem("submissionResult");
+    localStorage.removeItem("testDuration");
+    localStorage.removeItem("end_time");
+    localStorage.removeItem("selectedTestName");
+    localStorage.removeItem("exam_id");
+
     window.location.reload();
   };
 

@@ -15,13 +15,10 @@ const InstructionsModal = ({ isVisible, onClose }) => {
     localStorage.setItem("selectedOptionalSubject", selectedSubject);
   };
   const storedTestName = localStorage.getItem("selectedTestName");
-  console.log("hii", storedTestName); // Logs the last stored test name
   const SubjectId = localStorage.getItem("selectedSubjectId");
   const optional = localStorage.getItem("nonSelectedLanguage");
-  console.log("Setting", optional);
   const storedDetails = JSON.parse(localStorage.getItem("selectedTestDetails"));
   const duration = JSON.parse(localStorage.getItem("selectedExamDuration"));
-  console.log("storedDetails", storedDetails, duration);
 
   const subjects = storedDetails?.subjects || [];
   const totalQuestions = storedDetails?.totalQuestions || 0;
@@ -301,6 +298,8 @@ const QuestionNavigation = ({
   const [selectedSubject, setSelectedSubject] = useState(
     localStorage.getItem("selectedOptionalSubject") || ""
   );
+  const language = localStorage.getItem("selectedLanguage") || "english";
+
   useEffect(() => {
     if (prevSectionName.current !== sectionName) {
       onSelectQuestion(0);
@@ -315,22 +314,13 @@ const QuestionNavigation = ({
   const S = JSON.parse(localStorage.getItem("user"));
   const token = S.token;
 
-  console.log("Fetched Data ", S);
 
   const SubjectId = localStorage.getItem("selectedSubjectId");
   const Test = localStorage.getItem("selectedTestName");
   const [tabSwitchCount, setTabSwitchCount] = useState(0);
 
-  // const [totalMinutes, setTotalMinutes] = useState(() => {
-  //   const savedMinutes = localStorage.getItem("totalMinutes");
-  //   console.log("timeee", savedMinutes);
-  //   return savedMinutes ? parseInt(savedMinutes, 10) : 10;
-  // });
-
-  // console.log("Time", totalMinutes);
   const savedMinutes = localStorage.getItem("selectedExamDuration");
 
-  console.log("Tim3333e", savedMinutes);
   const parseDate = (str) => {
     const formattedStr = str
       .replace("_", " ")
@@ -385,7 +375,6 @@ const QuestionNavigation = ({
         ...item,
       }));
 
-      console.log("Submitting payload:", enhancedPayload);
 
       const queryParams = `student_id=${student_id}&test_name=${test_name}&start_time=${start_time}&exam_id=${exam_id}&end_time=${end_time}`;
 
@@ -574,7 +563,7 @@ const QuestionNavigation = ({
         <div className="grid grid-cols-5 gap-4">
           {filteredQuestions.length > 0 ? (
             filteredQuestions.map((question, i) => {
-              console.log(`Question ${i + 1}:`, answeredQuestions[i]); // Debug
+              // console.log(`Question ${i + 1}:`, answeredQuestions[i]); // Debug
               return (
                 <button
                   key={i}

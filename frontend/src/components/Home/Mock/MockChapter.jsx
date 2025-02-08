@@ -102,7 +102,6 @@ const MockChapter = () => {
   const [timerDuration, setTimerDuration] = useState(0); // State for timer
   const SubjectId = localStorage.getItem("selectedSubjectId");
   const language = localStorage.getItem("selectedLanguage") || "english";
-  console.log("lang", language);
 
   useEffect(() => {
     const fetchMockTests = async () => {
@@ -122,11 +121,9 @@ const MockChapter = () => {
         }
 
         const result = await response.json();
-        console.log("Raw API Response:", result);
 
         // Retrieve selected chapter from localStorage
         const selectedChapter = localStorage.getItem("selectedChapter");
-        console.log("Selected Chapter from LocalStorage:", selectedChapter);
 
         if (result && result.data && result.data.chapters) {
           const groupedTests = [];
@@ -201,7 +198,6 @@ const MockChapter = () => {
             }
           });
 
-          console.log("Mapped Tests Data for Selected Chapter:", groupedTests);
           setMockTestData(groupedTests);
         } else {
           console.error(
@@ -220,8 +216,6 @@ const MockChapter = () => {
 
   // Debugging: Check the timerDuration and mockTestData
   useEffect(() => {
-    console.log("Updated Timer Duration:", timerDuration);
-    console.log("Updated mockTestData:", mockTestData);
   }, [timerDuration, mockTestData]);
 
   const [answeredQuestions, setAnsweredQuestions] = useState(
@@ -332,9 +326,6 @@ const MockChapter = () => {
       // Fetch the user's answer for the current question
       const userAnswer =
         answeredQuestions[currentSectionIndex]?.[currentQuestionIndex] || {}; // Fetch based on both section and question index
-
-      console.log("User Answer:", userAnswer);
-
       const user = JSON.parse(localStorage.getItem("user"));
 
       if (!user) {
@@ -372,8 +363,6 @@ const MockChapter = () => {
           ? userAnswer
           : null; // Assign image answer if it's a URL
 
-      console.log("Selected Answer:", selectedAnswer);
-      console.log("Selected Answer 2:", selectedAnswer2);
 
       // Update the selected answer for the current question
       storedData[sectionName].questions = [
@@ -385,13 +374,13 @@ const MockChapter = () => {
           selected_answer: selectedAnswer || null, // Assign text if present
           selected_answer_2: selectedAnswer2 || null, // Assign image if present
           student: student_id,
+          language:language,
         },
       ];
 
       // Save the updated structure to localStorage
       localStorage.setItem("submittedData", JSON.stringify(storedData));
 
-      console.log("Updated LocalStorage Data:", storedData);
 
       // Move to the next question or section
       if (currentQuestionIndex < currentSection.questions.length - 1) {
@@ -408,7 +397,6 @@ const MockChapter = () => {
         // setSelectedSubject(nextSubject); // Update the selected subject dynamically
       } else {
         // End of all sections and questions
-        console.log("All sections and questions completed.");
       }
     } catch (error) {
       console.error("Error in handleSubmitNext:", error);

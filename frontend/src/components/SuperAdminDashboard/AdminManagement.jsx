@@ -49,7 +49,6 @@ const AdminManagement = ({ user }) => {
 
   const fetchPlans = async () => {
     if (!token) {
-      console.log("No token found, unable to fetch subscription plans.");
       return;
     }
 

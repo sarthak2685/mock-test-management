@@ -37,7 +37,6 @@ const Subject = () => {
           ...subject,
           exam: "Chapter 1-10",
         }));
-        console.log("subject", filteredData);
         setSubjectData(enrichedData);
         setCount(enrichedData.length - 1);
       } catch (error) {

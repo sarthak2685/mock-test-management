@@ -13,7 +13,6 @@ const Announcement = () => {
   const [successMessage, setSuccessMessage] = useState(""); // New state for success message
   const token = user.token;
   const id = user.id;
-  console.log(user);
 
   const toggleSidebar = () => {
     setIsCollapsed((prev) => !prev); // Toggle sidebar collapse state
