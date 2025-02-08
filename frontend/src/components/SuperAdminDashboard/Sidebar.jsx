@@ -117,13 +117,13 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
       </nav>
 
       {/* Log out button */}
-      <div className="mt-auto">
+      <div className="mt-auto mb-20 md:mb-0">
         <button
           onClick={handleLogout}
-          className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-md flex items-center justify-center"
+          className="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-md flex items-center justify-center transition-all duration-200"
         >
           <ArrowLeftOnRectangleIcon className="h-5 w-5 mr-2" />
-          <span className="block">{isCollapsed ? "" : "Log Out"}</span>
+          {!isCollapsed && <span>Log Out</span>}
         </button>
       </div>
     </aside>
