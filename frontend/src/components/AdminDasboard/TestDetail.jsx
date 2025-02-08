@@ -91,7 +91,6 @@ function TestDetail() {
       }
 
       const data = await response.json();
-      console.log("Subject Test Data:", data);
 
       // Transform data into { subject: [test1, test2, ...] }
       const groupedSubjects = data.reduce((acc, subjectObj) => {

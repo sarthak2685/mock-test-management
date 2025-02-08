@@ -69,7 +69,6 @@ const StudentManagement = ({ user }) => {
         }
 
         const data = await response.json();
-        console.log("Fetched students data:", data); // Log the fetched data
 
         // Ensure the data is an array before setting it to state
         if (Array.isArray(data.data)) {
@@ -164,7 +163,6 @@ const StudentManagement = ({ user }) => {
       );
 
       // Log responses for debugging
-      console.log("Responses from API:", responses);
 
       // Update state with newly added students
       const newStudentData = responses.map((response, index) => ({

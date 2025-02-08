@@ -24,7 +24,6 @@ const Instructions = () => {
 
   const storedDetails = JSON.parse(localStorage.getItem("selectedTestDetails"));
   const duration = JSON.parse(localStorage.getItem("selectedExamDuration"));
-  console.log("storedDetails", storedDetails, duration);
 
   const handleLanguageChange = (e) => {
     const selectedLanguage = e.target.value;
@@ -43,7 +42,6 @@ const Instructions = () => {
         },
       });
       const data = await response.json();
-      console.log("serial no", data);
     } catch (error) {
       console.error("Error fetching data:", error);
     }
@@ -287,11 +285,7 @@ const Instructions = () => {
                                   "nonSelectedLanguage",
                                   nonSelectedLang
                                 ); // Save non-selected language to localStorage
-                                console.log("selectedLanguage", selectedLang);
-                                console.log(
-                                  "nonSelectedLanguage",
-                                  nonSelectedLang
-                                );
+                          
                               }}
                               className="border border-gray-300 rounded px-2 py-1"
                             >

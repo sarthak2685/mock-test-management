@@ -28,7 +28,6 @@ const MockDemo = () => {
   //const token = S.token;
 
   const storedTestName = localStorage.getItem("selectedTestName");
-  console.log("hii", storedTestName); // Logs the last stored test name
 
   // const UserProfile = () => {
   //   const [user, setUser] = useState({ name: "Unknown User", role: "Student" }); // Default user state with name and role
@@ -73,7 +72,6 @@ const MockDemo = () => {
   const SubjectId = localStorage.getItem("selectedSubjectId");
   const optional = localStorage.getItem("nonSelectedLanguage");
   const language = localStorage.getItem("selectedLanguage") || "english";
-  console.log("lang", language);
 
   useEffect(() => {
     const fetchMockTests = async () => {
@@ -87,7 +85,6 @@ const MockDemo = () => {
         }
 
         const result = await response.json();
-        console.log("Raw API Response:", result);
 
         if (result.data) {
           // Check if the stored test name exists in the API response
@@ -148,7 +145,6 @@ const MockDemo = () => {
                   };
                 });
 
-              console.log("Grouped Test Data:", groupedTests);
               setMockTestData(groupedTests);
 
               // Set the first subject as the selected subject
@@ -159,7 +155,6 @@ const MockDemo = () => {
                 ...new Set(groupedTests.map((test) => test.subject)),
               ];
 
-              console.log("Unique Subjects:", uniqueSubjects);
 
               // Save unique subjects to localStorage
               localStorage.setItem(
@@ -188,8 +183,7 @@ const MockDemo = () => {
 
   // Debugging: Check the timerDuration and mockTestData
   useEffect(() => {
-    console.log("Updated Timer Duration:", timerDuration);
-    console.log("Updated mockTestData:", mockTestData);
+
   }, [timerDuration, mockTestData]);
 
   // const [answeredQuestions, setAnsweredQuestions] = useState(
@@ -331,7 +325,6 @@ const MockDemo = () => {
       // Fetch the user's answer for the current question
       const userAnswer =
         answeredQuestions[currentSectionIndex]?.[currentQuestionIndex] || {}; // Fetch based on both section and question index
-      console.log("User Answer:", userAnswer);
 
       const user = JSON.parse(localStorage.getItem("user"));
 
@@ -370,8 +363,7 @@ const MockDemo = () => {
           ? userAnswer
           : null; // Assign image answer if it's a URL
 
-      console.log("Selected Answer:", selectedAnswer);
-      console.log("Selected Answer 2:", selectedAnswer2);
+
 
       // Update the selected answer for the current question
       storedData[sectionName].questions = [
@@ -383,13 +375,13 @@ const MockDemo = () => {
           selected_answer: selectedAnswer, // Assign text if present
           selected_answer_2: selectedAnswer2, // Assign image if present
           student: student_id,
+          language:language,
         },
       ];
 
       // Save the updated structure to localStorage
       localStorage.setItem("submittedData", JSON.stringify(storedData));
 
-      console.log("Updated LocalStorage Data:", storedData);
 
       // Move to the next question or section
       if (currentQuestionIndex < currentSection.questions.length - 1) {
@@ -423,14 +415,6 @@ const MockDemo = () => {
     (mockTestData?.length || 0) > 0 &&
     currentSectionIndex === (mockTestData?.length || 0) - 1;
 
-  // console.log("mockTestData:", mockTestData);
-  // console.log("currentSectionIndex:", currentSectionIndex);
-  // console.log("currentQuestionIndex:", currentQuestionIndex);
-  // console.log("Current Section:", currentSection);
-  // console.log("Total Sections:", mockTestData.length);
-  // console.log("Total Questions in Section:", currentSection?.questions?.length);
-  // console.log("isLastQuestion:", isLastQuestion);
-  // console.log("isLastSection:", isLastSection);
 
   const handleSectionChange = (sectionIndex, subject) => {
     setCurrentSectionIndex(sectionIndex); // Update the active section index
@@ -457,7 +441,6 @@ const MockDemo = () => {
     section.questions.some((q) => q.subject === selectedSubject)
   );
 
-  console.log("Filtered Data", filteredSections);
 
   useEffect(() => {
     // Automatically set the active subject when the section index changes
