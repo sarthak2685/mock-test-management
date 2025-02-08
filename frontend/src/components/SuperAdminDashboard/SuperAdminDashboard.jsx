@@ -19,7 +19,6 @@ const SuperAdminDashboard = () => {
       setUser(parsedUser);
     }
   }, []);
-  console.log("user", user);
 
   useEffect(() => {
     const fetchAdmins = async () => {

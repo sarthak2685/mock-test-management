@@ -37,7 +37,6 @@ const Dashboards = () => {
     }
   }, []);
   const userInfo = JSON.parse(localStorage.getItem("user"));
-  console.log(userInfo);
   const institute = userInfo.institute_name;
   const id = userInfo.id;
   useEffect(() => {
@@ -54,12 +53,10 @@ const Dashboards = () => {
           }
         );
         const data = await response.json();
-        console.log("data", data);
         const leaderboard = data.leaderboard || [];
         const currentUser = leaderboard.find(
           (entry) => entry.student_id === id
         );
-        console.log("he", currentUser);
         setLeaderboardData(leaderboard);
         if (currentUser) {
           setCurrentUserRank(currentUser.rank);
@@ -114,7 +111,6 @@ const Dashboards = () => {
         }
 
         const data = await response.json();
-        console.log("Announcements", data.time);
         setExistingAnnouncement(data.time);
         setDate(data.date);
       } catch (error) {

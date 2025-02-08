@@ -16,8 +16,6 @@ const NoticeOwner = () => {
 
   const S = JSON.parse(localStorage.getItem("user"));
   const token = S.token;
-  // console.log(S);
-  // console.log(S.id);
 
   const toggleSidebar = () => {
     setIsCollapsed((prev) => !prev);

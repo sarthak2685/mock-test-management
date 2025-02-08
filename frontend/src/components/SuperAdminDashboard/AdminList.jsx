@@ -179,8 +179,6 @@ const AdminList = () => {
       });
       const result = await response.json();
 
-      // console.log("Request",result)
-
       if (Array.isArray(result)) {
         setSubscriptionPlans(result);
       } else {
