@@ -674,20 +674,25 @@ const MockTestManagement = ({ user }) => {
     setIsFormValid(isValid);
   }, [selectedOptions, newTest]);
 
+  const [isClicked, setIsClicked] = useState(false);
+
   const handleTest = async () => {
     if (!isFormValid) {
       alert("Please fill in all required fields before submitting the test.");
-      return; // Stop execution if the form is invalid
+      return;
     }
+
+    if (isClicked) return; // Prevent multiple clicks
+    setIsClicked(true);
 
     try {
       const currentQuestion = newTest.questions[currentQuestionIndex];
       if (!currentQuestion) {
         console.error("No questions found at index:", currentQuestionIndex);
+        setIsClicked(false); // Re-enable button on error
         return;
       }
 
-      // Function to convert image files to Base64
       const fileToBase64 = (file) => {
         return new Promise((resolve, reject) => {
           const reader = new FileReader();
@@ -697,7 +702,6 @@ const MockTestManagement = ({ user }) => {
         });
       };
 
-      // Handle options (both text and image)
       const options = await Promise.all(
         currentQuestion.options.map(async (option) => {
           if (typeof option === "string") {
@@ -706,17 +710,15 @@ const MockTestManagement = ({ user }) => {
           if (option?.image instanceof File) {
             return await fileToBase64(option.image);
           }
-          return option?.image || option?.text || ""; // Default to empty string
+          return option?.image || option?.text || "";
         })
       );
 
-      // Ensure option text length is capped at 100 characters
-      const truncatedOptions = options.map((option) => {
-        if (typeof option === "string" && option.length > 100) {
-          return option.slice(0, 100);
-        }
-        return option;
-      });
+      const truncatedOptions = options.map((option) =>
+        typeof option === "string" && option.length > 100
+          ? option.slice(0, 100)
+          : option
+      );
 
       let correctAnswer = null;
       let correctAnswer2 = null;
@@ -806,7 +808,6 @@ const MockTestManagement = ({ user }) => {
         formData.append("correct_answer2", correctAnswer2);
       }
 
-      // **New Addition: Append Selected Language from Dropdown**
       if (newTest.language) {
         formData.append("language", newTest.language);
       }
@@ -823,14 +824,17 @@ const MockTestManagement = ({ user }) => {
       );
 
       if (response.ok) {
-        const data = await response.json();
+        await response.json();
         handleSaveAndNext();
+        setIsClicked(false); // ✅ Re-enable button after successful submission
       } else {
         const errorData = await response.json();
         console.error("Failed to submit test:", errorData);
+        setIsClicked(false); // ❌ Re-enable button if submission fails
       }
     } catch (error) {
       console.error("Error while submitting test:", error);
+      setIsClicked(false); // ❌ Re-enable button on error
     }
   };
 
@@ -1591,8 +1595,11 @@ const MockTestManagement = ({ user }) => {
                   <div className="flex flex-row gap-1 w-full sm:w-auto">
                     <button
                       type="button"
-                      onClick={handleTest} // Ensure this function does not cause a reload
-                      className="bg-teal-500 text-white p-2 rounded-md w-full sm:w-auto h-8 sm:h-auto text-xs sm:text-base"
+                      onClick={handleTest}
+                      disabled={isClicked}
+                      className={`bg-teal-500 text-white p-2 rounded-md w-full sm:w-auto h-8 sm:h-auto text-xs sm:text-base ${
+                        isClicked ? "opacity-50 cursor-not-allowed" : ""
+                      }`}
                     >
                       Save and Next
                     </button>
