@@ -2,43 +2,58 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <link rel="icon" href="%PUBLIC_URL%/logo_color_img.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="An educational platform offering students a chance to take mock tests and enhance their learning. Prepare effectively for exams with our interactive tools and resources."
-      />
-    <!-- <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" /> -->
-    <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
-        <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
+    
+    <!-- Favicon -->
+    <link rel="icon" href="%PUBLIC_URL%/logo_color_img.png" sizes="32x32" type="image/png" />
+    
+    <!-- SEO Meta Tags -->
+    <title>Mock Period - Best Online Mock Test Platform</title>
+    <meta name="description" content="Prepare for exams with high-quality mock tests. Get instant feedback, detailed analysis, and improve your scores." />
+    <meta name="keywords" content="mock tests, online exams, practice tests, competitive exams, test preparation" />
+    <meta name="author" content="Mock Period" />
+    
+    <!-- Canonical URL (Prevents duplicate content issues) -->
+    <link rel="canonical" href="https://mockperiod.com/" />
 
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
-    <title>Mock Period</title>
+    <!-- Open Graph (Facebook, LinkedIn, WhatsApp) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Mock Period - Best Online Mock Test Platform" />
+    <meta property="og:description" content="Take free mock tests and improve your exam performance with detailed analysis." />
+    <meta property="og:image" content="https://mockperiod.com/preview-image.png" />
+    <meta property="og:url" content="https://mockperiod.com/" />
+
+    <!-- Twitter Cards (For Twitter sharing) -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Mock Period - Best Online Mock Test Platform" />
+    <meta name="twitter:description" content="Take free mock tests and improve your exam performance with detailed analysis." />
+    <meta name="twitter:image" content="https://mockperiod.com/preview-image.png" />
+    
+    <!-- Web App Manifest -->
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+
+    <!-- Preload Critical Assets (Improves Page Load Speed) -->
+    <link rel="preload" href="%PUBLIC_URL%/logo_color_img.png" as="image" />
+    
+    <!-- Defer Razorpay Script (Improves Page Speed) -->
+    <script defer src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    <!-- Structured Data (Schema Markup for SEO) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "EducationalOrganization",
+      "name": "Mock Period",
+      "url": "https://mockperiod.com",
+      "description": "Prepare for competitive exams with the best mock tests and interactive study materials.",
+      "logo": "https://mockperiod.com/logo.png"
+    }
+    </script>
   </head>
+  
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
-
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
-
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
   </body>
 </html>
