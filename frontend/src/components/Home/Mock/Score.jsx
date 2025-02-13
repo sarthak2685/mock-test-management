@@ -30,11 +30,8 @@ const Score = () => {
   const averageMarksData = analysisData?.average_marks_by_subject || []; // Added this
   const language = localStorage.getItem("selectedLanguage") || "english";
 
-
-
   const queryParams = `student_id=${studentId}&test_name=${testName}&start_time=${startTime}&exam_id=${examId}&end_time=${endTime}&optional=${optional}&language=${language}`;
   const apiUrl = `${config.apiUrl}/get-analysis/?${queryParams}`;
-  
 
   // Fetch analysis data
   useEffect(() => {
@@ -75,228 +72,182 @@ const Score = () => {
     localStorage.removeItem("exam_id");
     localStorage.removeItem("selectedExamDuration");
     localStorage.removeItem("selectedTestDetails");
-    localStorage.removeItem("selectedLanguage")
+    localStorage.removeItem("selectedLanguage");
     navigate("/");
   };
   const sectionData =
-  analysisData?.data_2?.subject_summary &&
-  Object.keys(analysisData.data_2.subject_summary).map((subject) => {
-    const summary = analysisData.data_2.subject_summary[subject];
-    return {
-      name: subject,
-      correct: summary.correct,
-      wrong: summary.incorrect,
-      unattempted: summary.unattempted,
-      marks: summary.marks,
-    };
-  });
+    analysisData?.data_2?.subject_summary &&
+    Object.keys(analysisData.data_2.subject_summary).map((subject) => {
+      const summary = analysisData.data_2.subject_summary[subject];
+      return {
+        name: subject,
+        correct: summary.correct,
+        wrong: summary.incorrect,
+        unattempted: summary.unattempted,
+        marks: summary.marks,
+      };
+    });
 
   const handlePDFDownload = async () => {
     const apiUrl = `${config.apiUrl}/analysis-report/?student_id=${studentId}&exam_id=${examId}&test_name=${testName}`;
 
     try {
-        const response = await fetch(apiUrl, {
-            method: "GET",
-            headers: {
-                Authorization: `Token ${token}`,
-            },
+      const response = await fetch(apiUrl, {
+        method: "GET",
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch report data");
+      }
+
+      const apiData = await response.json();
+      const sanitizeText = (text) =>
+        typeof text === "string" ? text.replace(/\\/g, "") : text;
+
+      const data = {
+        examName: sanitizeText(apiData[0]?.exam_name),
+        section: sanitizeText(apiData[0]?.subject_name),
+        questions: apiData.map((q, index) => ({
+          questionNumber: index + 1,
+          question: sanitizeText(q.question),
+          questionImage:
+            q.question_1 === "/media/uploads/questions/option_4_uFtm5qj.png"
+              ? null
+              : q.question_1 || null,
+          options: [1, 2, 3, 4].map((idx) => ({
+            text: sanitizeText(q.options[`Option ${idx}`] || ""),
+            image:
+              q.options[`Option_${idx}`] &&
+              q.options[`Option_${idx}`] !==
+                "/media/uploads/questions/option_4_uFtm5qj.png"
+                ? q.options[`Option_${idx}`]
+                : null,
+          })),
+          correctAnswer: sanitizeText(q.correct_answer),
+          markedAnswer: sanitizeText(q.selected_answer),
+        })),
+      };
+
+      const doc = new jsPDF();
+      const colors = {
+        title: [50, 50, 50],
+        question: [0, 102, 204],
+        correct: [34, 139, 34],
+        marked: [255, 51, 51],
+        text: [0, 0, 0],
+      };
+
+      doc
+        .setFontSize(16)
+        .setFont("helvetica", "bold")
+        .setTextColor(...colors.title);
+      doc.text("Score Report", 20, 12);
+      let y = 18;
+
+      if (data.examName) {
+        doc.setFontSize(12).text(`Exam Name: ${data.examName}`, 20, y);
+        y += 5;
+      }
+      if (data.section) {
+        doc.text(`Section: ${data.section}`, 20, y);
+        y += 5;
+      }
+
+      data.questions.forEach((question, i) => {
+        if (i > 0) y += 12; // Space between questions
+
+        // Question Text
+        doc.setTextColor(...colors.question).setFontSize(10);
+        const wrappedQuestion = doc.splitTextToSize(
+          `QUESTION ${question.questionNumber}: ${question.question}`,
+          180
+        );
+        doc.text(wrappedQuestion, 20, y);
+        y += wrappedQuestion.length * 4;
+
+        // Render Question Image (if available)
+        if (
+          question.questionImage &&
+          question.questionImage.startsWith("/media/uploads/")
+        ) {
+          try {
+            const imageUrl = `${config.apiUrl}${question.questionImage}`;
+            doc.addImage(imageUrl, "JPEG", 20, y, 25, 20);
+            y += 22;
+          } catch (error) {
+            console.error("Error loading question image:", error);
+          }
+        }
+
+        // Render options - shifted further left
+        const optionX1 = 15, // Adjusted from 30 to 15 to shift left
+          optionX2 = 90; // Adjusted from 120 to 90 to shift left
+        let optionY = y + 5;
+        const imageOffset = 2; // Small adjustment for alignment
+
+        question.options.forEach((option, idx) => {
+          if (!option.image && !option.text) return;
+
+          const columnX = idx % 2 === 0 ? optionX1 : optionX2;
+          const rowY = optionY + Math.floor(idx / 2) * 15;
+
+          // Option Text
+          doc.setTextColor(...colors.text);
+          doc.text(
+            `${String.fromCharCode(65 + idx)}) ${option.text}`,
+            columnX,
+            rowY
+          );
+
+          // Option Image (if available)
+          if (option.image) {
+            try {
+              const imageUrl = `${config.apiUrl}${option.image}`;
+              doc.addImage(imageUrl, "JPEG", columnX + 10, rowY - 7, 20, 20);
+              optionY += 4;
+            } catch (error) {
+              console.error("Error loading option image:", error);
+            }
+          }
         });
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error("API Error:", errorText);
-            throw new Error("Failed to fetch report data");
-        }
+        y += 25;
 
-        const apiData = await response.json();
+        // Render Answers
+        doc.setFontSize(9).setFont("helvetica", "bold");
+        doc
+          .setTextColor(...colors.correct)
+          .text(`Correct Answer: ${question.correctAnswer}`, 140, y - 5);
+        doc
+          .setTextColor(...colors.marked)
+          .text(
+            `Marked Answer: ${question.markedAnswer || "Not Answered"}`,
+            140,
+            y + 5
+          );
+        y += 12;
+      });
 
-        const sanitizeText = (text) =>
-            typeof text === "string" ? text.replace(/\\/g, "") : text;
+      // Add page numbers
+      const totalPages = doc.internal.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        doc.setPage(i);
+        doc
+          .setFontSize(8)
+          .setFont("helvetica", "normal")
+          .setTextColor(150, 150, 150);
+        doc.text(`Page ${i} of ${totalPages}`, 180, 290);
+      }
 
-        const data = {
-            examName: `${sanitizeText(apiData[0]?.exam_name)}`,
-            section: `${sanitizeText(apiData[0]?.subject_name)}`,
-            questions: apiData.map((q, index) => ({
-                questionNumber: index + 1,
-                question: sanitizeText(q.question),
-                questionImage: q.question_1 || null,
-                options: [1, 2, 3, 4].map((idx) => ({
-                    text: sanitizeText(q.options[`Option ${idx}`] || ''),
-                    image: q.options[`Option_${idx}`] || null,
-                })),
-                correctAnswer: sanitizeText(q.correct_answer),
-                markedAnswer: sanitizeText(q.selected_answer),
-            })),
-        };
-
-        const doc = new jsPDF();
-        const titleColor = [50, 50, 50];
-        const questionColor = [0, 102, 204];
-        const correctAnswerColor = [34, 139, 34];
-        const markedAnswerColor = [255, 51, 51];
-        const optionTextColor = [0, 0, 0];
-
-        doc.setFontSize(16);
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(...titleColor);
-        doc.text("Score Report", 20, 12);
-
-        let y = 20;
-        if (data.examName) {
-            doc.setFontSize(12);
-            doc.setFont("helvetica", "bold");
-            doc.text(`Exam Name: ${data.examName}`, 20, y);
-            y += 5;
-        }
-
-        if (data.section) {
-            doc.setFontSize(12);
-            doc.setFont("helvetica", "bold");
-            doc.text(`Section: ${data.section}`, 20, y);
-            y += 5;
-        }
-
-        // Loop through questions
-        for (let i = 0; i < data.questions.length; i++) {
-            const question = data.questions[i];
-
-            // Add spacing between cards (but not before the first card)
-            if (i > 0) {
-                y += 12; // Increased spacing between cards
-            }
-
-            const hasQuestionImage = question.questionImage && question.questionImage.startsWith("/media/uploads/");
-            const hasOptionImages = question.options.some(opt => opt.image && opt.image.startsWith("/media/uploads/"));
-            const isTextOnly = !hasQuestionImage && !hasOptionImages;
-
-            const cardMargin = isTextOnly ? 3 : 5;
-            const cardWidth = 180;
-            let cardHeight = 0;
-            const borderRadius = isTextOnly ? 3 : 5;
-
-            // Wrap question text and calculate height
-            const wrappedQuestion = doc.splitTextToSize(
-                `QUESTION ${question.questionNumber}: ${question.question}`,
-                cardWidth - 2 * cardMargin
-            );
-            cardHeight += wrappedQuestion.length * (isTextOnly ? 3 : 4) + (isTextOnly ? 2 : 4);
-
-            if (hasQuestionImage) {
-                cardHeight += 20;
-            }
-
-            // Calculate options height
-            const optionHeight = isTextOnly ? 4 : 6;
-            const imageHeight = 12;
-            let optionsHeight = 0;
-
-            for (let idx = 0; idx < 4; idx++) {
-                const option = question.options[idx];
-                let optionCurrentHeight = optionHeight;
-
-                if (option.image && option.image.startsWith("/media/uploads/")) {
-                    optionCurrentHeight += imageHeight + 2;
-                }
-                optionsHeight += optionCurrentHeight;
-            }
-
-            cardHeight += optionsHeight;
-            cardHeight += isTextOnly ? 4 : 8;
-
-            // Check if we need a new page before drawing the card
-            if (y + cardHeight > 280 && i < data.questions.length - 1) {
-                doc.addPage();
-                y = 15; // Start a bit lower on new pages
-            }
-
-            // Draw question card with improved visual separation
-            doc.setFillColor(245, 245, 245);
-            doc.setDrawColor(160, 160, 160);
-            doc.setLineWidth(isTextOnly ? 0.2 : 0.3);
-            doc.roundedRect(15, y, cardWidth, cardHeight, borderRadius, borderRadius, 'FD');
-
-            // Render question text
-            doc.setTextColor(...questionColor);
-            doc.setFontSize(10);
-            doc.setFont("helvetica", "bold");
-            doc.text(wrappedQuestion, 20, y + cardMargin);
-            y += wrappedQuestion.length * (isTextOnly ? 3 : 4) + (isTextOnly ? 2 : 4);
-
-            // Render question image if present
-            if (hasQuestionImage) {
-                try {
-                    const imageUrl = `${config.apiUrl}${question.questionImage}`;
-                    doc.addImage(imageUrl, "JPEG", 20, y, 25, 20);
-                    y += 8;
-                } catch (error) {
-                    console.error("Error loading question image:", error);
-                }
-            }
-
-            // Render options
-            const optionX1 = 20;
-            const optionX2 = 110;
-            let optionY = y + (isTextOnly ? 2 : 3);
-
-            const optionSpacing = isTextOnly ? 4 : (hasQuestionImage ? 12 : 6);
-
-            for (let idx = 0; idx < 4; idx++) {
-                const option = question.options[idx];
-                const columnX = idx % 2 === 0 ? optionX1 : optionX2;
-                const optionText = `${String.fromCharCode(65 + idx)}) ${option.text}`;
-                const optionColumnY = optionY + Math.floor(idx / 2) * optionSpacing;
-
-                doc.setTextColor(...optionTextColor);
-                doc.text(optionText, columnX, optionColumnY);
-
-                if (option.image && option.image.startsWith("/media/uploads/")) {
-                    try {
-                        const imageUrl = `${config.apiUrl}${option.image}`;
-                        doc.addImage(imageUrl, "JPEG", columnX, optionColumnY + 2, 12, 12);
-                    } catch (error) {
-                        console.error("Error loading option image:", error);
-                    }
-                }
-            }
-
-            optionY += optionsHeight / 2;
-
-            // Render answers
-            doc.setFontSize(9);
-            doc.setFont("helvetica", "bold");
-
-            const correctAnswerText = `Correct Answer: ${question.correctAnswer}`;
-            const markedAnswerText = `Marked Answer: ${question.markedAnswer || "Not Answered"}`;
-
-            doc.setTextColor(...correctAnswerColor);
-            doc.text(correctAnswerText, 20, optionY + (isTextOnly ? 2 : 3));
-            doc.setTextColor(...markedAnswerColor);
-            doc.text(markedAnswerText, 110, optionY + (isTextOnly ? 2 : 3));
-
-            optionY += isTextOnly ? 2 : 3;
-            y = optionY + (isTextOnly ? 2 : 3);
-            y += 12; // Add extra space between cards
-        }
-
-        // Add page numbers
-        const totalPages = doc.internal.getNumberOfPages();
-        for (let i = 1; i <= totalPages; i++) {
-            doc.setPage(i);
-            doc.setFontSize(8);
-            doc.setFont("helvetica", "normal");
-            doc.setTextColor(150, 150, 150);
-            doc.text(`Page ${i} of ${totalPages}`, 180, 290);
-        }
-
-        doc.save(`${testName}-report.pdf`);
+      doc.save(`${testName}-report.pdf`);
     } catch (error) {
-        console.error("Error generating PDF:", error.message);
-        alert("Failed to generate the PDF. Please try again.");
+      console.error("Error generating PDF:", error.message);
+      alert("Failed to generate the PDF. Please try again.");
     }
-};
-
-
-  
+  };
 
   const parseDate = (str) => {
     const formattedStr = str
