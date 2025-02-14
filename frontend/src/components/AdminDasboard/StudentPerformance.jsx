@@ -38,9 +38,9 @@ const StudentPerformance = () => {
   const token = user.token;
   const [loading, setLoading] = useState(true);
   const [test, setTest] = useState([]);
-  const [weeklyPerformance, setWeeklyPerformance] = useState([])
+  const [weeklyPerformance, setWeeklyPerformance] = useState([]);
   const institueName = user.institute_name;
-  const [student, setStudent] = useState([])
+  const [student, setStudent] = useState([]);
   const handleResize = () => {
     if (window.innerWidth >= 768) {
       setIsCollapsed(false); // Show sidebar on desktop
@@ -75,20 +75,32 @@ const StudentPerformance = () => {
 
   const currentDate = new Date();
   const monthNames = [
-      "January", "February", "March", "April", "May", "June",
-      "July", "August", "September", "October", "November", "December"
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
   ];
   const currentMonthName = monthNames[currentDate.getMonth()];
 
-
   const fetchPerformanceData = async () => {
     try {
-      const response = await fetch(`${config.apiUrl}/institute-statistics/?institute_name=${institueName}`, {
-        headers: {
-          Authorization: `Token ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `${config.apiUrl}/institute-statistics/?institute_name=${institueName}`,
+        {
+          headers: {
+            Authorization: `Token ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`Error: ${response.status} ${response.statusText}`);
@@ -184,26 +196,18 @@ const StudentPerformance = () => {
     }
   };
 
-
-
-
   useEffect(() => {
     fetchWeeklyPerformance();
   }, []);
-
 
   const toggleSidebar = () => {
     setIsCollapsed((prev) => !prev); // Toggle sidebar collapse state
   };
 
-
-
   // Check if student is available
   if (!student) {
     return <div>Student data not found.</div>; // Handle undefined student
   }
-
-
 
   // Data for pie chart (mock tests attempted vs not attempted)
   const pieData = {
@@ -211,7 +215,10 @@ const StudentPerformance = () => {
     datasets: [
       {
         label: "Mock Tests",
-        data: [student.total_tests_given, test.total_mock_tests - student.total_tests_given],
+        data: [
+          student.total_tests_given,
+          test.total_mock_tests - student.total_tests_given,
+        ],
         backgroundColor: ["#36A2EB", "#FF6384"],
         hoverBackgroundColor: ["#36A2EB", "#FF6384"],
       },
@@ -220,28 +227,26 @@ const StudentPerformance = () => {
 
   // Data for line chart (monthly success rate performance)
 
-
-
   // Chart options for line and bar charts
   const lineOptions = {
     maintainAspectRatio: false,
     scales: {
       y: {
         beginAtZero: true,
-        max: 100, // Set maximum y-axis value to 100
+        suggestedMax: undefined,
       },
     },
   };
 
-  const barOptions = {
-    maintainAspectRatio: false,
-    scales: {
-      y: {
-        beginAtZero: true,
-        max: 100, // Set maximum y-axis value to 100
-      },
-    },
-  };
+  // const barOptions = {
+  //   maintainAspectRatio: false,
+  //   scales: {
+  //     y: {
+  //       beginAtZero: true,
+  //       max: 100, // Set maximum y-axis value to 100
+  //     },
+  //   },
+  // };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -254,8 +259,9 @@ const StudentPerformance = () => {
         />
         {/* Main Performance Content */}
         <div
-          className={`flex-grow transition-all duration-300 ease-in-out ${isCollapsed ? "ml-0" : "ml-64"
-            }`}
+          className={`flex-grow transition-all duration-300 ease-in-out ${
+            isCollapsed ? "ml-0" : "ml-64"
+          }`}
         >
           {/* Header */}
           <DashboardHeader
@@ -295,7 +301,6 @@ const StudentPerformance = () => {
                 )}
               </div>
             </div>
-
           </div>
         </div>
       </div>
