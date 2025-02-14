@@ -99,8 +99,7 @@ const StudentPerformances = ({ user }) => {
         label: "Question Status",
         data: [
           performanceData?.question_stats.attempted,
-          performanceData?.question_stats.total_questions -
-            performanceData?.question_stats.attempted,
+          performanceData?.question_stats.unattempted,
         ],
         backgroundColor: ["#36A2EB", "#FF6384"],
         hoverBackgroundColor: ["#36A2EB", "#FF6384"],
@@ -204,7 +203,9 @@ const StudentPerformances = ({ user }) => {
               </h3>
               <h3 className="text-xs sm:text-sm  mb-1 text-center">
                 (Total questions:{" "}
-                {performanceData?.question_stats.total_questions})
+                {performanceData?.question_stats.attempted +
+                  performanceData?.question_stats.unattempted}
+                )
               </h3>
 
               <div className="h-32 sm:h-40 lg:h-72 w-full sm:w-[80%] lg:w-[60%] mx-auto">
