@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import config from "../config";
 import "react-toastify/dist/ReactToastify.css";
+import { Helmet } from "react-helmet-async";
 
 const ContactForm = () => {
   const [formData, setFormData] = useState({
@@ -68,6 +69,12 @@ const ContactForm = () => {
 
   return (
     <div className="relative flex flex-col items-center justify-center min-h-screen bg-gray-50">
+       <Helmet>
+        <title>Contact Us - Support Ticket</title>
+        <meta name="description" content="Submit your support ticket and get assistance from our team." />
+        <meta name="keywords" content="support, contact, help, customer service" />
+        <meta name="robots" content="index, follow" />
+      </Helmet>
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-black">
           Need Help? Open a Ticket

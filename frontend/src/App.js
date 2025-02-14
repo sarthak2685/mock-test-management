@@ -53,7 +53,7 @@ import Announcement from "./components/AdminDasboard/Announcement.jsx";
 import TestTime from "./components/AdminDasboard/TestTime.jsx";
 import TestDetail from "./components/AdminDasboard/TestDetail.jsx";
 import TestList from "./components/SuperAdminDashboard/TestList.jsx";
-
+import { HelmetProvider } from "react-helmet-async";
 
 
 function App() {
@@ -145,9 +145,11 @@ function App() {
 
 function AppWrapper() {
   return (
+    <HelmetProvider> 
     <Router>
       <App />
     </Router>
+  </HelmetProvider>
   );
 }
 

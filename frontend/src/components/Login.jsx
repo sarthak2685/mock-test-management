@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import config from "../config";
 import illustrationImage from "../assets/Login.png";
 import { toast, ToastContainer } from "react-toastify";
+import { Helmet } from "react-helmet-async";
 
 const Login = () => {
   const [mobileNumber, setMobileNumber] = useState("");
@@ -142,6 +143,10 @@ const Login = () => {
 
   return (
     <>
+    <Helmet>
+  <title>Login - Mock Period</title>
+  <meta name="description" content="Log in to access your Mock Period account and take practice tests." />
+</Helmet>
       <ToastContainer />
       <div className="flex min-h-screen bg-white items-center justify-center p-6">
         <div className="bg-white shadow-lg border border-gray-100 rounded-lg flex flex-col md:flex-row max-w-4xl w-full">
