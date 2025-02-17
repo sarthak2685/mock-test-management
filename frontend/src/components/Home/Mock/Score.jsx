@@ -8,6 +8,9 @@ import { FaCloudDownloadAlt } from "react-icons/fa";
 import { RiCloseLine } from "react-icons/ri";
 import config from "../../../config";
 import { useNavigate } from "react-router-dom";
+import "jspdf-autotable";
+import katex from "katex";
+import html2canvas from "html2canvas";
 
 const Score = () => {
   const [activeTab, setActiveTab] = useState("testResult");
@@ -88,166 +91,203 @@ const Score = () => {
       };
     });
 
-  const handlePDFDownload = async () => {
-    const apiUrl = `${config.apiUrl}/analysis-report/?student_id=${studentId}&exam_id=${examId}&test_name=${testName}`;
-
-    try {
-      const response = await fetch(apiUrl, {
-        method: "GET",
-        headers: {
-          Authorization: `Token ${token}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch report data");
-      }
-
-      const apiData = await response.json();
-      const sanitizeText = (text) =>
-        typeof text === "string" ? text.replace(/\\/g, "") : text;
-
-      const data = {
-        examName: sanitizeText(apiData[0]?.exam_name),
-        section: sanitizeText(apiData[0]?.subject_name),
-        questions: apiData.map((q, index) => ({
-          questionNumber: index + 1,
-          question: sanitizeText(q.question),
-          questionImage:
-            q.question_1 === "/media/uploads/questions/option_4_uFtm5qj.png"
-              ? null
-              : q.question_1 || null,
-          options: [1, 2, 3, 4].map((idx) => ({
-            text: sanitizeText(q.options[`Option ${idx}`] || ""),
-            image:
-              q.options[`Option_${idx}`] &&
-              q.options[`Option_${idx}`] !==
-                "/media/uploads/questions/option_4_uFtm5qj.png"
-                ? q.options[`Option_${idx}`]
-                : null,
-          })),
-          correctAnswer: sanitizeText(q.correct_answer),
-          markedAnswer: sanitizeText(q.selected_answer),
-        })),
-      };
-
-      const doc = new jsPDF();
-      const colors = {
-        title: [50, 50, 50],
-        question: [0, 102, 204],
-        correct: [34, 139, 34],
-        marked: [255, 51, 51],
-        text: [0, 0, 0],
-      };
-
-      doc
-        .setFontSize(16)
-        .setFont("helvetica", "bold")
-        .setTextColor(...colors.title);
-      doc.text("Score Report", 20, 12);
-      let y = 18;
-
-      if (data.examName) {
-        doc.setFontSize(12).text(`Exam Name: ${data.examName}`, 20, y);
-        y += 5;
-      }
-      if (data.section) {
-        doc.text(`Section: ${data.section}`, 20, y);
-        y += 5;
-      }
-
-      data.questions.forEach((question, i) => {
-        if (i > 0) y += 12; // Space between questions
-
-        // Question Text
-        doc.setTextColor(...colors.question).setFontSize(10);
-        const wrappedQuestion = doc.splitTextToSize(
-          `QUESTION ${question.questionNumber}: ${question.question}`,
-          180
-        );
-        doc.text(wrappedQuestion, 20, y);
-        y += wrappedQuestion.length * 4;
-
-        // Render Question Image (if available)
-        if (
-          question.questionImage &&
-          question.questionImage.startsWith("/media/uploads/")
-        ) {
-          try {
-            const imageUrl = `${config.apiUrl}${question.questionImage}`;
-            doc.addImage(imageUrl, "JPEG", 20, y, 25, 20);
-            y += 22;
-          } catch (error) {
-            console.error("Error loading question image:", error);
-          }
+    const handlePDFDownload = async () => {
+      const apiUrl = `${config.apiUrl}/analysis-report/?student_id=${studentId}&exam_id=${examId}&test_name=${testName}`;
+    
+      try {
+        const response = await fetch(apiUrl, {
+          method: "GET",
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        });
+    
+        if (!response.ok) {
+          throw new Error("Failed to fetch report data");
         }
-
-        // Render options - shifted further left
-        const optionX1 = 15, // Adjusted from 30 to 15 to shift left
-          optionX2 = 90; // Adjusted from 120 to 90 to shift left
-        let optionY = y + 5;
-        const imageOffset = 2; // Small adjustment for alignment
-
-        question.options.forEach((option, idx) => {
-          if (!option.image && !option.text) return;
-
-          const columnX = idx % 2 === 0 ? optionX1 : optionX2;
-          const rowY = optionY + Math.floor(idx / 2) * 15;
-
-          // Option Text
-          doc.setTextColor(...colors.text);
-          doc.text(
-            `${String.fromCharCode(65 + idx)}) ${option.text}`,
-            columnX,
-            rowY
+    
+        const apiData = await response.json();
+    
+        // Function to render LaTeX expressions
+        const renderLaTeX = async (text) => {
+          if (!text) return "";
+          const latexRegex = /\$(.*?)\$/g;
+          if (!latexRegex.test(text)) return text;
+    
+          // Convert LaTeX to HTML
+          const renderedHTML = text.replace(latexRegex, (_, latex) =>
+            katex.renderToString(latex, { throwOnError: false })
           );
-
-          // Option Image (if available)
-          if (option.image) {
+    
+          // Convert HTML to Image
+          const container = document.createElement("div");
+          container.innerHTML = renderedHTML;
+          document.body.appendChild(container);
+    
+          const canvas = await html2canvas(container);
+          document.body.removeChild(container);
+          return canvas.toDataURL("image/png");
+        };
+    
+        const sanitizeText = (text) =>
+          typeof text === "string" ? text.replace(/\\/g, "") : text;
+    
+        const data = {
+          examName: sanitizeText(apiData[0]?.exam_name),
+          section: sanitizeText(apiData[0]?.subject_name),
+          questions: await Promise.all(
+            apiData.map(async (q, index) => ({
+              questionNumber: index + 1,
+              question: await renderLaTeX(sanitizeText(q.question)),
+              questionImage:
+                q.question_1 === "/media/uploads/questions/option_4_uFtm5qj.png"
+                  ? null
+                  : q.question_1 || null,
+              options: await Promise.all(
+                [1, 2, 3, 4].map(async (idx) => ({
+                  text: await renderLaTeX(sanitizeText(q.options[`Option ${idx}`] || "")),
+                  image:
+                    q.options[`Option_${idx}`] &&
+                    q.options[`Option_${idx}`] !==
+                      "/media/uploads/questions/option_4_uFtm5qj.png"
+                      ? q.options[`Option_${idx}`]
+                      : null,
+                }))
+              ),
+              correctAnswer: await renderLaTeX(sanitizeText(q.correct_answer)),
+              markedAnswer: await renderLaTeX(sanitizeText(q.selected_answer)),
+            }))
+          ),
+        };
+    
+        const doc = new jsPDF();
+        const colors = {
+          title: [50, 50, 50],
+          question: [0, 102, 204],
+          correct: [34, 139, 34],
+          marked: [255, 51, 51],
+          text: [0, 0, 0],
+        };
+    
+        doc
+          .setFontSize(16)
+          .setFont("helvetica", "bold")
+          .setTextColor(...colors.title);
+        doc.text("Score Report", 20, 12);
+        let y = 18;
+    
+        if (data.examName) {
+          doc.setFontSize(12).text(`Exam Name: ${data.examName}`, 20, y);
+          y += 5;
+        }
+        if (data.section) {
+          doc.text(`Section: ${data.section}`, 20, y);
+          y += 5;
+        }
+    
+        for (const question of data.questions) {
+          if (y > 270) {
+            doc.addPage();
+            y = 10;
+          }
+    
+          // Question Text
+          doc.setTextColor(...colors.question).setFontSize(10);
+          if (question.question.startsWith("data:image")) {
+            doc.addImage(question.question, "PNG", 20, y, 60, 20);
+            y += 25;
+          } else {
+            const wrappedQuestion = doc.splitTextToSize(
+              `QUESTION ${question.questionNumber}: ${question.question}`,
+              180
+            );
+            doc.text(wrappedQuestion, 20, y);
+            y += wrappedQuestion.length * 4;
+          }
+    
+          // Render Question Image (if available)
+          if (question.questionImage) {
             try {
-              const imageUrl = `${config.apiUrl}${option.image}`;
-              doc.addImage(imageUrl, "JPEG", columnX + 10, rowY - 7, 20, 20);
-              optionY += 4;
+              const imageUrl = `${config.apiUrl}${question.questionImage}`;
+              doc.addImage(imageUrl, "JPEG", 20, y, 25, 20);
+              y += 22;
             } catch (error) {
-              console.error("Error loading option image:", error);
+              console.error("Error loading question image:", error);
             }
           }
-        });
-
-        y += 25;
-
-        // Render Answers
-        doc.setFontSize(9).setFont("helvetica", "bold");
-        doc
-          .setTextColor(...colors.correct)
-          .text(`Correct Answer: ${question.correctAnswer}`, 140, y - 5);
-        doc
-          .setTextColor(...colors.marked)
-          .text(
-            `Marked Answer: ${question.markedAnswer || "Not Answered"}`,
-            140,
-            y + 5
-          );
-        y += 12;
-      });
-
-      // Add page numbers
-      const totalPages = doc.internal.getNumberOfPages();
-      for (let i = 1; i <= totalPages; i++) {
-        doc.setPage(i);
-        doc
-          .setFontSize(8)
-          .setFont("helvetica", "normal")
-          .setTextColor(150, 150, 150);
-        doc.text(`Page ${i} of ${totalPages}`, 180, 290);
+    
+          // Render options
+          const optionX1 = 15,
+            optionX2 = 90;
+          let optionY = y + 5;
+    
+          for (const [idx, option] of question.options.entries()) {
+            if (!option.image && !option.text) continue;
+    
+            const columnX = idx % 2 === 0 ? optionX1 : optionX2;
+            const rowY = optionY + Math.floor(idx / 2) * 15;
+    
+            // Option Text
+            doc.setTextColor(...colors.text);
+            if (option.text.startsWith("data:image")) {
+              doc.addImage(option.text, "PNG", columnX, rowY, 50, 20);
+              optionY += 10;
+            } else {
+              doc.text(`${String.fromCharCode(65 + idx)}) ${option.text}`, columnX, rowY);
+            }
+    
+            // Option Image
+            if (option.image) {
+              try {
+                const imageUrl = `${config.apiUrl}${option.image}`;
+                doc.addImage(imageUrl, "JPEG", columnX + 10, rowY - 7, 20, 20);
+                optionY += 4;
+              } catch (error) {
+                console.error("Error loading option image:", error);
+              }
+            }
+          }
+    
+          y += 25;
+    
+          // Render Answers
+          doc.setFontSize(9).setFont("helvetica", "bold");
+          doc.setTextColor(...colors.correct).text(`Correct Answer:`, 140, y - 5);
+          if (question.correctAnswer.startsWith("data:image")) {
+            doc.addImage(question.correctAnswer, "PNG", 140, y, 50, 20);
+            y += 20;
+          } else {
+            doc.text(question.correctAnswer, 170, y - 5);
+          }
+    
+          doc.setTextColor(...colors.marked).text(`Marked Answer:`, 140, y + 5);
+          if (question.markedAnswer.startsWith("data:image")) {
+            doc.addImage(question.markedAnswer, "PNG", 140, y + 5, 50, 20);
+            y += 20;
+          } else {
+            doc.text(question.markedAnswer || "Not Answered", 170, y + 5);
+          }
+    
+          y += 12;
+        }
+    
+        // Add page numbers
+        const totalPages = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= totalPages; i++) {
+          doc.setPage(i);
+          doc
+            .setFontSize(8)
+            .setFont("helvetica", "normal")
+            .setTextColor(150, 150, 150);
+          doc.text(`Page ${i} of ${totalPages}`, 180, 290);
+        }
+    
+        doc.save(`${testName}-report.pdf`);
+      } catch (error) {
+        console.error("Error generating PDF:", error.message);
+        alert("Failed to generate the PDF. Please try again.");
       }
-
-      doc.save(`${testName}-report.pdf`);
-    } catch (error) {
-      console.error("Error generating PDF:", error.message);
-      alert("Failed to generate the PDF. Please try again.");
-    }
-  };
+    };
 
   const parseDate = (str) => {
     const formattedStr = str
