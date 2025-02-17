@@ -3,6 +3,7 @@ import {
   Routes,
   Route,
   useLocation,
+  useNavigate,
 } from "react-router-dom";
 import { UserProvider } from "../src/components/UserContext/UserContext.js";
 import Navbar from "./components/Navbar.jsx";
@@ -54,12 +55,39 @@ import TestTime from "./components/AdminDasboard/TestTime.jsx";
 import TestDetail from "./components/AdminDasboard/TestDetail.jsx";
 import TestList from "./components/SuperAdminDashboard/TestList.jsx";
 import { HelmetProvider } from "react-helmet-async";
+import NotFound from "./components/NotFound.jsx";
+import { useEffect } from "react";
+
+
+function ProtectedRoute({ element, allowedRoles }) {
+  const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem("user")) || {};
+  const userRole = user.type || "student";
+
+  console.log("user role: ", allowedRoles);
+
+  useEffect(() => {
+    if (!allowedRoles.includes(userRole)) {
+      navigate("/*", { replace: true });
+    }
+  }, [userRole, allowedRoles, navigate]);
+
+  if (!allowedRoles.includes(userRole)) {
+    return null; // Prevent rendering unauthorized pages
+  }
+
+  return element;
+}
+
+
+
 
 
 function App() {
   const location = useLocation();
 
   const userRole = localStorage.getItem("userRole");
+  
 
   const isNavbarFooterVisible =
     userRole !== "owner" &&
@@ -75,11 +103,11 @@ function App() {
         {/* Conditional Navbar and Footer */}
         {isNavbarFooterVisible && <Navbar />}
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<ProtectedRoute element={<Home />} allowedRoles={["student"]} />} />
           <Route path="/login" element={<Login />} />
           <Route path="/contact" element={<ContactPage />} />
-          <Route path="/admin" element={<Dashboard />} />
-          <Route path="/super-admin" element={<SuperAdminDashboard />} />
+          <Route path="/admin" element={<ProtectedRoute element={<Dashboard />} allowedRoles={["admin"]} />} />
+          <Route path="/super-admin"  element={<ProtectedRoute element={<SuperAdminDashboard />} allowedRoles={["owner"]} />} />
           <Route path="/students" element={<StudentManagement />} />
           <Route path="/create-test" element={<MockTestManagement />} />
           <Route path="/performance" element={<ChartComponent />} />
@@ -134,6 +162,7 @@ function App() {
 
           <Route path="/announcement" element={<Announcement />} />
           <Route path="/test-list" element={<TestList />} />
+          <Route path="*" element={<NotFound />} />
 
 
         </Routes>

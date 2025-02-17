@@ -447,38 +447,38 @@ const QuestionNavigation = ({
     }
   };
 
-  const enableFullScreen = () => {
-    const elem = document.documentElement; // The root element
-    if (elem.requestFullscreen) {
-      elem.requestFullscreen();
-    } else if (elem.mozRequestFullScreen) {
-      elem.mozRequestFullScreen(); // For Firefox
-    } else if (elem.webkitRequestFullscreen) {
-      elem.webkitRequestFullscreen(); // For Chrome, Safari, and Opera
-    } else if (elem.msRequestFullscreen) {
-      elem.msRequestFullscreen(); // For IE/Edge
-    }
-  };
+  // const enableFullScreen = () => {
+  //   const elem = document.documentElement; // The root element
+  //   if (elem.requestFullscreen) {
+  //     elem.requestFullscreen();
+  //   } else if (elem.mozRequestFullScreen) {
+  //     elem.mozRequestFullScreen(); // For Firefox
+  //   } else if (elem.webkitRequestFullscreen) {
+  //     elem.webkitRequestFullscreen(); // For Chrome, Safari, and Opera
+  //   } else if (elem.msRequestFullscreen) {
+  //     elem.msRequestFullscreen(); // For IE/Edge
+  //   }
+  // };
 
-  const monitorFullScreen = () => {
-    if (!document.fullscreenElement && !hasSubmitted) {
-      toast.error(
-        "You exited full-screen mode. The test will now be submitted."
-      );
-      setHasSubmitted(true);
-      handleSubmit();
-    }
-  };
+  // const monitorFullScreen = () => {
+  //   if (!document.fullscreenElement && !hasSubmitted) {
+  //     toast.error(
+  //       "You exited full-screen mode. The test will now be submitted."
+  //     );
+  //     setHasSubmitted(true);
+  //     handleSubmit();
+  //   }
+  // };
 
   useEffect(() => {
     // Add event listeners
     document.addEventListener("visibilitychange", handleTabSwitch);
-    document.addEventListener("fullscreenchange", monitorFullScreen);
+    // document.addEventListener("fullscreenchange", monitorFullScreen);
 
     return () => {
       // Clean up event listeners
       document.removeEventListener("visibilitychange", handleTabSwitch);
-      document.removeEventListener("fullscreenchange", monitorFullScreen);
+      // document.removeEventListener("fullscreenchange", monitorFullScreen);
     };
   }, []);
 
