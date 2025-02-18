@@ -8,6 +8,7 @@ import { StaticMathField } from "react-mathquill";
 
 import UserProfile from "../Mock/UserProfile";
 import config from "../../../config";
+import { toast, ToastContainer } from "react-toastify";
 
 const MobileQuizLayout = ({
   currentSectionIndex,
@@ -166,6 +167,30 @@ const MobileQuizLayout = ({
   //     return updatedAnswers;
   //   });
   // };
+  const [tabSwitchCount, setTabSwitchCount] = useState(0); // Track tab switch count
+
+
+  useEffect(() => {
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        setTabSwitchCount(prevCount => {
+          const newCount = prevCount + 1;
+          // If tab has been switched more than 3 times, show the success toast
+          if (newCount > 3) {
+            // toast.success("you have reached the limit, so Test has been successfully submitted!");
+          }
+          return newCount;
+        });
+        // toast.warning("You switched the tab!");
+      }
+    };
+
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, []);
 
   return (
     <div className="flex flex-col bg-gray-100 min-h-screen relative">
@@ -429,6 +454,7 @@ const MobileQuizLayout = ({
           )}
         </div>
 
+        
         {/* Bottom Navigation */}
         {!submitted && (
           <div className="bg-white shadow-md p-4 flex flex-col justify-center items-center gap-2 border-t border-gray-200">
@@ -445,6 +471,79 @@ const MobileQuizLayout = ({
               >
                 Next
               </button>
+            </div>
+            <div className="bg-white hidden rounded-lg p-6 w-11/12 max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl max-h-3/4 overflow-y-auto shadow-lg">
+              <h3 className="text-center text-lg font-semibold mb-4 text-gray-700 relative">
+                Sections
+                <button
+                  className="absolute top-0 right-0 text-gray-500"
+                  onClick={() => setShowNavigation(false)}
+                  aria-label="Close Navigation"
+                >
+                  <FaTimes className="w-6 h-6" />
+                </button>
+              </h3>
+
+              {/* Custom Dropdown for Section Selection */}
+              <div className="relative w-full max-w-xs mx-auto mb-4 dropdown">
+                <button
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  className="w-full bg-white border border-gray-300 rounded-lg px-4 py-2 flex justify-between items-center text-gray-700"
+                >
+                  {subjects.length > 0
+                    ? subjects[currentSectionIndex]
+                    : "Select Section"}
+                  <FaChevronDown
+                    className={`transition-transform ${
+                      dropdownOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {dropdownOpen && (
+                  <div className="absolute z-40 w-full bg-white border border-gray-300 rounded-lg mt-1 shadow-lg max-h-60 overflow-y-auto">
+                    {subjects.length > 0 ? (
+                      subjects.map((subject, index) => (
+                        <div
+                          key={index}
+                          onClick={() => {
+                            setCurrentSectionIndex(index);
+                            setDropdownOpen(false);
+                          }}
+                          className={`px-4 py-2 cursor-pointer hover:bg-blue-500 hover:text-white ${
+                            index === currentSectionIndex ? "bg-blue-100" : ""
+                          }`}
+                        >
+                          {subject}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="px-4 py-2 text-gray-500">
+                        No sections available
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex-grow mt-4 overflow-y-auto max-h-96">
+                {currentSection && (
+                  <QuestionNavigation
+                    questions={currentSection.questions}
+                    selectedQuestionIndex={currentQuestionIndex}
+                    onSelectQuestion={(index) => {
+                      setCurrentQuestionIndex(index);
+                      setShowNavigation(false);
+                    }}
+                    onSubmit={handleSubmit}
+                    sectionName={currentSection.section}
+                    answeredQuestions={
+                      answeredQuestions[currentSectionIndex] || []
+                    }
+                    markedForReview={markedForReview[currentSectionIndex] || []}
+                  />
+                )}
+              </div>
             </div>
             <div className="flex flex-row justify-between gap-2 w-full">
               <button
@@ -464,6 +563,7 @@ const MobileQuizLayout = ({
           </div>
         )}
       </div>
+      <ToastContainer />
     </div>
   );
 };

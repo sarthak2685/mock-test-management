@@ -5,6 +5,7 @@ import Timer from "./Timer";
 import config from "../../../config";
 import UserProfile from "../Mock/UserProfile";
 import { StaticMathField } from "react-mathquill";
+import { toast, ToastContainer } from "react-toastify";
 
 const ChapterMobile = ({
   currentSectionIndex,
@@ -29,22 +30,7 @@ const ChapterMobile = ({
   const [showNavigation, setShowNavigation] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [user, setUser] = useState({ id: "Unknown User", role: "Student" });
-  // const S = JSON.parse(localStorage.getItem("user"));
-  // const token = S.token;
-  // const [selectedSubject, setSelectedSubject] = useState(
-  //   localStorage.getItem("selectedOptionalSubject") || ""
-  // );
-
-  // Function to close dropdown on outside click
-  useEffect(() => {
-    const handleOutsideClick = (e) => {
-      if (dropdownOpen && !e.target.closest(".dropdown")) {
-        setDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleOutsideClick);
-    return () => document.removeEventListener("mousedown", handleOutsideClick);
-  }, [dropdownOpen]);
+  
 
   // UserProfile Component
   // const UserProfile = () => {
@@ -154,9 +140,31 @@ const ChapterMobile = ({
   //       return updatedAnswers;
   //     });
   //   };
-
+  const [tabSwitchCount, setTabSwitchCount] = useState(0); // Track tab switch count
   const baseUrl = `${config.apiUrl}`;
   const defaultFileValue = "/media/uploads/questions/option_4_uFtm5qj.png";
+
+  useEffect(() => {
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        setTabSwitchCount(prevCount => {
+          const newCount = prevCount + 1;
+          // If tab has been switched more than 3 times, show the success toast
+          if (newCount > 3) {
+            // toast.success("you have reached the limit, so Test has been successfully submitted!");
+          }
+          return newCount;
+        });
+        // toast.warning("You switched the tab!");
+      }
+    };
+
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, []);
 
   return (
     <div className="flex flex-col bg-gray-100 min-h-screen relative">
@@ -397,6 +405,41 @@ const ChapterMobile = ({
               Next
             </button>
           </div>
+          <div className="bg-white rounded-lg p-6 w-11/12 hidden max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl max-h-3/4 overflow-y-auto shadow-lg">
+              <h3 className="text-center text-lg font-semibold mb-4 text-gray-700 relative">
+                Sections
+                <button
+                  className="absolute top-0 right-0 text-gray-500"
+                  onClick={() => setShowNavigation(false)}
+                  aria-label="Close Navigation"
+                >
+                  <FaTimes className="w-6 h-6" />
+                </button>
+              </h3>
+
+              <div className="w-full hidden max-w-xs mx-auto mb-4 text-center text-gray-700 bg-white border border-gray-300 rounded-lg px-4 py-2">
+                {mockTestData[currentSectionIndex]?.test_name || "Unknown Test"}
+              </div>
+
+              <div className="flex-grow mt-4 overflow-y-auto max-h-96">
+                {currentSection && (
+                  <ChapterNavigation
+                    questions={currentSection.questions}
+                    selectedQuestionIndex={currentQuestionIndex}
+                    onSelectQuestion={(index) => {
+                      setCurrentQuestionIndex(index);
+                      setShowNavigation(false);
+                    }}
+                    onSubmit={handleSubmit}
+                    sectionName={currentSection.section}
+                    answeredQuestions={
+                      answeredQuestions[currentSectionIndex] || []
+                    }
+                    markedForReview={markedForReview[currentSectionIndex] || []}
+                  />
+                )}
+              </div>
+            </div>
           <div className="flex flex-row justify-between gap-2 w-full">
             <button
               onClick={handleMarkForReview}
@@ -414,6 +457,8 @@ const ChapterMobile = ({
           </div>
         </div>
       )}
+            <ToastContainer />
+
     </div>
   );
 };

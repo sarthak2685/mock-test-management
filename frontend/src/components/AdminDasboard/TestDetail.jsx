@@ -112,6 +112,8 @@ function TestDetail() {
 
   return (
     <>
+        <div className="flex flex-col min-h-screen overflow-auto bg-gray-50">
+
       <Sidebar
         isCollapsed={isCollapsed}
         toggleSidebar={toggleSidebar}
@@ -125,7 +127,7 @@ function TestDetail() {
       >
         <DashboardHeader user={user} toggleSidebar={toggleSidebar} />
 
-        <div className="test-container">
+        <div className="test-container ">
           {/* Exam-based Tests */}
           <h2 className="test-title">Available Tests by Exam</h2>
           <div className="test-grid">
@@ -164,6 +166,7 @@ function TestDetail() {
             ))}
           </div>
         </div>
+      </div>
       </div>
 
       {/* CSS Styling */}
