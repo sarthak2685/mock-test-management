@@ -5,6 +5,7 @@ import Timer from "./Timer";
 import config from "../../../config";
 import UserProfile from "../Mock/UserProfile";
 import { StaticMathField } from "react-mathquill";
+import { toast, ToastContainer } from "react-toastify";
 
 const ChapterMobile = ({
   currentSectionIndex,
@@ -29,22 +30,7 @@ const ChapterMobile = ({
   const [showNavigation, setShowNavigation] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [user, setUser] = useState({ id: "Unknown User", role: "Student" });
-  // const S = JSON.parse(localStorage.getItem("user"));
-  // const token = S.token;
-  // const [selectedSubject, setSelectedSubject] = useState(
-  //   localStorage.getItem("selectedOptionalSubject") || ""
-  // );
-
-  // Function to close dropdown on outside click
-  useEffect(() => {
-    const handleOutsideClick = (e) => {
-      if (dropdownOpen && !e.target.closest(".dropdown")) {
-        setDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleOutsideClick);
-    return () => document.removeEventListener("mousedown", handleOutsideClick);
-  }, [dropdownOpen]);
+  
 
   // UserProfile Component
   // const UserProfile = () => {
@@ -154,16 +140,36 @@ const ChapterMobile = ({
   //       return updatedAnswers;
   //     });
   //   };
-
+  const [tabSwitchCount, setTabSwitchCount] = useState(0); // Track tab switch count
   const baseUrl = `${config.apiUrl}`;
   const defaultFileValue = "/media/uploads/questions/option_4_uFtm5qj.png";
-  const [modalOpen, setModalOpen] = useState(false);
-  const [modalMessage, setModalMessage] = useState("");
+
+  useEffect(() => {
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        setTabSwitchCount(prevCount => {
+          const newCount = prevCount + 1;
+          // If tab has been switched more than 3 times, show the success toast
+          if (newCount > 3) {
+            // toast.success("you have reached the limit, so Test has been successfully submitted!");
+          }
+          return newCount;
+        });
+        // toast.warning("You switched the tab!");
+      }
+    };
+
+    document.addEventListener('visibilitychange', onVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibilityChange);
+    };
+  }, []);
 
   return (
     <div className="flex flex-col bg-gray-100 min-h-screen relative">
       {/* Sticky Header */}
-      <div className="sticky top-0 bg-white shadow-md z-10 p-4 grid grid-cols-1 items-center">
+      <div className="sticky top-0 bg-white shadow-md z-10 p-4 grid grid-cols-3 items-center">
         <div className="grid grid-cols-2 col-span-2 items-center space-x-4 justify-between">
           <UserProfile className="col-span-1" user={user} />
           {mockTestData.length > 0 && (
@@ -175,7 +181,7 @@ const ChapterMobile = ({
             />
           )}
         </div>
-        {/* <div className="flex col-span-1 items-center justify-end space-x-4">
+        <div className="flex col-span-1 items-center justify-end space-x-4">
           <button
             onClick={() => setShowNavigation(!showNavigation)}
             className="text-blue-500"
@@ -187,12 +193,12 @@ const ChapterMobile = ({
               <FaBars className="w-6 h-6" />
             )}
           </button>
-        </div> */}
+        </div>
       </div>
 
       {/* Main Content */}
       <div className="flex-1 p-4 mt-4">
-        {/* {showNavigation && (
+        {showNavigation && (
           <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center z-30">
             <div className="bg-white rounded-lg p-6 w-11/12 max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl max-h-3/4 overflow-y-auto shadow-lg">
               <h3 className="text-center text-lg font-semibold mb-4 text-gray-700 relative">
@@ -230,7 +236,7 @@ const ChapterMobile = ({
               </div>
             </div>
           </div>
-        )} */}
+        )}
 
         {currentQuestion ? (
           <div className="bg-white rounded-lg shadow p-6">
@@ -399,6 +405,41 @@ const ChapterMobile = ({
               Next
             </button>
           </div>
+          <div className="bg-white rounded-lg p-6 w-11/12 hidden max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl max-h-3/4 overflow-y-auto shadow-lg">
+              <h3 className="text-center text-lg font-semibold mb-4 text-gray-700 relative">
+                Sections
+                <button
+                  className="absolute top-0 right-0 text-gray-500"
+                  onClick={() => setShowNavigation(false)}
+                  aria-label="Close Navigation"
+                >
+                  <FaTimes className="w-6 h-6" />
+                </button>
+              </h3>
+
+              <div className="w-full hidden max-w-xs mx-auto mb-4 text-center text-gray-700 bg-white border border-gray-300 rounded-lg px-4 py-2">
+                {mockTestData[currentSectionIndex]?.test_name || "Unknown Test"}
+              </div>
+
+              <div className="flex-grow mt-4 overflow-y-auto max-h-96">
+                {currentSection && (
+                  <ChapterNavigation
+                    questions={currentSection.questions}
+                    selectedQuestionIndex={currentQuestionIndex}
+                    onSelectQuestion={(index) => {
+                      setCurrentQuestionIndex(index);
+                      setShowNavigation(false);
+                    }}
+                    onSubmit={handleSubmit}
+                    sectionName={currentSection.section}
+                    answeredQuestions={
+                      answeredQuestions[currentSectionIndex] || []
+                    }
+                    markedForReview={markedForReview[currentSectionIndex] || []}
+                  />
+                )}
+              </div>
+            </div>
           <div className="flex flex-row justify-between gap-2 w-full">
             <button
               onClick={handleMarkForReview}
@@ -414,115 +455,10 @@ const ChapterMobile = ({
               Save & Next
             </button>
           </div>
-
-          {/*Navigation Buttons*/}
-          <div className="bg-white rounded-lg p-6 w-11/12 max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl max-h-3/4 overflow-y-auto shadow-lg">
-            <h3 className="text-center text-lg font-semibold mb-4 text-gray-700 relative">
-              Sections
-            </h3>
-
-            <div className="w-full max-w-xs mx-auto mb-4 text-center text-gray-700 bg-white border border-gray-300 rounded-lg px-4 py-2">
-              {mockTestData[currentSectionIndex]?.test_name || "Unknown Test"}
-            </div>
-
-            <div className="flex-grow mt-4 overflow-y-auto max-h-96">
-              {currentSection && (
-                <ChapterNavigation
-                  questions={currentSection.questions}
-                  selectedQuestionIndex={currentQuestionIndex}
-                  onSelectQuestion={(index) => {
-                    setCurrentQuestionIndex(index);
-                    setShowNavigation(false);
-                  }}
-                  onSubmit={handleSubmit}
-                  sectionName={currentSection.section}
-                  answeredQuestions={
-                    answeredQuestions[currentSectionIndex] || []
-                  }
-                  markedForReview={markedForReview[currentSectionIndex] || []}
-                />
-              )}
-            </div>
-          </div>
-          {modalOpen && (
-            <div className="modal-overlay">
-              <div className="modal-content">
-                <p>{modalMessage}</p>
-                {![
-                  "Test is being submitted...",
-                  "Submission successful!",
-                ].includes(modalMessage) && (
-                  <div className="modal-buttons">
-                    <button
-                      className="modal-btn confirm"
-                      onClick={() => {
-                        setModalOpen(false); // Close modal
-                        handleSubmit(); // Submit test
-                      }}
-                    >
-                      Yes
-                    </button>
-                    <button
-                      className="modal-btn cancel"
-                      onClick={() => setModalOpen(false)}
-                    >
-                      No
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          <style jsx>{`
-            .modal-overlay {
-              position: fixed;
-              top: 0;
-              left: 0;
-              width: 100%;
-              height: 100%;
-              background: rgba(0, 0, 0, 0.5);
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              z-index: 1000;
-            }
-            .modal-content {
-              background: white;
-              padding: 20px;
-              border-radius: 10px;
-              text-align: center;
-              width: 300px;
-              box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-            }
-            .modal-buttons {
-              display: flex;
-              justify-content: space-between;
-              margin-top: 10px;
-            }
-            .modal-btn {
-              padding: 8px 16px;
-              border: none;
-              border-radius: 5px;
-              cursor: pointer;
-              font-size: 14px;
-            }
-            .modal-btn.confirm {
-              background: #28a745;
-              color: white;
-            }
-            .modal-btn.cancel {
-              background: #dc3545;
-              color: white;
-            }
-            .modal-btn.close {
-              background: #007bff;
-              color: white;
-              margin-top: 10px;
-            }
-          `}</style>
         </div>
       )}
+            <ToastContainer />
+
     </div>
   );
 };

@@ -64,6 +64,7 @@ const ChapterScore = () => {
     fetchData();
   }, [apiUrl]);
 
+
   const handleChange = () => {
     localStorage.removeItem("submittedData");
     localStorage.removeItem("selectedExamDuration");
@@ -74,6 +75,14 @@ const ChapterScore = () => {
     localStorage.removeItem("end_time");
     localStorage.removeItem("selectedTestName");
     localStorage.removeItem("exam_id");
+    localStorage.removeItem("selectedChapter");
+    localStorage.removeItem("testDuration");
+    localStorage.removeItem("noOfQuestions");
+    localStorage.removeItem("positiveMarks");
+    localStorage.removeItem("negativeMarks");
+    localStorage.removeItem("submissionInProgress");
+    localStorage.removeItem("selectedSubjectId"); 
+
     navigate("/");
   };
 
@@ -474,16 +483,16 @@ const ChapterScore = () => {
                       return (
                         <tr className="border-b">
                           <td className="p-2 md:p-4 text-left">
-                            {chapter || "Unknown Chapter"}
+                            {chapter || testName}
                           </td>
                           <td className="p-2 md:p-4 text-center">
-                            {correct_answers}
+                            {correct_answers || 0}
                           </td>
                           <td className="p-2 md:p-4 text-center">
-                            {wrong_answers}
+                            {wrong_answers || 0}
                           </td>
                           <td className="p-2 md:p-4 text-center">
-                            {unattempted}
+                            {unattempted || 0}
                           </td>
                         </tr>
                       );

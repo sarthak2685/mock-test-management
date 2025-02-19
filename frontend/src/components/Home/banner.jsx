@@ -170,7 +170,6 @@ function Banner() {
 
           <div className="w-full md:w-1/2 flex justify-center relative z-10">
             <img
-              fetchPriority="high"
               src={bannerImage} // Dynamically set the image based on login status
               alt="Mock Test Platform"
               className="w-3/4 h-auto animate-bounceImage"

@@ -181,7 +181,7 @@ const StudentManagement = ({ user }) => {
       // Enhanced error handling
       if (error.response) {
         if (error.response.status === 404) {
-          setError("Student already exists.");
+          setError("Student already exists with this Number.");
         } else {
           setError(
             `Failed to add students. Error: ${
@@ -272,12 +272,12 @@ const StudentManagement = ({ user }) => {
   };
 
   const filteredStudents = Array.isArray(students)
-    ? students.filter(
-        (student) =>
-          student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          student.username.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    : [];
+  ? students.filter((student) =>
+      (student.name?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
+      (student.username?.toLowerCase() || "").includes(searchTerm.toLowerCase())
+    )
+  : [];
+
 
   const indexOfLastStudent = currentPage * studentsPerPage;
   const indexOfFirstStudent = indexOfLastStudent - studentsPerPage;
@@ -319,7 +319,7 @@ const StudentManagement = ({ user }) => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen overflow-auto">
       <div className="flex flex-row flex-grow">
         {/* Sidebar */}
         <Sidebar
@@ -400,15 +400,28 @@ const StudentManagement = ({ user }) => {
                       }
                       className="border p-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    <input
-                      type="text"
-                      placeholder="Mobile Number"
-                      value={student.mobile_no}
-                      onChange={(e) =>
-                        handleStudentChange(index, "mobile_no", e.target.value)
-                      }
-                      className="border p-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
+                    <div className="w-full">
+      <input
+        type="tel"
+        placeholder="Mobile Number"
+        value={student.mobile_no}
+        onChange={(e) => {
+          const value = e.target.value;
+          if (/^\d{0,10}$/.test(value)) {
+            handleStudentChange(index, "mobile_no", value);
+          }
+        }}
+        onBlur={() => {
+          if (student.mobile_no.length !== 10) {
+            setError("Please enter a 10-digit mobile number.");
+          } else {
+            setError("");
+          }
+        }}
+        className="border p-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+      {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+    </div>
                   </div>
                 </div>
               ))}

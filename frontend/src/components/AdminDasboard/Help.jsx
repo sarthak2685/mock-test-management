@@ -83,7 +83,7 @@ const Help = () => {
   }, []);
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-100 to-gray-300">
+    <div className="flex flex-col min-h-screen overflow-auto bg-gradient-to-br from-gray-100 to-gray-300">
       {/* Dashboard Header */}
       <DashboardHeader user={user} toggleSidebar={toggleSidebar} />
 

@@ -76,6 +76,9 @@ const Score = () => {
     localStorage.removeItem("selectedExamDuration");
     localStorage.removeItem("selectedTestDetails");
     localStorage.removeItem("selectedLanguage");
+    localStorage.removeItem("uniqueSubjects");
+    localStorage.removeItem("submissionInProgress");
+    localStorage.removeItem("selectedSubjectId"); 
     navigate("/");
   };
   const sectionData =
