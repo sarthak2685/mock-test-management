@@ -130,13 +130,23 @@ const Instructions = () => {
   const examDuration = duration || 0;
   const positiveMarks = storedDetails?.postiveMarks || 0;
   const negativeMarks = storedDetails?.negativeMarks || 0;
+  const subject_new = storedDetails?.subjects_new || [];
+  // console.log("subject", subject_new, storedDetails);
 
-  const subjectData = subjects.map((subject) => ({
-    subject,
-    questions: totalQuestions / subjects.length,
-    marks: totalMarks / subjects.length,
-    time: examDuration / subjects.length, // Assuming equal time distribution
-  }));
+  const subjectData = subjects.map((subject) => {
+    // Find the matching subject from subjects_new
+    const subjectInfo = subject_new.find((item) => item.name === subject);
+  
+    return {
+      subject,
+      questions: subjectInfo ? subjectInfo.total_questions : 0, // Use total_questions or 0 if not found
+      marks: subjectInfo ? subjectInfo.total_questions * positiveMarks : 0,
+      time: examDuration / subjects.length, // Assuming equal time distribution
+    };
+  });
+  
+  console.log("hi",subjectData);
+  
 
   const optionalSubjectData = {
     subject: optionalSubject || "Optional Subject",

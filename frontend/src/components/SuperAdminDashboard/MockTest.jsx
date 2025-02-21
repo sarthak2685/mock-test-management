@@ -196,6 +196,12 @@ const MockTestManagement = ({ user }) => {
       console.error("Subject or questions are missing in newTest.");
       return;
     }
+    if (newTest.subject === "ALL") {
+      if (!newTest.subtopic) {
+        console.error("Subtopic is missing in newTest.");
+        return; // ✅ Return only if subtopic is missing
+      }
+    }
 
     if (
       currentQuestionIndex < 0 ||
@@ -667,7 +673,8 @@ const MockTestManagement = ({ user }) => {
       newTest.subject &&
       newTest.correctMark !== "" &&
       newTest.negativeMark !== "" &&
-      (!newTest.domain || (newTest.domain && !newTest.chapter)); // Chapter not required if domain exists
+      (!newTest.domain || (newTest.domain && !newTest.chapter)) &&
+      (newTest.subject !== "ALL" || (newTest.subject === "ALL" && newTest.subtopic)); 
 
     setIsFormValid(isValid);
   }, [selectedOptions, newTest]);
@@ -1237,6 +1244,10 @@ const MockTestManagement = ({ user }) => {
                             fetchSubtopic();
                           }
                         }}
+                        required={
+                          newTest.subject === "ALL" ||
+                          newTest.chapter === null
+                        }
                         onChange={(e) => {
                           const value = e.target.value?.trim() || "";
                           handleQuestionChange(null, "subtopic", value);
@@ -1330,6 +1341,7 @@ const MockTestManagement = ({ user }) => {
                         </option>
                         <option value="english">English</option>
                         <option value="hindi">Hindi</option>
+                        <option value="ALL">ALL</option>
                       </select>
                     </div>
                   </div>
