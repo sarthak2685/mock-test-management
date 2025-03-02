@@ -153,8 +153,7 @@ function Banner() {
               Welcome to <span className="text-[#007bff]">Mock Period</span>
             </h1>
             <p className="text-lg md:text-xl text-gray-600 mb-14 mt[-1.5rem]">
-              Prepare for your exams with our mock test series. Track your
-              progress and improve your performance with detailed analytics.
+            Enhance your exam preparation with our mock tests and chapter-wise tests. Practice in real-time, get instant results, and access detailed solutions. Boost your confidence and achieve success effortlessly!
             </p>
             <div className="text-center mb-10 md:text-left">
               {!userType && (

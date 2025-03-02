@@ -25,8 +25,14 @@ const logoMap = {
 const categoryMap = {
   SSC: "SSC Exam",
   DEFENCE: "Defence Exam",
-  RAILWAY: "Railway Exam",
-  BANK: "Bank Exam",
+  RRB: "Railway Exam",
+  IBPS: "Bank Exam",
+  SBI: "Bank Exam",
+  RBI: "Bank Exam",
+  NABARD: "Bank Exam",
+  UP: "Police exam",
+  Bihar: "Police exam",
+  BSSC: "BSSC exam"
 };
 
 // Function to get category based on exam serial number
