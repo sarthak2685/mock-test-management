@@ -30,31 +30,37 @@ const MockTest = () => {
         const examDomain = result.data.exam_domain || "N/A";
 
         const groupedTests = Object.entries(result.data || {})
-          .filter(([key]) => key !== "exam_domain")
-          .map(([testName, testDetails]) => {
-            const subjects = Object.keys(testDetails)
-              .filter(
-                (key) =>
-                  key !== "exam_duration" &&
-                  key !== "total_marks" &&
-                  key !== "total_questions" &&
-                  key !== "_positive_marks" &&
-                  key !== "_negative_marks"
-              )
-              .join(", ");
-
-            return {
-              test_name: testName,
-              subjects: subjects || "N/A",
-              total_questions: testDetails.total_questions || 0,
-              exam_duration: testDetails.exam_duration || "N/A",
-              total_marks: parseFloat(testDetails.total_marks) || 0,
-              postiveMarks: testDetails._positive_marks || 0,
-              negativeMarks: testDetails._negative_marks || 0,
-            };
-          });
-        setMockTestData(groupedTests);
-        return groupedTests.map((test) => test.test_name);
+        .filter(([key]) => key !== "exam_domain")
+        .map(([testName, testDetails]) => {
+          const subjects = Object.keys(testDetails)
+            .filter(
+              (key) =>
+                key !== "exam_duration" &&
+                key !== "total_marks" &&
+                key !== "total_questions" &&
+                key !== "_positive_marks" &&
+                key !== "_negative_marks"
+            )
+            const subjects_new = subjects.map((subject) => ({
+              name: subject,
+              total_questions: testDetails[subject]?.no_of_questions || 0,
+            }));
+      
+          return {
+            test_name: testName,
+            subjects: subjects || "N/A",
+            subjects_new: subjects_new.length ? subjects_new : [{ name: "N/A", total_questions: 0 }],
+            total_questions: testDetails.total_questions || 0,
+            exam_duration: testDetails.exam_duration || "N/A",
+            total_marks: parseFloat(testDetails.total_marks) || 0,
+            postiveMarks: testDetails._positive_marks || 0,
+            negativeMarks: testDetails._negative_marks || 0,
+          };
+        });
+      console.log("ss",groupedTests)
+      setMockTestData(groupedTests);
+      return groupedTests.map((test) => test.test_name);
+      
       } catch (error) {
         console.error("Error fetching mock test data:", error);
         return [];
@@ -134,20 +140,36 @@ const MockTest = () => {
     totalMarks,
     totalQuestions,
     postiveMarks,
-    negativeMarks
+    negativeMarks,
+    subjects_new
   ) => {
+    console.log("Card clicked",subjects)
     localStorage.setItem("selectedTestName", testName);
     localStorage.setItem("selectedExamDuration", examDuration);
 
     // Store distinct subjects, total marks, and total questions in localStorage
     const testDetails = {
-      subjects: subjects.split(", ").filter((subject) => subject.trim() !== ""),
+      subjects: subjects.filter((subject) => subject.trim() !== ""),
+      subjects_new: Array.isArray(subjects_new)
+        ? subjects_new.map((subj) => ({
+            name: subj.name,
+            total_questions: subj.total_questions
+          }))
+        : [],
       totalMarks,
       totalQuestions,
       postiveMarks,
       negativeMarks,
     };
+    console.log("hii",testDetails)
+    // ✅ Store in localStorage
     localStorage.setItem("selectedTestDetails", JSON.stringify(testDetails));
+//     const storedDetails = JSON.parse(localStorage.getItem("testDetails"));
+
+// console.log("Subjects and Total Questions:");
+// storedDetails.subjects.forEach((subj) => {
+//   console.log(`${subj.name}: ${subj.total_questions} questions`);
+// });
 
     console.log(
       `Test name '${testName}', Exam Duration '${examDuration}', Subjects '${subjects}', Total Marks '${totalMarks}', and Total Questions '${totalQuestions}',${postiveMarks},${negativeMarks} saved to localStorage`
@@ -201,7 +223,8 @@ const MockTest = () => {
                     test.total_marks || "0",
                     test.total_questions || "0",
                     test.postiveMarks || "0",
-                    test.negativeMarks || "0"
+                    test.negativeMarks || "0",
+                    test.subjects_new
                   )
                 }
               >
@@ -211,8 +234,8 @@ const MockTest = () => {
                       {test.test_name}
                     </h3>
                     <p className="text-gray-500 mt-2 font-semibold">
-                      <strong>Subjects:</strong> {test.subjects}
-                      <br />
+                    <strong>Subjects:</strong> {test.subjects.join(", ")}
+                    <br />
                       <span className="text-gray-500 mt-2 flex items-center font-semibold">
                         🕒 {test.exam_duration} Minutes
                       </span>

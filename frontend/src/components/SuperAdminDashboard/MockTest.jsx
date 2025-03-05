@@ -45,11 +45,12 @@ const MockTestManagement = ({ user }) => {
           { text: "", image: null }, // Option 4
         ],
         correctAnswer: "", // The correct answer for the question
-        subtopic: "", // Subtopic associated with the question
       },
     ],
     correctMark: "", // Marks for a correct answer
     negativeMark: "", // Marks to deduct for an incorrect answer
+    subtopic: "", // Subtopic associated with the question
+    language: "",
   });
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0); // Starting index for the next question
@@ -110,45 +111,50 @@ const MockTestManagement = ({ user }) => {
 
   const [selectedOptions, setSelectedOptions] = useState([]); // track selected options
 
-  const handleQuestionChange = (index, field, value, optionIndex) => {
-    const updatedQuestions = [...newTest.questions];
-
-    if (!updatedQuestions[index]) {
-      console.error(`Question at index ${index} not found`);
-      return;
-    }
-
-    if (field === "options") {
-      // Ensure options array exists
-      if (
-        !updatedQuestions[index].options ||
-        !updatedQuestions[index].options[optionIndex]
-      ) {
-        console.error(
-          `Option at index ${optionIndex} not found for question ${index}`
-        );
-        return;
+  // Handles changes for both questions & top-level subtopic
+  const handleQuestionChange = (index, field, value, optionIndex = null) => {
+    setNewTest((prevTest) => {
+      if (field === "subtopic") {
+        // Update top-level subtopic directly
+        return { ...prevTest, subtopic: value };
       }
 
-      // Update the text of the specified option
-      updatedQuestions[index].options[optionIndex].text = value;
-    } else {
-      // Update the field value
-      updatedQuestions[index][field] = value;
-    }
+      const updatedQuestions = [...prevTest.questions];
 
-    // Check if any options' text is empty or invalid
-    const anyOptionEmpty = updatedQuestions[index].options.some(
-      (option) => typeof option.text === "string" && option.text.trim() === ""
-    );
+      if (!updatedQuestions[index]) {
+        console.error(`Question at index ${index} not found`);
+        return prevTest;
+      }
 
-    // Only reset correctAnswer if there's an empty option
-    if (anyOptionEmpty) {
-      updatedQuestions[index].correctAnswer = "";
-    }
+      if (field === "options") {
+        if (
+          !updatedQuestions[index].options ||
+          !updatedQuestions[index].options[optionIndex]
+        ) {
+          console.error(
+            `Option at index ${optionIndex} not found for question ${index}`
+          );
+          return prevTest;
+        }
 
-    // Update the state with modified questions
-    setNewTest({ ...newTest, questions: updatedQuestions });
+        // Update option text
+        updatedQuestions[index].options[optionIndex].text = value;
+      } else {
+        // Update other question fields
+        updatedQuestions[index][field] = value;
+      }
+
+      // Check if any options are empty
+      const anyOptionEmpty = updatedQuestions[index].options.some(
+        (option) => typeof option.text === "string" && option.text.trim() === ""
+      );
+
+      if (anyOptionEmpty) {
+        updatedQuestions[index].correctAnswer = "";
+      }
+
+      return { ...prevTest, questions: updatedQuestions };
+    });
   };
 
   const handleImageUpload = (index, file) => {
@@ -175,31 +181,6 @@ const MockTestManagement = ({ user }) => {
     }
   };
 
-  // Function to add a new question
-  {
-    /*const addQuestion = () => {
-    setNewTest({
-      ...newTest,
-      questions: [
-        ...newTest.questions,
-        {
-          questionText: "",
-          options: [
-            { text: "", image: null }, // Option 1: Text + Image
-            { text: "", image: null }, // Option 2: Text + Image
-            { text: "", image: null }, // Option 3: Text + Image
-            { text: "", image: null }, // Option 4: Text + Image
-          ],
-          correctAnswer: "",
-          image: null,
-          subtopic: "", // Add subtopic field to the new question
-          subject: "", // Add subject field to the new question
-        },
-      ],
-    });
-  };*/
-  }
-
   const [questionText, setQuestionText] = useState("");
   const [options, setOptions] = useState(["", "", "", ""]);
   const [correctAnswer, setCorrectAnswer] = useState("");
@@ -214,6 +195,12 @@ const MockTestManagement = ({ user }) => {
     if (!newTest || !newTest.subject || !Array.isArray(newTest.questions)) {
       console.error("Subject or questions are missing in newTest.");
       return;
+    }
+    if (newTest.subject === "ALL") {
+      if (!newTest.subtopic) {
+        console.error("Subtopic is missing in newTest.");
+        return; // ✅ Return only if subtopic is missing
+      }
     }
 
     if (
@@ -247,16 +234,22 @@ const MockTestManagement = ({ user }) => {
       ...currentQuestion,
       index: currentQuestionIndex,
       questionText: currentQuestion.questionText,
-      options: currentQuestion.options,
+      options: currentQuestion.options.map((option) => ({
+        ...option,
+        text: "", // Reset the text field of each option
+      })),
       correctAnswer: currentQuestion.correctAnswer,
-      subtopic: currentQuestion.subtopic,
       image: currentQuestion.image,
     };
 
-    // Reset the file inputs for the current question's options
-    optionFileInputRefs.current.forEach((input) => {
-      if (input) input.value = null;
-    });
+    // **Reset Only Option Text Fields**
+    setOptions(["", "", "", ""]); // Clears option state
+
+    if (optionFileInputRefs.current) {
+      optionFileInputRefs.current.forEach((input) => {
+        if (input) input.value = null; // Clears file input (if any)
+      });
+    }
 
     // Prepare for the next question
     const nextQuestionIndex = currentQuestionIndex + 1;
@@ -265,9 +258,8 @@ const MockTestManagement = ({ user }) => {
       savedQuestions.push({
         index: nextQuestionIndex,
         questionText: "",
-        options: ["", "", "", ""],
+        options: ["", "", "", ""].map(() => ({ text: "" })), // Ensuring new options have empty text fields
         correctAnswer: "",
-        subtopic: "",
         image: null,
       });
     }
@@ -280,9 +272,8 @@ const MockTestManagement = ({ user }) => {
     // Update state for the next question
     const nextQuestion = savedQuestions[nextQuestionIndex] || {
       questionText: "",
-      options: ["", "", "", ""],
+      options: ["", "", "", ""].map(() => ({ text: "" })), // Reset options text for the next question
       correctAnswer: "",
-      subtopic: "",
       image: null,
     };
 
@@ -290,7 +281,6 @@ const MockTestManagement = ({ user }) => {
     setCorrectAnswer(nextQuestion.correctAnswer || "");
     setDropdownOpen(false);
     setQuestionText(nextQuestion.questionText || "");
-    setOptions(nextQuestion.options || ["", "", "", ""]);
     setSubtopic(nextQuestion.subtopic || "");
     setImage(nextQuestion.image || null);
     setText(""); // Clear the text area after saving the current question
@@ -302,23 +292,23 @@ const MockTestManagement = ({ user }) => {
     setNewTest({ ...newTest, questions: updatedQuestions });
   };
 
-  const handleAddTest = () => {
-    const allQuestionsValid = newTest.questions.every((question) => {
-      if (newTest.subject === "ALL") {
-        return question.subtopic !== "";
-      }
-      return true;
-    });
+  // const handleAddTest = () => {
+  //   const allQuestionsValid = newTest.questions.every((question) => {
+  //     if (newTest.subject === "ALL") {
+  //       return question.subtopic !== "";
+  //     }
+  //     return true;
+  //   });
 
-    if (!allQuestionsValid) {
-      alert(
-        "Please select a subtopic for each question when subject is 'ALL'."
-      );
-      return;
-    }
+  //   if (!allQuestionsValid) {
+  //     alert(
+  //       "Please select a subtopic for each question when subject is 'ALL'."
+  //     );
+  //     return;
+  //   }
 
-    setShowConfirmationModal(true); // Show modal if validation passes
-  };
+  //   setShowConfirmationModal(true); // Show modal if validation passes
+  // };
 
   const confirmSubmission = () => {
     if (mockTests) {
@@ -342,7 +332,9 @@ const MockTestManagement = ({ user }) => {
 
   const [isDropdownOpen, setDropdownOpen] = useState(false);
 
-  const isDropdownEnabled = newTest.questions[0].options.some(
+  const isDropdownEnabled = newTest.questions[
+    currentQuestionIndex
+  ]?.options.some(
     (option) => (option.text && option.text.trim() !== "") || option.image
   );
 
@@ -681,7 +673,8 @@ const MockTestManagement = ({ user }) => {
       newTest.subject &&
       newTest.correctMark !== "" &&
       newTest.negativeMark !== "" &&
-      (!newTest.domain || (newTest.domain && !newTest.chapter)); // Chapter not required if domain exists
+      (!newTest.domain || (newTest.domain && !newTest.chapter)) &&
+      (newTest.subject !== "ALL" || (newTest.subject === "ALL" && newTest.subtopic)); 
 
     setIsFormValid(isValid);
   }, [selectedOptions, newTest]);
@@ -694,14 +687,14 @@ const MockTestManagement = ({ user }) => {
       return;
     }
 
-    if (isClicked) return; // Prevent multiple clicks
+    if (isClicked) return;
     setIsClicked(true);
 
     try {
       const currentQuestion = newTest.questions[currentQuestionIndex];
       if (!currentQuestion) {
         console.error("No questions found at index:", currentQuestionIndex);
-        setIsClicked(false); // Re-enable button on error
+        setIsClicked(false);
         return;
       }
 
@@ -749,12 +742,17 @@ const MockTestManagement = ({ user }) => {
         correctAnswer = correctAnswer.slice(0, 100);
       }
 
-      const forExamSubjects =
-        newTest.subject === "ALL"
-          ? subTopic
-              .filter((sub) => sub.name === currentQuestion.subtopic)
-              .map((sub) => sub.id)
-          : newTest.selectedSubjects?.filter((id) => id !== "ALL") || [];
+      let forExamSubjects = [];
+      if (newTest.subject === "ALL") {
+        forExamSubjects = subTopic
+          .filter((sub) => sub.name === newTest.subtopic)
+          .map((sub) => sub.id);
+      } else {
+        forExamSubjects =
+          newTest.selectedSubjects?.filter((id) => id !== "ALL") || [];
+      }
+
+      console.log("forExamSubjects:", forExamSubjects);
 
       const formData = new FormData();
       formData.append("test_name", newTest.testName);
@@ -791,7 +789,7 @@ const MockTestManagement = ({ user }) => {
       }
 
       if (newTest.subject === "ALL") {
-        formData.append("subtopic", currentQuestion.subtopic);
+        formData.append("subtopic", newTest.subtopic);
       }
 
       await Promise.all(
@@ -801,7 +799,6 @@ const MockTestManagement = ({ user }) => {
 
           const optionText =
             typeof option === "string" ? option : option?.text || "";
-
           formData.append(optionTextKey, optionText);
 
           if (option?.image) {
@@ -838,37 +835,17 @@ const MockTestManagement = ({ user }) => {
       if (response.ok) {
         await response.json();
         handleSaveAndNext();
-        setIsClicked(false); // ✅ Re-enable button after successful submission
+        setIsClicked(false);
       } else {
         const errorData = await response.json();
         console.error("Failed to submit test:", errorData);
-        setIsClicked(false); // ❌ Re-enable button if submission fails
+        setIsClicked(false);
       }
     } catch (error) {
       console.error("Error while submitting test:", error);
-      setIsClicked(false); // ❌ Re-enable button on error
+      setIsClicked(false);
     }
   };
-
-  const instituteOptions = institutes.map((institute) => ({
-    value: institute,
-    label: institute,
-  }));
-
-  const domainOptions = domains.map((domain) => ({
-    value: domain,
-    label: domain,
-  }));
-
-  const subjectOptions = subjects.map((subject) => ({
-    value: subject,
-    label: subject,
-  }));
-
-  const subtopicOptions = subtopics.map((subtopic) => ({
-    value: subtopic,
-    label: subtopic,
-  }));
 
   const removeImage = (index) => {
     const updatedQuestions = newTest.questions.map((question, i) =>
@@ -970,6 +947,24 @@ const MockTestManagement = ({ user }) => {
       });
     }
   };
+
+  useEffect(() => {
+    setCurrentQuestionIndex(0); // Reset question index on language or subtopic change
+  }, [newTest.language, newTest.subtopic]);
+
+  useEffect(() => {
+    setNewTest((prevTest) => {
+      const updatedTest = { ...prevTest }; // Create a shallow copy
+      updatedTest.questions = [...prevTest.questions]; // Copy the questions array
+      updatedTest.questions[currentQuestionIndex] = {
+        ...prevTest.questions[currentQuestionIndex],
+        correctAnswer: null, // Reset correct answer
+      };
+      return updatedTest;
+    });
+
+    setDropdownOpen(false); // Close dropdown when switching questions
+  }, [currentQuestionIndex]);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -1137,9 +1132,15 @@ const MockTestManagement = ({ user }) => {
                         required
                       />
                     </div>
+                  </div>
 
+                  {/*Subject, Chapter, Sub Subject */}
+                  <div className="flex flex-wrap gap-4 w-full mt-3">
                     {/* Subject Dropdown */}
-                    <div onClick={fetchSubjects}>
+                    <div
+                      className="flex-1 min-w-[200px]"
+                      onClick={fetchSubjects}
+                    >
                       <select
                         name="subject"
                         value={newTest.subject}
@@ -1147,7 +1148,6 @@ const MockTestManagement = ({ user }) => {
                           const selectedSubjectId = e.target.value;
 
                           if (selectedSubjectId === "ALL") {
-                            // Include all subject IDs
                             setNewTest((prevTest) => ({
                               ...prevTest,
                               subject: selectedSubjectId,
@@ -1198,10 +1198,13 @@ const MockTestManagement = ({ user }) => {
                     </div>
 
                     {/* Chapter Dropdown */}
-                    <div onClick={fetchChapters}>
+                    <div
+                      className="flex-1 min-w-[200px]"
+                      onClick={fetchChapters}
+                    >
                       <select
                         name="chapter"
-                        value={newTest.chapter?.id || ""} // No default value if disabled
+                        value={newTest.chapter?.id || ""}
                         onChange={(e) => {
                           const selectedChapterId = e.target.value;
                           const selectedChapter = chapters.find(
@@ -1210,16 +1213,16 @@ const MockTestManagement = ({ user }) => {
 
                           setNewTest((prevTest) => ({
                             ...prevTest,
-                            chapter: selectedChapter || null, // Set to null if no selection
+                            chapter: selectedChapter || null,
                           }));
                         }}
-                        disabled={!!newTest.domain} // Disable when domain is selected
+                        disabled={!!newTest.domain}
                         className={`border p-2 w-full rounded-md transition duration-200 ${
                           newTest.domain
-                            ? "bg-gray-200 cursor-not-allowed focus:ring-0" // Adjust styles when disabled
+                            ? "bg-gray-200 cursor-not-allowed focus:ring-0"
                             : "focus:outline-none focus:ring focus:ring-blue-400"
                         }`}
-                        required={!newTest.domain} // Chapter is required only if domain is empty
+                        required={!newTest.domain}
                       >
                         <option value="" disabled>
                           Select Chapter
@@ -1231,58 +1234,92 @@ const MockTestManagement = ({ user }) => {
                         ))}
                       </select>
                     </div>
+
+                    {/* Subtopic Dropdown */}
+                    <div className="flex-1 min-w-[200px]">
+                      <select
+                        value={newTest.subtopic || ""}
+                        onClick={() => {
+                          if (newTest.subject === "ALL") {
+                            fetchSubtopic();
+                          }
+                        }}
+                        required={
+                          newTest.subject === "ALL" ||
+                          newTest.chapter === null
+                        }
+                        onChange={(e) => {
+                          const value = e.target.value?.trim() || "";
+                          handleQuestionChange(null, "subtopic", value);
+                        }}
+                        className={`border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 ${
+                          newTest.subject === "ALL"
+                            ? ""
+                            : "bg-gray-200 cursor-not-allowed"
+                        }`}
+                        disabled={newTest.subject !== "ALL"}
+                      >
+                        <option value="" disabled>
+                          Select Sub-Subject
+                        </option>
+                        {subTopic.map((subtopic) => (
+                          <option key={subtopic.id} value={subtopic.name}>
+                            {subtopic.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
 
                   {/* Correct Mark, Negative Mark, and Language Selection in Same Row */}
                   <div className="flex gap-4 mt-3">
                     {/* Correct Mark Input */}
-                    <div className="flex-grow">
-                      <input
-                        type="number"
-                        step="0.01" // Allows decimal inputs
-                        name="correctMark"
-                        value={newTest.correctMark}
-                        onChange={(e) => {
-                          const updatedCorrectMark =
-                            parseFloat(e.target.value) || ""; // Parse as float or empty if NaN
-                          setNewTest((prevTest) => ({
-                            ...prevTest,
-                            correctMark: updatedCorrectMark,
-                          }));
-                        }}
-                        placeholder="Correct Mark"
-                        className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
-                        required
-                      />
-                    </div>
+<div className="flex-grow">
+  <input
+    type="number"
+    step="0.01"
+    name="correctMark"
+    value={newTest.correctMark}
+    onChange={(e) => {
+      const updatedCorrectMark = e.target.value === "" ? "" : parseFloat(e.target.value);
+      setNewTest((prevTest) => ({
+        ...prevTest,
+        correctMark: isNaN(updatedCorrectMark) ? "" : updatedCorrectMark,
+      }));
+    }}
+    placeholder="Correct Mark"
+    className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
+    required
+  />
+</div>
 
-                    {/* Negative Mark Input */}
-                    <div className="flex-grow">
-                      <input
-                        type="number"
-                        step="0.01" // Allows decimal inputs
-                        name="negativeMark"
-                        value={newTest.negativeMark}
-                        onChange={(e) => {
-                          let updatedNegativeMark = e.target.value;
+{/* Negative Mark Input */}
+<div className="flex-grow">
+  <input
+    type="number"
+    step="0.01"
+    name="negativeMark"
+    value={newTest.negativeMark}
+    onChange={(e) => {
+      let updatedNegativeMark = e.target.value;
 
-                          // Ensure the value has a negative sign
-                          if (
-                            !updatedNegativeMark.startsWith("-") &&
-                            updatedNegativeMark !== ""
-                          ) {
-                            updatedNegativeMark = `-${updatedNegativeMark}`;
-                          }
-                          setNewTest((prevTest) => ({
-                            ...prevTest,
-                            negativeMark: parseFloat(updatedNegativeMark) || "", // Parse as float or empty if NaN
-                          }));
-                        }}
-                        placeholder="Negative Mark"
-                        className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
-                        required
-                      />
-                    </div>
+      // Allow "0" and ensure negative sign for other numbers
+      if (updatedNegativeMark !== "" && updatedNegativeMark !== "0" && !updatedNegativeMark.startsWith("-")) {
+        updatedNegativeMark = `-${updatedNegativeMark}`;
+      }
+
+      const parsedValue = updatedNegativeMark === "" ? "" : parseFloat(updatedNegativeMark);
+      
+      setNewTest((prevTest) => ({
+        ...prevTest,
+        negativeMark: isNaN(parsedValue) ? "" : parsedValue,
+      }));
+    }}
+    placeholder="Negative Mark"
+    className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
+    required
+  />
+</div>
 
                     {/* Select Language Dropdown with Placeholder (No Default Selection) */}
                     <div className="flex-grow">
@@ -1303,6 +1340,7 @@ const MockTestManagement = ({ user }) => {
                         </option>
                         <option value="english">English</option>
                         <option value="hindi">Hindi</option>
+                        <option value="ALL">ALL</option>
                       </select>
                     </div>
                   </div>
@@ -1348,46 +1386,6 @@ const MockTestManagement = ({ user }) => {
                           placeholder="Enter text or LaTeX expressions (use $ for inline)"
                           rows={4}
                         />
-                      </div>
-
-                      {/* Subtopic Dropdown */}
-                      <div className="flex-shrink-0 w-full sm:w-auto">
-                        <select
-                          value={
-                            newTest.questions[currentQuestionIndex]?.subtopic ||
-                            ""
-                          }
-                          onClick={() => {
-                            // Fetch subtopics only if "ALL" is selected
-                            if (newTest.subject === "ALL") {
-                              fetchSubtopic();
-                            }
-                          }}
-                          onChange={(e) => {
-                            const value = e.target.value?.trim() || ""; // Ensure value is defined and trimmed
-                            handleQuestionChange(
-                              currentQuestionIndex,
-                              "subtopic",
-                              value
-                            );
-                          }}
-                          className={`border p-1 sm:p-2 w-full sm:w-auto rounded-md focus:outline-none focus:ring focus:ring-blue-400 text-xs sm:text-base ${
-                            newTest.subject === "ALL"
-                              ? ""
-                              : "bg-gray-200 cursor-not-allowed"
-                          }`}
-                          disabled={newTest.subject !== "ALL"}
-                          // required // Added required
-                        >
-                          <option value="" disabled>
-                            Select Sub-Subject
-                          </option>
-                          {subTopic.map((subtopic) => (
-                            <option key={subtopic.id} value={subtopic.name}>
-                              {subtopic.name}
-                            </option>
-                          ))}
-                        </select>
                       </div>
                     </div>
 

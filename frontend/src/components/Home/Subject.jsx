@@ -9,13 +9,22 @@ import Reasoning from "../../assets/reasoning.png";
 import Science from "../../assets/science.png";
 import Gk from "../../assets/gk.png";
 import English from "../../assets/english.png";
+import Quantitaive from "../../assets/QUNATITATIVE.png";
+import Reasioning from "../../assets/Reasoning.jpg";
+import Awarness from "../../assets/General Awarness.jpg"
+import Hindi from "../../assets/Hindi.png"
 
 const logoMap = {
   Maths: Maths,
   Reasoning: Reasoning,
-  English: English,
+  "English Language": English,
+  "English Comprehension": English,
   Science: Science,
   "GK/GS": Gk,
+  "Quantitative Aptitude": Quantitaive,
+  "General Intelligence and Reasoning": Reasioning,
+  "General Awareness": Awarness,
+  "Hindi Language": Hindi,
 };
 
 const Subject = () => {
@@ -124,9 +133,10 @@ const Subject = () => {
                 className="w-20 h-20 object-contain rounded-full transform transition duration-300 ease-in-out hover:scale-110 hover:brightness-110"
               />
             </div>
-            <h3 className="text-2xl font-semibold text-gray-800 mb-2">
-              {subject.name}
-            </h3>
+            <h3 className="text-xl font-semibold text-gray-800 mb-2 whitespace-normal break-words max-w-full">
+  {subject.name}
+</h3>
+
             <p className="text-gray-600 mb-4">{subject.exam}</p>
           </div>
         ))}

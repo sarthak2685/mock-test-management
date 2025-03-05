@@ -144,7 +144,7 @@ const TestList = () => {
               ) : (
                 <p className="text-center text-gray-500">No exam-based tests available</p>
               )}
-
+              <hr className="w-full text-black border-black border-t-2"/>
               {/* Subject-Based Tests */}
               {Object.keys(subjectTests).length > 0 ? (
                 <div>
