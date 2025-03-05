@@ -1274,53 +1274,52 @@ const MockTestManagement = ({ user }) => {
                   {/* Correct Mark, Negative Mark, and Language Selection in Same Row */}
                   <div className="flex gap-4 mt-3">
                     {/* Correct Mark Input */}
-                    <div className="flex-grow">
-                      <input
-                        type="number"
-                        step="0.01" // Allows decimal inputs
-                        name="correctMark"
-                        value={newTest.correctMark}
-                        onChange={(e) => {
-                          const updatedCorrectMark =
-                            parseFloat(e.target.value) || ""; // Parse as float or empty if NaN
-                          setNewTest((prevTest) => ({
-                            ...prevTest,
-                            correctMark: updatedCorrectMark,
-                          }));
-                        }}
-                        placeholder="Correct Mark"
-                        className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
-                        required
-                      />
-                    </div>
+<div className="flex-grow">
+  <input
+    type="number"
+    step="0.01"
+    name="correctMark"
+    value={newTest.correctMark}
+    onChange={(e) => {
+      const updatedCorrectMark = e.target.value === "" ? "" : parseFloat(e.target.value);
+      setNewTest((prevTest) => ({
+        ...prevTest,
+        correctMark: isNaN(updatedCorrectMark) ? "" : updatedCorrectMark,
+      }));
+    }}
+    placeholder="Correct Mark"
+    className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
+    required
+  />
+</div>
 
-                    {/* Negative Mark Input */}
-                    <div className="flex-grow">
-                      <input
-                        type="number"
-                        step="0.01" // Allows decimal inputs
-                        name="negativeMark"
-                        value={newTest.negativeMark}
-                        onChange={(e) => {
-                          let updatedNegativeMark = e.target.value;
+{/* Negative Mark Input */}
+<div className="flex-grow">
+  <input
+    type="number"
+    step="0.01"
+    name="negativeMark"
+    value={newTest.negativeMark}
+    onChange={(e) => {
+      let updatedNegativeMark = e.target.value;
 
-                          // Ensure the value has a negative sign
-                          if (
-                            !updatedNegativeMark.startsWith("-") &&
-                            updatedNegativeMark !== ""
-                          ) {
-                            updatedNegativeMark = `-${updatedNegativeMark}`;
-                          }
-                          setNewTest((prevTest) => ({
-                            ...prevTest,
-                            negativeMark: parseFloat(updatedNegativeMark) || "", // Parse as float or empty if NaN
-                          }));
-                        }}
-                        placeholder="Negative Mark"
-                        className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
-                        required
-                      />
-                    </div>
+      // Allow "0" and ensure negative sign for other numbers
+      if (updatedNegativeMark !== "" && updatedNegativeMark !== "0" && !updatedNegativeMark.startsWith("-")) {
+        updatedNegativeMark = `-${updatedNegativeMark}`;
+      }
+
+      const parsedValue = updatedNegativeMark === "" ? "" : parseFloat(updatedNegativeMark);
+      
+      setNewTest((prevTest) => ({
+        ...prevTest,
+        negativeMark: isNaN(parsedValue) ? "" : parsedValue,
+      }));
+    }}
+    placeholder="Negative Mark"
+    className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
+    required
+  />
+</div>
 
                     {/* Select Language Dropdown with Placeholder (No Default Selection) */}
                     <div className="flex-grow">
