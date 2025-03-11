@@ -117,13 +117,11 @@ const StudentManagement = ({ user }) => {
   };
 
   const handleSubmitStudents = async () => {
-    // Check if the token exists
     if (!token) {
       setError("Authentication token is required.");
       return;
     }
 
-    // Check for required fields in new students
     if (
       newStudents.some(
         (student) =>
@@ -140,16 +138,15 @@ const StudentManagement = ({ user }) => {
     }
 
     try {
-      // Prepare the POST requests
       const responses = await Promise.all(
-        newStudents.map((student) => {
-          return axios.post(
+        newStudents.map((student) =>
+          axios.post(
             `${config.apiUrl}/admin-student-crud/`,
             {
               name: student.name,
               mobile_no: student.mobile_no,
-              institute_name: "none", // Placeholder; modify if necessary
-              email_id: "none", // Placeholder; modify if necessary
+              institute_name: "none",
+              email_id: "none",
               password_encoded: student.password,
             },
             {
@@ -158,27 +155,39 @@ const StudentManagement = ({ user }) => {
                 "Content-Type": "application/json",
               },
             }
-          );
-        })
+          )
+        )
       );
 
-      // Log responses for debugging
+      // Check responses and update state accordingly
+      const newStudentData = responses.map((response, index) => {
+        console.log("hey", response);
+        if (response.data.status === false) {
+          setError("Number already exists.");
+          return null;
+        } else {
+          return {
+            ...newStudents[index],
+            id: students.length + index + 1,
+            apiResponse: response.data,
+          };
+        }
+      });
 
-      // Update state with newly added students
-      const newStudentData = responses.map((response, index) => ({
-        ...newStudents[index],
-        id: students.length + index + 1, // Generate a unique ID for each new student
-        apiResponse: response.data, // Optional: Store the response from the API if needed
-      }));
+      // Filter out null values (students that failed due to duplicate numbers)
+      const validStudents = newStudentData.filter(
+        (student) => student !== null
+      );
 
-      // Update the students state
-      setStudents([...students, ...newStudentData]);
-      setNewStudents([{ name: "", username: "", password: "", mobile_no: "" }]); // Reset the input fields
-      setError(""); // Clear any existing error message
-      // Refresh the page
-      window.location.reload();
+      if (validStudents.length > 0) {
+        setStudents([...students, ...validStudents]);
+        setNewStudents([
+          { name: "", username: "", password: "", mobile_no: "" },
+        ]);
+        setError(""); // Clear errors if at least one student was added
+        alert("Students added successfully!");
+      }
     } catch (error) {
-      // Enhanced error handling
       if (error.response) {
         if (error.response.status === 404) {
           setError("Student already exists with this Number.");
@@ -197,6 +206,7 @@ const StudentManagement = ({ user }) => {
       }
     }
   };
+
   const openPasswordModal = (student) => {
     setCurrentStudent(student);
     setNewPassword("");
@@ -272,12 +282,16 @@ const StudentManagement = ({ user }) => {
   };
 
   const filteredStudents = Array.isArray(students)
-  ? students.filter((student) =>
-      (student.name?.toLowerCase() || "").includes(searchTerm.toLowerCase()) ||
-      (student.username?.toLowerCase() || "").includes(searchTerm.toLowerCase())
-    )
-  : [];
-
+    ? students.filter(
+        (student) =>
+          (student.name?.toLowerCase() || "").includes(
+            searchTerm.toLowerCase()
+          ) ||
+          (student.username?.toLowerCase() || "").includes(
+            searchTerm.toLowerCase()
+          )
+      )
+    : [];
 
   const indexOfLastStudent = currentPage * studentsPerPage;
   const indexOfFirstStudent = indexOfLastStudent - studentsPerPage;
@@ -401,27 +415,29 @@ const StudentManagement = ({ user }) => {
                       className="border p-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     <div className="w-full">
-      <input
-        type="tel"
-        placeholder="Mobile Number"
-        value={student.mobile_no}
-        onChange={(e) => {
-          const value = e.target.value;
-          if (/^\d{0,10}$/.test(value)) {
-            handleStudentChange(index, "mobile_no", value);
-          }
-        }}
-        onBlur={() => {
-          if (student.mobile_no.length !== 10) {
-            setError("Please enter a 10-digit mobile number.");
-          } else {
-            setError("");
-          }
-        }}
-        className="border p-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
-      {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
-    </div>
+                      <input
+                        type="tel"
+                        placeholder="Mobile Number"
+                        value={student.mobile_no}
+                        onChange={(e) => {
+                          const value = e.target.value;
+                          if (/^\d{0,10}$/.test(value)) {
+                            handleStudentChange(index, "mobile_no", value);
+                          }
+                        }}
+                        onBlur={() => {
+                          if (student.mobile_no.length !== 10) {
+                            setError("Please enter a 10-digit mobile number.");
+                          } else {
+                            setError("");
+                          }
+                        }}
+                        className="border p-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      {error && (
+                        <p className="text-red-500 text-sm mt-1">{error}</p>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}

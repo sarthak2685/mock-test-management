@@ -674,7 +674,8 @@ const MockTestManagement = ({ user }) => {
       newTest.correctMark !== "" &&
       newTest.negativeMark !== "" &&
       (!newTest.domain || (newTest.domain && !newTest.chapter)) &&
-      (newTest.subject !== "ALL" || (newTest.subject === "ALL" && newTest.subtopic)); 
+      (newTest.subject !== "ALL" ||
+        (newTest.subject === "ALL" && newTest.subtopic));
 
     setIsFormValid(isValid);
   }, [selectedOptions, newTest]);
@@ -1245,8 +1246,7 @@ const MockTestManagement = ({ user }) => {
                           }
                         }}
                         required={
-                          newTest.subject === "ALL" ||
-                          newTest.chapter === null
+                          newTest.subject === "ALL" || newTest.chapter === null
                         }
                         onChange={(e) => {
                           const value = e.target.value?.trim() || "";
@@ -1274,52 +1274,64 @@ const MockTestManagement = ({ user }) => {
                   {/* Correct Mark, Negative Mark, and Language Selection in Same Row */}
                   <div className="flex gap-4 mt-3">
                     {/* Correct Mark Input */}
-<div className="flex-grow">
-  <input
-    type="number"
-    step="0.01"
-    name="correctMark"
-    value={newTest.correctMark}
-    onChange={(e) => {
-      const updatedCorrectMark = e.target.value === "" ? "" : parseFloat(e.target.value);
-      setNewTest((prevTest) => ({
-        ...prevTest,
-        correctMark: isNaN(updatedCorrectMark) ? "" : updatedCorrectMark,
-      }));
-    }}
-    placeholder="Correct Mark"
-    className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
-    required
-  />
-</div>
+                    <div className="flex-grow">
+                      <input
+                        type="number"
+                        step="0.01"
+                        name="correctMark"
+                        value={newTest.correctMark}
+                        onChange={(e) => {
+                          const updatedCorrectMark =
+                            e.target.value === ""
+                              ? ""
+                              : parseFloat(e.target.value);
+                          setNewTest((prevTest) => ({
+                            ...prevTest,
+                            correctMark: isNaN(updatedCorrectMark)
+                              ? ""
+                              : updatedCorrectMark,
+                          }));
+                        }}
+                        placeholder="Correct Mark"
+                        className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
+                        required
+                      />
+                    </div>
 
-{/* Negative Mark Input */}
-<div className="flex-grow">
-  <input
-    type="number"
-    step="0.01"
-    name="negativeMark"
-    value={newTest.negativeMark}
-    onChange={(e) => {
-      let updatedNegativeMark = e.target.value;
+                    {/* Negative Mark Input */}
+                    <div className="flex-grow">
+                      <input
+                        type="number"
+                        step="0.01"
+                        name="negativeMark"
+                        value={newTest.negativeMark}
+                        onChange={(e) => {
+                          let updatedNegativeMark = e.target.value;
 
-      // Allow "0" and ensure negative sign for other numbers
-      if (updatedNegativeMark !== "" && updatedNegativeMark !== "0" && !updatedNegativeMark.startsWith("-")) {
-        updatedNegativeMark = `-${updatedNegativeMark}`;
-      }
+                          // Allow "0" and ensure negative sign for other numbers
+                          if (
+                            updatedNegativeMark !== "" &&
+                            updatedNegativeMark !== "0" &&
+                            !updatedNegativeMark.startsWith("-")
+                          ) {
+                            updatedNegativeMark = `-${updatedNegativeMark}`;
+                          }
 
-      const parsedValue = updatedNegativeMark === "" ? "" : parseFloat(updatedNegativeMark);
-      
-      setNewTest((prevTest) => ({
-        ...prevTest,
-        negativeMark: isNaN(parsedValue) ? "" : parsedValue,
-      }));
-    }}
-    placeholder="Negative Mark"
-    className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
-    required
-  />
-</div>
+                          const parsedValue =
+                            updatedNegativeMark === ""
+                              ? ""
+                              : parseFloat(updatedNegativeMark);
+
+                          setNewTest((prevTest) => ({
+                            ...prevTest,
+                            negativeMark: isNaN(parsedValue) ? "" : parsedValue,
+                          }));
+                        }}
+                        placeholder="Negative Mark"
+                        className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
+                        required
+                      />
+                    </div>
 
                     {/* Select Language Dropdown with Placeholder (No Default Selection) */}
                     <div className="flex-grow">
