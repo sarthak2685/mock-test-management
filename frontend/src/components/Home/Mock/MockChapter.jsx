@@ -215,8 +215,7 @@ const MockChapter = () => {
   }, [SubjectId]);
 
   // Debugging: Check the timerDuration and mockTestData
-  useEffect(() => {
-  }, [timerDuration, mockTestData]);
+  useEffect(() => {}, [timerDuration, mockTestData]);
 
   const [answeredQuestions, setAnsweredQuestions] = useState(
     mockTestData.map((subject) => new Array(subject.no_of_questions).fill(null)) // Initialize with null (or any default value)
@@ -363,7 +362,6 @@ const MockChapter = () => {
           ? userAnswer
           : null; // Assign image answer if it's a URL
 
-
       // Update the selected answer for the current question
       storedData[sectionName].questions = [
         ...storedData[sectionName].questions.filter(
@@ -374,13 +372,12 @@ const MockChapter = () => {
           selected_answer: selectedAnswer || null, // Assign text if present
           selected_answer_2: selectedAnswer2 || null, // Assign image if present
           student: student_id,
-          language:language,
+          language: language,
         },
       ];
 
       // Save the updated structure to localStorage
       localStorage.setItem("submittedData", JSON.stringify(storedData));
-
 
       // Move to the next question or section
       if (currentQuestionIndex < currentSection.questions.length - 1) {
@@ -690,7 +687,7 @@ const MockChapter = () => {
                         : "bg-gray-300 text-gray-700 hover:bg-gray-400"
                     }`}
                   >
-                    Next
+                    Skip & Next
                   </button>
                 </div>
                 <div className="col-span-1" />

@@ -169,11 +169,10 @@ const MobileQuizLayout = ({
   // };
   const [tabSwitchCount, setTabSwitchCount] = useState(0); // Track tab switch count
 
-
   useEffect(() => {
     const onVisibilityChange = () => {
       if (document.hidden) {
-        setTabSwitchCount(prevCount => {
+        setTabSwitchCount((prevCount) => {
           const newCount = prevCount + 1;
           // If tab has been switched more than 3 times, show the success toast
           if (newCount > 3) {
@@ -185,10 +184,10 @@ const MobileQuizLayout = ({
       }
     };
 
-    document.addEventListener('visibilitychange', onVisibilityChange);
+    document.addEventListener("visibilitychange", onVisibilityChange);
 
     return () => {
-      document.removeEventListener('visibilitychange', onVisibilityChange);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
     };
   }, []);
 
@@ -454,7 +453,6 @@ const MobileQuizLayout = ({
           )}
         </div>
 
-        
         {/* Bottom Navigation */}
         {!submitted && (
           <div className="bg-white shadow-md p-4 flex flex-col justify-center items-center gap-2 border-t border-gray-200">
@@ -469,7 +467,7 @@ const MobileQuizLayout = ({
                 onClick={handleNext}
                 className="bg-gray-300 hover:bg-gray-400 text-gray-700 font-medium rounded-md px-4 py-2 w-full md:w-auto"
               >
-                Next
+                Skip & Next
               </button>
             </div>
             <div className="bg-white hidden rounded-lg p-6 w-11/12 max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl max-h-3/4 overflow-y-auto shadow-lg">
