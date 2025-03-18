@@ -17,7 +17,7 @@ const socialLinks = [
   {
     path: "https://www.facebook.com/profile.php?id=61571569440041&mibextid=ZbWKwL",
     icon: <FaFacebookF />,
-    },
+  },
 ];
 
 const reach = [
@@ -35,7 +35,7 @@ const reach = [
   {
     display: (
       <>
-        <IoCall className="inline-block mr-2" /> +91-9430995928,7004578419 
+        <IoCall className="inline-block mr-2" /> +91-9430995928,7004578419
       </>
     ),
     path: "tel:+919430995928 ", // Correct usage of 'tel:' link
@@ -142,16 +142,21 @@ const Footer = () => {
         <br></br>
         <hr></hr>
         <div className="flex justify-between ">
-          <div className="md:text-left py-3 mt-auto items-center text-center justify-center">
-            <p
-              style={{ fontSize: "10px" }}
-              className="text-gray-600 font-semibold"
-            >
-              Developed By
-              <span className="font-semibold text-blue-500"> WebCraftix</span>
-            </p>
-          </div>
-
+          <a
+            href="https://webcrafticx.com" // Replace with the actual URL
+            target="_blank"
+            rel="noopener noreferrer"
+          >         
+           <div className="md:text-left py-3 mt-auto items-center text-center justify-center">
+              <p
+                style={{ fontSize: "10px" }}
+                className="text-gray-600 font-semibold"
+              >
+                Developed By
+                <span className="font-semibold text-blue-500"> WebCrafticX</span>
+              </p>
+            </div>
+          </a>
           {/* Copyright Section */}
           <div className="md:text-right py-3 mt-auto items-center text-center justify-center">
             <p

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useUser } from "../UserContext/UserContext";
 import { AiFillLock } from "react-icons/ai";
 import config from "../../config";
-
+import ClipLoader from "react-spinners/ClipLoader";
 import Maths from "../../assets/mathh.png";
 import Reasoning from "../../assets/reasoning.png";
 import Science from "../../assets/science.png";
@@ -13,6 +13,7 @@ import Quantitaive from "../../assets/QUNATITATIVE.png";
 import Reasioning from "../../assets/Reasoning.jpg";
 import Awarness from "../../assets/General Awarness.jpg"
 import Hindi from "../../assets/Hindi.png"
+import computer from "../../assets/computer.png";
 
 const logoMap = {
   Maths: Maths,
@@ -25,6 +26,7 @@ const logoMap = {
   "General Intelligence and Reasoning": Reasioning,
   "General Awareness": Awarness,
   "Hindi Language": Hindi,
+  "Computer Knowledge" : computer,
 };
 
 const Subject = () => {
@@ -33,6 +35,8 @@ const Subject = () => {
   const ref = useRef(null);
   const { user } = useUser();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+
 
   useEffect(() => {
     const fetchSubjects = async () => {
@@ -50,6 +54,8 @@ const Subject = () => {
         setCount(enrichedData.length - 1);
       } catch (error) {
         console.error("Error fetching subject data:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -102,6 +108,12 @@ const Subject = () => {
 
   return (
     <div ref={ref} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      {loading ? (
+        <div className="flex justify-center items-center h-96">
+          <ClipLoader size={80} color="#007bff" />
+        </div>
+      ) : (
+        <>
       <h1 className="text-5xl font-extrabold text-center text-gray-800 mb-6">
         Explore Our <span className="text-blue-600">Subjects</span>
       </h1>
@@ -141,6 +153,8 @@ const Subject = () => {
           </div>
         ))}
       </div>
+      </>
+      )}
     </div>
   );
 };
