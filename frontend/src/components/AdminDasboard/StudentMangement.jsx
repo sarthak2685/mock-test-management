@@ -13,6 +13,8 @@ import DashboardHeader from "./DashboardHeader";
 import Sidebar from "../AdminDasboard/Sidebar/SideBars"; // Importing Sidebar
 import config from "../../config";
 import axios from "axios";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const StudentManagement = ({ user }) => {
   const [students, setStudents] = useState([]);
@@ -161,7 +163,6 @@ const StudentManagement = ({ user }) => {
 
       // Check responses and update state accordingly
       const newStudentData = responses.map((response, index) => {
-        console.log("hey", response);
         if (response.data.status === false) {
           setError("Number already exists.");
           return null;
@@ -185,8 +186,16 @@ const StudentManagement = ({ user }) => {
           { name: "", username: "", password: "", mobile_no: "" },
         ]);
         setError(""); // Clear errors if at least one student was added
-        alert("Students added successfully!");
-      }
+        toast.success("Students added successfully!", {
+          position: "top-right",
+          autoClose: 3000, // Closes after 3 seconds
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+            }
     } catch (error) {
       if (error.response) {
         if (error.response.status === 404) {
@@ -234,8 +243,16 @@ const StudentManagement = ({ user }) => {
 
   const handlePasswordChange = async () => {
     if (!newPassword) {
-      alert("Please enter a new password.");
-      return;
+      toast.error("Please enter a new password.", {
+        position: "top-right",
+        autoClose: 3000, // Closes after 3 seconds
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+            return;
     }
 
     try {
@@ -266,13 +283,28 @@ const StudentManagement = ({ user }) => {
         )
       );
 
-      alert("Password updated successfully.");
-      setIsModalOpen(false);
+      toast.success("password updated successfully!", {
+        position: "top-right",
+        autoClose: 3000, // Closes after 3 seconds
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });      setIsModalOpen(false);
       window.location.reload();
     } catch (error) {
       console.error("Error updating password:", error);
-      alert("Failed to update password.");
-    }
+      toast.error("failed to update password.", {
+        position: "top-right",
+        autoClose: 3000, // Closes after 3 seconds
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });  
+      }
   };
 
   const closeModal = () => {
@@ -333,6 +365,8 @@ const StudentManagement = ({ user }) => {
   };
 
   return (
+    <>
+    <ToastContainer />
     <div className="flex flex-col min-h-screen overflow-auto">
       <div className="flex flex-row flex-grow">
         {/* Sidebar */}
@@ -522,8 +556,7 @@ const StudentManagement = ({ user }) => {
                             {student.mobile_no}
                           </td>
                           <td className="px-2 py-1 md:px-4 md:py-2 text-[9px] md:text-sm">
-                            {student.password_encoded}{" "}
-                            {/* Now visible in mobile */}
+                            {student.password_encoded || student.password}{" "}
                           </td>
                           <td className="px-2 py-1 md:px-4 md:py-2 text-center">
                             <button
@@ -658,6 +691,7 @@ const StudentManagement = ({ user }) => {
         </div>
       </div>
     </div>
+    </>
   );
 };
 
