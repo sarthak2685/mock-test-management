@@ -30,7 +30,6 @@ const ChapterMobile = ({
   const [showNavigation, setShowNavigation] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [user, setUser] = useState({ id: "Unknown User", role: "Student" });
-  
 
   // UserProfile Component
   // const UserProfile = () => {
@@ -147,7 +146,7 @@ const ChapterMobile = ({
   useEffect(() => {
     const onVisibilityChange = () => {
       if (document.hidden) {
-        setTabSwitchCount(prevCount => {
+        setTabSwitchCount((prevCount) => {
           const newCount = prevCount + 1;
           // If tab has been switched more than 3 times, show the success toast
           if (newCount > 3) {
@@ -159,10 +158,10 @@ const ChapterMobile = ({
       }
     };
 
-    document.addEventListener('visibilitychange', onVisibilityChange);
+    document.addEventListener("visibilitychange", onVisibilityChange);
 
     return () => {
-      document.removeEventListener('visibilitychange', onVisibilityChange);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
     };
   }, []);
 
@@ -402,44 +401,44 @@ const ChapterMobile = ({
               onClick={handleNext}
               className="bg-gray-300 hover:bg-gray-400 text-gray-700 font-medium rounded-md px-4 py-2 w-full md:w-auto"
             >
-              Next
+              Skip & Next
             </button>
           </div>
           <div className="bg-white rounded-lg p-6 w-11/12 hidden max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-4xl max-h-3/4 overflow-y-auto shadow-lg">
-              <h3 className="text-center text-lg font-semibold mb-4 text-gray-700 relative">
-                Sections
-                <button
-                  className="absolute top-0 right-0 text-gray-500"
-                  onClick={() => setShowNavigation(false)}
-                  aria-label="Close Navigation"
-                >
-                  <FaTimes className="w-6 h-6" />
-                </button>
-              </h3>
+            <h3 className="text-center text-lg font-semibold mb-4 text-gray-700 relative">
+              Sections
+              <button
+                className="absolute top-0 right-0 text-gray-500"
+                onClick={() => setShowNavigation(false)}
+                aria-label="Close Navigation"
+              >
+                <FaTimes className="w-6 h-6" />
+              </button>
+            </h3>
 
-              <div className="w-full hidden max-w-xs mx-auto mb-4 text-center text-gray-700 bg-white border border-gray-300 rounded-lg px-4 py-2">
-                {mockTestData[currentSectionIndex]?.test_name || "Unknown Test"}
-              </div>
-
-              <div className="flex-grow mt-4 overflow-y-auto max-h-96">
-                {currentSection && (
-                  <ChapterNavigation
-                    questions={currentSection.questions}
-                    selectedQuestionIndex={currentQuestionIndex}
-                    onSelectQuestion={(index) => {
-                      setCurrentQuestionIndex(index);
-                      setShowNavigation(false);
-                    }}
-                    onSubmit={handleSubmit}
-                    sectionName={currentSection.section}
-                    answeredQuestions={
-                      answeredQuestions[currentSectionIndex] || []
-                    }
-                    markedForReview={markedForReview[currentSectionIndex] || []}
-                  />
-                )}
-              </div>
+            <div className="w-full hidden max-w-xs mx-auto mb-4 text-center text-gray-700 bg-white border border-gray-300 rounded-lg px-4 py-2">
+              {mockTestData[currentSectionIndex]?.test_name || "Unknown Test"}
             </div>
+
+            <div className="flex-grow mt-4 overflow-y-auto max-h-96">
+              {currentSection && (
+                <ChapterNavigation
+                  questions={currentSection.questions}
+                  selectedQuestionIndex={currentQuestionIndex}
+                  onSelectQuestion={(index) => {
+                    setCurrentQuestionIndex(index);
+                    setShowNavigation(false);
+                  }}
+                  onSubmit={handleSubmit}
+                  sectionName={currentSection.section}
+                  answeredQuestions={
+                    answeredQuestions[currentSectionIndex] || []
+                  }
+                  markedForReview={markedForReview[currentSectionIndex] || []}
+                />
+              )}
+            </div>
+          </div>
           <div className="flex flex-row justify-between gap-2 w-full">
             <button
               onClick={handleMarkForReview}
@@ -457,8 +456,7 @@ const ChapterMobile = ({
           </div>
         </div>
       )}
-            <ToastContainer />
-
+      <ToastContainer />
     </div>
   );
 };

@@ -155,7 +155,6 @@ const MockDemo = () => {
                 ...new Set(groupedTests.map((test) => test.subject)),
               ];
 
-
               // Save unique subjects to localStorage
               localStorage.setItem(
                 "uniqueSubjects",
@@ -182,9 +181,7 @@ const MockDemo = () => {
   }, [SubjectId]);
 
   // Debugging: Check the timerDuration and mockTestData
-  useEffect(() => {
-
-  }, [timerDuration, mockTestData]);
+  useEffect(() => {}, [timerDuration, mockTestData]);
 
   // const [answeredQuestions, setAnsweredQuestions] = useState(
   //   quizData.map(() => [])
@@ -363,8 +360,6 @@ const MockDemo = () => {
           ? userAnswer
           : null; // Assign image answer if it's a URL
 
-
-
       // Update the selected answer for the current question
       storedData[sectionName].questions = [
         ...storedData[sectionName].questions.filter(
@@ -375,13 +370,12 @@ const MockDemo = () => {
           selected_answer: selectedAnswer, // Assign text if present
           selected_answer_2: selectedAnswer2, // Assign image if present
           student: student_id,
-          language:language,
+          language: language,
         },
       ];
 
       // Save the updated structure to localStorage
       localStorage.setItem("submittedData", JSON.stringify(storedData));
-
 
       // Move to the next question or section
       if (currentQuestionIndex < currentSection.questions.length - 1) {
@@ -415,7 +409,6 @@ const MockDemo = () => {
     (mockTestData?.length || 0) > 0 &&
     currentSectionIndex === (mockTestData?.length || 0) - 1;
 
-
   const handleSectionChange = (sectionIndex, subject) => {
     setCurrentSectionIndex(sectionIndex); // Update the active section index
     setSelectedSubject(subject); // Update the active subject
@@ -440,7 +433,6 @@ const MockDemo = () => {
   const filteredSections = mockTestData.filter((section) =>
     section.questions.some((q) => q.subject === selectedSubject)
   );
-
 
   useEffect(() => {
     // Automatically set the active subject when the section index changes
@@ -735,7 +727,7 @@ const MockDemo = () => {
                         : "bg-gray-300 text-gray-700 hover:bg-gray-400"
                     }`}
                   >
-                    Next
+                    Skip & Next
                   </button>
                 </div>
                 <div className="col-span-1" />

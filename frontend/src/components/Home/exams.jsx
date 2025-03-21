@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../UserContext/UserContext"; // Import user context
+import ClipLoader from "react-spinners/ClipLoader";
+
 
 // Import logos
 import sscLogo from "../../assets/ssc-logo.png";
@@ -48,6 +50,9 @@ const Exams = () => {
   const { user } = useUser();
   const navigate = useNavigate();
   const itemsPerPage = 8;
+  const [loading, setLoading] = useState(true);
+  const [count, setCount] = useState(1);
+
 
   // Fetch exam data on component mount
   useEffect(() => {
@@ -56,8 +61,12 @@ const Exams = () => {
         const response = await fetch(`${config.apiUrl}/exams/`);
         const data = await response.json();
         setExamData(data);
+        setCount(data.length - 1);
+
       } catch (error) {
         console.error("Error fetching exam data:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -101,15 +110,55 @@ const Exams = () => {
     }
   };
 
+  useEffect(() => {
+    const handleScroll = (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setCount(1);
+          const interval = setInterval(() => {
+            setCount((prevCount) => {
+              if (prevCount < examData.length) {
+                return prevCount + 1;
+              } else {
+                clearInterval(interval);
+                return prevCount;
+              }
+            });
+          }, 200);
+          return () => clearInterval(interval);
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(handleScroll);
+    const currentRef = ref.current;
+    if (currentRef) {
+      observer.observe(currentRef);
+    }
+
+    return () => {
+      if (currentRef) {
+        observer.unobserve(currentRef);
+      }
+    };
+  }, [ref, examData]);
+
   return (
     <div ref={ref} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-5xl font-extrabold text-black mb-4 text-center">
-        Our Extensive List Of <span className="text-[#007bff]">Exams</span>
-      </h1>
-      <h6 className="text-[20px] text-gray-600 mb-8 text-center">
-        <span className="text-[#007bff] font-bold">{examData.length}+</span>{" "}
-        exams for your preparation
-      </h6>
+       {loading ? (
+        <div className="flex justify-center items-center h-96">
+          <ClipLoader size={80} color="#007bff" />
+        </div>
+      ) : (
+        <>
+          <h1 className="text-5xl font-extrabold text-black mb-4 text-center">
+            Our Extensive List Of <span className="text-[#007bff]">Exams</span>
+          </h1>
+          <h6 className="text-[20px] text-gray-600 mb-8 text-center">
+          <span className="text-blue-500 font-bold">{count}+</span>
+            exams for your preparation
+          </h6>
+
 
       <div className="relative">
         {/* Pagination controls for desktop */}
@@ -175,6 +224,8 @@ const Exams = () => {
           &gt;
         </button>
       </div>
+      </>
+    )}
     </div>
   );
 };
