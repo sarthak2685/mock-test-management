@@ -86,6 +86,11 @@ const ChapterScore = () => {
     navigate("/");
   };
 
+  window.history.pushState(null, null, window.location.href);
+  window.addEventListener("popstate", function () {
+      window.history.pushState(null, null, window.location.href);
+  });
+  
   const reportRef = useRef();
   const handlePDFDownload = async () => {
     const apiUrl = `${config.apiUrl}/analysis-report/?student_id=${studentId}&exam_id=${examId}&test_name=${testName}`;

@@ -81,6 +81,14 @@ const Score = () => {
     localStorage.removeItem("selectedSubjectId"); 
     navigate("/");
   };
+
+  window.history.pushState(null, null, window.location.href);
+  window.addEventListener("popstate", function () {
+      window.history.pushState(null, null, window.location.href);
+  });
+  
+
+
   const sectionData =
     analysisData?.data_2?.subject_summary &&
     Object.keys(analysisData.data_2.subject_summary).map((subject) => {
