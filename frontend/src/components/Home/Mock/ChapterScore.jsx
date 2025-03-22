@@ -87,7 +87,7 @@ const ChapterScore = () => {
 
     window.history.pushState(null, null, window.location.href);
     window.addEventListener("popstate", function () {
-        window.history.pushState(null, null, window.location.href);
+        window.location.href = "/"; // Redirect to Home Page
     });
 
     const reportRef = useRef();
