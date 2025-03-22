@@ -582,19 +582,19 @@ const MockDemo = () => {
                           ))}
 
                           {/* Additional question (question_1), skipping the default value */}
-                          {currentQuestion?.question_1 &&
-                          currentQuestion.question_1 !== defaultFileValue ? (
-                            currentQuestion.question_1.startsWith(
+                          {currentQuestion?.question2 &&
+                          currentQuestion.question2 !== defaultFileValue ? (
+                            currentQuestion.question2.startsWith(
                               "/media/uploads/"
                             ) ? (
                               <img
-                                src={`${config.apiUrl}${currentQuestion.question_1}`}
+                                src={`${config.apiUrl}${currentQuestion.question2}`}
                                 alt="Additional question"
                                 className="max-w-full max-h-24 object-contain mt-4"
                               />
                             ) : (
                               <p className="mt-2">
-                                {currentQuestion.question_1}
+                                {currentQuestion.question2}
                               </p>
                             )
                           ) : null}
