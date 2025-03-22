@@ -84,8 +84,9 @@ const Score = () => {
 
     window.history.pushState(null, null, window.location.href);
     window.addEventListener("popstate", function () {
-        window.history.pushState(null, null, window.location.href);
+        window.location.href = "/"; // Redirect to Home Page
     });
+    
 
     const sectionData =
         analysisData?.data_2?.subject_summary &&

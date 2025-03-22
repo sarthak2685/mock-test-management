@@ -31,6 +31,7 @@ const ChapterTestInstructions = () => {
   const [noOfQuestions, setNoOfQuestions] = useState("");
   const [positiveMarks, setPositiveMarks] = useState("");
   const [negativeMarks, setNegativeMarks] = useState("");
+  const [totalMarks, setTotalMarks] = useState("");
 
   useEffect(() => {
     // Get items from localStorage
@@ -39,6 +40,7 @@ const ChapterTestInstructions = () => {
     const questions = localStorage.getItem("noOfQuestions");
     const positiveMarks = localStorage.getItem("positiveMarks");
     const negativeMarks = localStorage.getItem("negativeMarks");
+    const totalMarks = questions * positiveMarks;
 
     // Set them in state
     setSelectedChapter(chapter || "");
@@ -46,6 +48,7 @@ const ChapterTestInstructions = () => {
     setNoOfQuestions(questions || "");
     setPositiveMarks(positiveMarks || 0);
     setNegativeMarks(negativeMarks || 0);
+    setTotalMarks(totalMarks || 0);
   }, []);
 
   // const handleOptionalSubjectChange = (e) => {
@@ -241,7 +244,7 @@ const ChapterTestInstructions = () => {
                       {noOfQuestions}
                     </td>
                     <td className="px-2 sm:px-4 py-2 border border-gray-300">
-                      {testDuration}
+                      {totalMarks}
                     </td>
                     <td className="px-2 sm:px-4 py-2 border border-gray-300">
                       {testDuration} min
