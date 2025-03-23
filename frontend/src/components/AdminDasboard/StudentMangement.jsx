@@ -13,7 +13,7 @@ import DashboardHeader from "./DashboardHeader";
 import Sidebar from "../AdminDasboard/Sidebar/SideBars"; // Importing Sidebar
 import config from "../../config";
 import axios from "axios";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const StudentManagement = ({ user }) => {
@@ -72,7 +72,6 @@ const StudentManagement = ({ user }) => {
 
         const data = await response.json();
 
-        // Ensure the data is an array before setting it to state
         if (Array.isArray(data.data)) {
           setStudents(data.data);
         } else {
@@ -82,14 +81,13 @@ const StudentManagement = ({ user }) => {
       } catch (error) {
         console.error("Error fetching students:", error);
         setError("Failed to fetch students.");
-        setStudents([]); // Ensure students is reset to an empty array on error
+        setStudents([]);
       }
     };
 
     fetchStudents();
   }, []);
 
-  // Handle student form input changes
   const handleStudentChange = (index, field, value) => {
     const updatedStudents = [...newStudents];
     updatedStudents[index][field] = value;
@@ -161,7 +159,6 @@ const StudentManagement = ({ user }) => {
         )
       );
 
-      // Check responses and update state accordingly
       const newStudentData = responses.map((response, index) => {
         if (response.data.status === false) {
           setError("Number already exists.");
@@ -352,13 +349,11 @@ const StudentManagement = ({ user }) => {
           (student) =>
             `${student.name},${student.password_encoded},${student.mobile_no}`
         )
-        .join("\n"); // Include mobile_no in CSV
-
+        .join("\n"); 
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
 
-    // Use the institute_name as part of the file name
     link.setAttribute("download", `${instituteName} student list.csv`);
     document.body.appendChild(link);
     link.click();
@@ -366,7 +361,6 @@ const StudentManagement = ({ user }) => {
 
   return (
     <>
-    <ToastContainer />
     <div className="flex flex-col min-h-screen overflow-auto">
       <div className="flex flex-row flex-grow">
         {/* Sidebar */}
