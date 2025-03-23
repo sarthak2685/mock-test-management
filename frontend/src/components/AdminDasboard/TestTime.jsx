@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import Select from "react-select";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import config from "../../config";
 import DashboardHeader from "./DashboardHeader";
@@ -132,7 +132,6 @@ const TestTime = () => {
 
   return (
     <div className="flex flex-col min-h-screen overflow-auto bg-gray-50">
-      <ToastContainer position="top-right" autoClose={3000} />
       <div className="flex flex-row flex-grow">
         <Sidebar
           isCollapsed={isCollapsed}

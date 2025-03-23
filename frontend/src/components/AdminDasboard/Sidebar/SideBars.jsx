@@ -5,7 +5,7 @@ import { HomeIcon, ArrowLeftOnRectangleIcon } from "@heroicons/react/24/solid";
 import { FaTimes, FaFileAlt } from "react-icons/fa";
 import { HiOutlineBell, HiClock } from "react-icons/hi";
 import { FiCalendar } from "react-icons/fi";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const Sidebar = ({ isCollapsed, toggleSidebar }) => {
@@ -26,7 +26,6 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
 
   return (
     <>
-      <ToastContainer />
       <aside
         className={`bg-[#007bff] text-white fixed top-0 left-0 w-64 h-screen p-4 flex flex-col transition-transform duration-300 z-50 ${
           isCollapsed ? "-translate-x-full" : "translate-x-0"

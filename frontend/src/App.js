@@ -56,7 +56,9 @@ import TestDetail from "./components/AdminDasboard/TestDetail.jsx";
 import TestList from "./components/SuperAdminDashboard/TestList.jsx";
 import { HelmetProvider } from "react-helmet-async";
 import NotFound from "./components/NotFound.jsx";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 
 function ProtectedRoute({ element, allowedRoles }) {
@@ -86,6 +88,7 @@ function ProtectedRoute({ element, allowedRoles }) {
 function App() {
   const location = useLocation();
 
+
   const userRole = localStorage.getItem("userRole");
   
 
@@ -100,6 +103,7 @@ function App() {
     <UserProvider>
       <div className="App">
         <ScrollToTop /> {/* Scroll to top on route change */}
+        <ToastContainer position="top-right" autoClose={3000}  /> 
         {/* Conditional Navbar and Footer */}
         {isNavbarFooterVisible && <Navbar />}
         <Routes>

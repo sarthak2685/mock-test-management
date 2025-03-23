@@ -3,7 +3,7 @@ import Sidebar from "./Sidebar/Sidebarr";
 import DashboardHeader from "./DashboardHeaders";
 import config from "../../config";
 import AvatarSelector from "../Avatar"; // Import your AvatarSelector
-import { toast, ToastContainer } from "react-toastify"; // Import toast from react-toastify
+import { toast } from "react-toastify"; // Import toast from react-toastify
 import "react-toastify/dist/ReactToastify.css";
 
 const Profile = () => {
@@ -149,7 +149,6 @@ const Profile = () => {
 
   return (
     <>
-      <ToastContainer />
       <div className="flex flex-col min-h-screen bg-gray-50">
         <Sidebar
           isCollapsed={isCollapsed}

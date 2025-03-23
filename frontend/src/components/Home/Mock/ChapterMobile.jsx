@@ -5,7 +5,7 @@ import Timer from "./Timer";
 import config from "../../../config";
 import UserProfile from "../Mock/UserProfile";
 import { StaticMathField } from "react-mathquill";
-import { toast, ToastContainer } from "react-toastify";
+import { toast} from "react-toastify";
 
 const ChapterMobile = ({
   currentSectionIndex,
@@ -456,7 +456,6 @@ const ChapterMobile = ({
           </div>
         </div>
       )}
-      <ToastContainer />
     </div>
   );
 };

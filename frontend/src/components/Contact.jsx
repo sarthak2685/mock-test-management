@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ToastContainer, toast } from "react-toastify";
+import { toast } from "react-toastify";
 import config from "../config";
 import "react-toastify/dist/ReactToastify.css";
 import { Helmet } from "react-helmet-async";
@@ -193,8 +193,6 @@ const ContactForm = () => {
         </form>
       </div>
 
-      {/* ToastContainer to display toasts */}
-      <ToastContainer />
     </div>
   );
 };
