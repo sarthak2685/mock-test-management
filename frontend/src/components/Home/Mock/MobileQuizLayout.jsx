@@ -8,7 +8,7 @@ import { StaticMathField } from "react-mathquill";
 
 import UserProfile from "../Mock/UserProfile";
 import config from "../../../config";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 
 const MobileQuizLayout = ({
   currentSectionIndex,
@@ -561,7 +561,6 @@ const MobileQuizLayout = ({
           </div>
         )}
       </div>
-      <ToastContainer />
     </div>
   );
 };

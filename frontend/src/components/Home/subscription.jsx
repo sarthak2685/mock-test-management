@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 function Subscription() {
   const plans = [
     {
-      id: "2f7ad885-0249-4c1e-9c3f-c7cfef31ca31", // Basic Plan ID
+      id: "38da1dce-e1f6-46c3-98ca-8851299b9a0d", // Basic Plan ID
       name: "Basic Plan",
       price: "₹1",
       description: "Ideal for institutes with up to 50 students per month.",
@@ -26,7 +26,7 @@ function Subscription() {
       ],
     },
     {
-      id: "77342a51-81c2-4689-b856-de980fbf41e3", // Standard Plan ID
+      id: "1dc81c46-980d-4777-aba0-6a6a76ce9a03", // Standard Plan ID
       name: "Standard Plan",
       price: "₹1",
       description: "Perfect for institutes with up to 80 students per month.",

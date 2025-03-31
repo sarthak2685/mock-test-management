@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { RiInformation2Line } from "react-icons/ri";
 import Timer from "../Mock/Timer"; // Assuming Timer is a separate component
 import config from "../../../config";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const InstructionsModal = ({ isVisible, onClose }) => {
@@ -493,14 +493,6 @@ const ChapterNavigation = ({
 
   return (
     <>
-      <ToastContainer
-        position="top-center"
-        autoClose={3000}
-        hideProgressBar={false}
-        closeOnClick
-        pauseOnHover
-        draggable
-      />{" "}
       <div className="bg-white p-7 rounded-lg shadow-lg">
         {/* Header Section */}
         <div className="mb-8 flex justify-between items-center">
