@@ -28,11 +28,11 @@ function Subscription() {
     {
       id: "1dc81c46-980d-4777-aba0-6a6a76ce9a03", // Standard Plan ID
       name: "Standard Plan",
-      price: "₹1",
-      description: "Perfect for institutes with up to 80 students per month.",
+      price: "₹2",
+      description: "Perfect for institutes with up to 200 students per month.",
       features: [
         {
-          text: "Mock tests accessible for up to 80 students",
+          text: "Mock tests accessible for up to 200 students",
           available: true,
         },
         { text: "Full length Mock Test 10+", available: true },
