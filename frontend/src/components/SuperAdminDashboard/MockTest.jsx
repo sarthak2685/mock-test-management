@@ -991,12 +991,12 @@ const MockTestManagement = ({ user }) => {
               <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-left">
                 Test Management
               </h1>
-              {/* <Link to="/view">
+              <Link to="/view">
                 <FaEye
                   className="cursor-pointer text-gray-600 hover:text-blue-500 transition-colors duration-300"
                   size={20} // Adjusted icon size for mobile
                 />
-              </Link> */}
+              </Link>
             </div>
 
             <form>
@@ -1626,13 +1626,13 @@ const MockTestManagement = ({ user }) => {
                       Save and Next
                     </button>
                   </div>
-                  {/* <button
+                  <button
                     type="button"
                     onClick={handleAddTest} // Ensure this function does not cause a reload
                     className="bg-green-500 text-white p-2 rounded-md w-full sm:w-auto mt-2 sm:mt-0 text-xs sm:text-base"
                   >
                     Submit Test
-                  </button> */}
+                  </button>
                   {/* Confirmation Modal */}
                   {showConfirmationModal && (
                     <div className="fixed inset-0 flex items-center justify-center bg-gray-700 bg-opacity-50 sm:bg-opacity-75">
