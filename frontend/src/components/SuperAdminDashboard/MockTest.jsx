@@ -292,23 +292,23 @@ const MockTestManagement = ({ user }) => {
     setNewTest({ ...newTest, questions: updatedQuestions });
   };
 
-  // const handleAddTest = () => {
-  //   const allQuestionsValid = newTest.questions.every((question) => {
-  //     if (newTest.subject === "ALL") {
-  //       return question.subtopic !== "";
-  //     }
-  //     return true;
-  //   });
+  const handleAddTest = () => {
+    const allQuestionsValid = newTest.questions.every((question) => {
+      if (newTest.subject === "ALL") {
+        return question.subtopic !== "";
+      }
+      return true;
+    });
 
-  //   if (!allQuestionsValid) {
-  //     alert(
-  //       "Please select a subtopic for each question when subject is 'ALL'."
-  //     );
-  //     return;
-  //   }
+    if (!allQuestionsValid) {
+      alert(
+        "Please select a subtopic for each question when subject is 'ALL'."
+      );
+      return;
+    }
 
-  //   setShowConfirmationModal(true); // Show modal if validation passes
-  // };
+    setShowConfirmationModal(true); // Show modal if validation passes
+  };
 
   const confirmSubmission = () => {
     if (mockTests) {
