@@ -53,6 +53,7 @@ const ChapterScore = () => {
                 const data = await response.json();
                 setExamMarks(data);
                 setAnalysisData(data.data);
+                console.log("gautam",data.data)
                 setSectionsData(data.average_marks);
                 setLeaderboardData(data.leaderboard || []);
             } catch (err) {
@@ -268,17 +269,13 @@ const ChapterScore = () => {
                                             const subject = Object.keys(
                                                 analysisData || {}
                                             )[0];
-                                            const chapter = Object.keys(
-                                                analysisData?.[subject] || {}
-                                            ).find((key) =>
-                                                key.startsWith("Chapter")
-                                            );
-                                            return (
-                                                analysisData?.[subject]?.[
-                                                    chapter
-                                                ]?.obtained_marks || "0"
-                                            );
-                                        })()}{" "}
+                                            const chapter = Object.keys(analysisData?.[subject] || {}).find(
+                                                (key) => analysisData?.[subject]?.[key]?.hasOwnProperty("obtained_marks")
+                                              );
+                                              return (
+                                                analysisData?.[subject]?.[chapter]?.obtained_marks?.toString() || "0"
+                                              );
+                                            })()}{" "}
                                     </p>
                                     <p className="text-xs md:text-sm lg:text-lg mt-1 md:mt-2 font-medium">
                                         Candidate's Mark
@@ -361,25 +358,20 @@ const ChapterScore = () => {
                                             const subject = Object.keys(
                                                 analysisData || {}
                                             )[0];
-                                            const chapter = Object.keys(
-                                                analysisData?.[subject] || {}
-                                            ).find((key) =>
-                                                key.startsWith("Chapter")
-                                            );
-
-                                            // Retrieve chapter data and question statistics
-                                            const chapterData =
-                                                analysisData?.[subject]?.[
-                                                    chapter
-                                                ] || {};
-                                            const questionStats =
-                                                chapterData?.question_stats ||
-                                                {};
-                                            const {
+                                            const chapter = Object.keys(analysisData?.[subject] || {}).find(
+                                                (key) => analysisData?.[subject]?.[key]?.hasOwnProperty("question_stats")
+                                              );
+                                              
+                                              // Retrieve chapter data and question statistics
+                                              const chapterData = analysisData?.[subject]?.[chapter] || {};
+                                              const questionStats = chapterData?.question_stats || {};
+                                              
+                                              const {
                                                 correct_answers,
                                                 wrong_answers,
                                                 unattempted,
-                                            } = questionStats;
+                                              } = questionStats;
+                                              
 
                                             // Render the table row if data is available
                                             return (
@@ -416,22 +408,26 @@ const ChapterScore = () => {
                                 </p>
                                 <div className="flex flex-wrap justify-between gap-4">
                                     {(() => {
-                                        const subject = Object.keys(
-                                            sectionData || {}
-                                        )[0];
-                                        const chapter = Object.keys(
-                                            sectionData?.[subject] || {}
-                                        ).find((key) =>
-                                            key.startsWith("Chapter")
-                                        );
-                                        const subj = Object.keys(
-                                            analysisData || {}
-                                        )[0];
-                                        const chap = Object.keys(
-                                            analysisData?.[subject] || {}
-                                        ).find((key) =>
-                                            key.startsWith("Chapter")
-                                        );
+                                        // Get the first subject from sectionData and analysisData
+const subject = Object.keys(sectionData || {})[0];
+const subj = Object.keys(analysisData || {})[0];
+
+// Dynamically find the first valid chapter/section under subject in sectionData
+const chapter = Object.keys(sectionData?.[subject] || {}).find(
+  (key) =>
+    typeof sectionData?.[subject]?.[key] === "object" &&
+    sectionData?.[subject]?.[key] !== null
+);
+
+// Dynamically find the first valid chapter/section under subject in analysisData
+const chap = Object.keys(analysisData?.[subj] || {}).find(
+  (key) =>
+    typeof analysisData?.[subj]?.[key] === "object" &&
+    analysisData?.[subj]?.[key] !== null &&
+    (analysisData?.[subj]?.[key]?.hasOwnProperty("obtained_marks") ||
+     analysisData?.[subj]?.[key]?.hasOwnProperty("question_stats"))
+);
+
                                         return (
                                             <div className="w-full sm:w-1/2 lg:w-1/3 bg-white rounded-lg p-4 shadow-md hover:shadow-lg transition duration-300">
                                                 <h5 className="text-sm md:text-lg font-semibold text-indigo-600 mb-2">
