@@ -17,8 +17,8 @@ import computer from "../../assets/computer.png";
 
 const logoMap = {
   Maths: Maths,
-  Reasoning: Reasoning,
-  "English Language": English,
+  reasoning: Reasoning,
+  "English": English,
   "English Comprehension": English,
   Science: Science,
   "GK/GS": Gk,
