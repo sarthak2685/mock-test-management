@@ -991,12 +991,12 @@ const MockTestManagement = ({ user }) => {
               <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-left">
                 Test Management
               </h1>
-              <Link to="/view">
+              {/* <Link to="/view">
                 <FaEye
                   className="cursor-pointer text-gray-600 hover:text-blue-500 transition-colors duration-300"
                   size={20} // Adjusted icon size for mobile
                 />
-              </Link>
+              </Link> */}
             </div>
 
             <form>
@@ -1064,33 +1064,39 @@ const MockTestManagement = ({ user }) => {
                       />
                     </div>
 
-                    {/* Domain Dropdown */}
-                    <div className="flex-grow" onClick={fetchDomains}>
-                      <select
-                        name="domain"
-                        value={newTest.domain || ""} // Use empty string when no value is selected
-                        onChange={(e) => {
-                          const selectedDomainId = e.target.value;
+{/* Domain Dropdown */}
+<div className="flex-grow" onClick={fetchDomains}>
+  <select
+    name="domain"
+    value={newTest.domain || ""}
+    onChange={(e) => {
+      const selectedDomainId = e.target.value;
 
-                          setNewTest((prevTest) => ({
-                            ...prevTest,
-                            domain: selectedDomainId, // Store domain ID directly
-                            chapter: null, // Reset chapter selection when domain changes
-                          }));
-                        }}
-                        className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
-                      >
-                        <option value="" disabled>
-                          Select Domain
-                        </option>
-                        {domains.map((domain) => (
-                          <option key={domain.id} value={domain.id}>
-                            {domain.name}{" "}
-                            {/* Display the name, but send the ID */}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+      setNewTest((prevTest) => ({
+        ...prevTest,
+        domain: selectedDomainId,
+        chapter: null, // Reset chapter if domain is changed
+      }));
+    }}
+    disabled={!!newTest.chapter?.id || !!newTest.subject} // Disable if chapter or subject is selected
+    className={`border p-2 w-full rounded-md transition duration-200 ${
+      newTest.chapter?.id || newTest.subject
+        ? "bg-gray-200 cursor-not-allowed focus:ring-0"
+        : "focus:outline-none focus:ring focus:ring-blue-400"
+    }`}
+  >
+    <option value="" disabled>
+      Select Domain
+    </option>
+    {domains.map((domain) => (
+      <option key={domain.id} value={domain.id}>
+        {domain.name}
+      </option>
+    ))}
+  </select>
+</div>
+
+
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
@@ -1626,13 +1632,13 @@ const MockTestManagement = ({ user }) => {
                       Save and Next
                     </button>
                   </div>
-                  <button
+                  {/* <button
                     type="button"
                     onClick={handleAddTest} // Ensure this function does not cause a reload
                     className="bg-green-500 text-white p-2 rounded-md w-full sm:w-auto mt-2 sm:mt-0 text-xs sm:text-base"
                   >
                     Submit Test
-                  </button>
+                  </button> */}
                   {/* Confirmation Modal */}
                   {showConfirmationModal && (
                     <div className="fixed inset-0 flex items-center justify-center bg-gray-700 bg-opacity-50 sm:bg-opacity-75">
