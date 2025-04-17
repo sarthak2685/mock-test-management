@@ -49,7 +49,7 @@ import ScrollToTop from "./components/ScrollToTop.jsx";
 import RazorpayPayment from "./components/RazorpayPayment.jsx";
 import NoticeOwner from "./components/SuperAdminDashboard/NoticeOwner.jsx";
 import NoticeAdmin from "./components/AdminDasboard/NoticeAdmin.jsx";
-
+import ChapterView from "./components/SuperAdminDashboard/ChapterView.jsx";
 import Announcement from "./components/AdminDasboard/Announcement.jsx";
 import TestTime from "./components/AdminDasboard/TestTime.jsx";
 import TestDetail from "./components/AdminDasboard/TestDetail.jsx";
@@ -59,7 +59,6 @@ import NotFound from "./components/NotFound.jsx";
 import { useEffect, useState } from "react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
 
 function ProtectedRoute({ element, allowedRoles }) {
   const navigate = useNavigate();
@@ -81,16 +80,10 @@ function ProtectedRoute({ element, allowedRoles }) {
   return element;
 }
 
-
-
-
-
 function App() {
   const location = useLocation();
 
-
   const userRole = localStorage.getItem("userRole");
-  
 
   const isNavbarFooterVisible =
     userRole !== "owner" &&
@@ -103,15 +96,36 @@ function App() {
     <UserProvider>
       <div className="App">
         <ScrollToTop /> {/* Scroll to top on route change */}
-        <ToastContainer position="top-right" autoClose={3000}  /> 
+        <ToastContainer position="top-right" autoClose={3000} />
         {/* Conditional Navbar and Footer */}
         {isNavbarFooterVisible && <Navbar />}
         <Routes>
-          <Route path="/" element={<ProtectedRoute element={<Home />} allowedRoles={["student"]} />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute element={<Home />} allowedRoles={["student"]} />
+            }
+          />
           <Route path="/login" element={<Login />} />
           <Route path="/contact" element={<ContactPage />} />
-          <Route path="/admin" element={<ProtectedRoute element={<Dashboard />} allowedRoles={["admin"]} />} />
-          <Route path="/super-admin"  element={<ProtectedRoute element={<SuperAdminDashboard />} allowedRoles={["owner"]} />} />
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute
+                element={<Dashboard />}
+                allowedRoles={["admin"]}
+              />
+            }
+          />
+          <Route
+            path="/super-admin"
+            element={
+              <ProtectedRoute
+                element={<SuperAdminDashboard />}
+                allowedRoles={["owner"]}
+              />
+            }
+          />
           <Route path="/students" element={<StudentManagement />} />
           <Route path="/create-test" element={<MockTestManagement />} />
           <Route path="/performance" element={<ChartComponent />} />
@@ -137,6 +151,7 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/help" element={<Help />} />
           <Route path="/view" element={<View />} />
+          <Route path="/chapter-view" element={<ChapterView />} />
           <Route path="/chapters/:subjectName" element={<Chapters />} />
           <Route path="/mock-test" element={<MockTest />} />
           <Route path="/score" element={<ScoreCard />} />
@@ -167,8 +182,6 @@ function App() {
           <Route path="/announcement" element={<Announcement />} />
           <Route path="/test-list" element={<TestList />} />
           <Route path="*" element={<NotFound />} />
-
-
         </Routes>
         {isNavbarFooterVisible && <Footer />}
       </div>
@@ -178,11 +191,11 @@ function App() {
 
 function AppWrapper() {
   return (
-    <HelmetProvider> 
-    <Router>
-      <App />
-    </Router>
-  </HelmetProvider>
+    <HelmetProvider>
+      <Router>
+        <App />
+      </Router>
+    </HelmetProvider>
   );
 }
 

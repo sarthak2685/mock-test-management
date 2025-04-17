@@ -1,18 +1,18 @@
 import React from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import { FiUsers, FiBarChart } from "react-icons/fi";
 import { HomeIcon, ArrowLeftOnRectangleIcon } from "@heroicons/react/24/solid";
-import { FaTimes } from "react-icons/fa"; // Importing Font Awesome close icon
-import { HiUserGroup } from "react-icons/hi"; // Importing icons for other sections
-import { HiOutlineBell } from "react-icons/hi"; // Notice Board icon
-import { HiOutlineClipboardList } from "react-icons/hi";
+import { FaTimes } from "react-icons/fa";
+import { HiUserGroup, HiOutlineBell, HiOutlineClipboardList } from "react-icons/hi";
 
 const Sidebar = ({ isCollapsed, toggleSidebar }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const isActive = (path) => location.pathname.startsWith(path);
 
   const handleLogout = () => {
     localStorage.removeItem("user");
-    // Navigate to the login page
     navigate("/login");
   };
 
@@ -25,17 +25,14 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
     >
       <div className="flex items-center justify-between p-2 rounded-md mb-7">
         <span className="text-2xl font-bold text-white">Mock Period</span>
-
-        {/* Show close button only in mobile view */}
         <button
           onClick={toggleSidebar}
           className={`text-white ${isCollapsed ? "hidden" : "block"} md:hidden`}
         >
-          <FaTimes className="w-6 h-6" /> {/* Close icon */}
+          <FaTimes className="w-6 h-6" />
         </button>
       </div>
 
-      {/* Navigation links */}
       <nav className="flex-grow">
         <NavLink
           to="/super-admin"
@@ -61,7 +58,6 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
           <span className="block">{isCollapsed ? "" : "Admin Management"}</span>
         </NavLink>
 
-        {/* Admins List Section */}
         <NavLink
           to="/admins-list"
           className={({ isActive }) =>
@@ -86,9 +82,6 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
           <span className="block">{isCollapsed ? "" : "Create Test"}</span>
         </NavLink>
 
-        {/* Test Time Section */}
-
-        {/* Notice Board Section */}
         <NavLink
           to="/notice-owner"
           className={({ isActive }) =>
@@ -97,26 +90,24 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
             }`
           }
         >
-          <HiOutlineBell className="mr-2" /> {/* Notice Board icon */}
+          <HiOutlineBell className="mr-2" />
           <span className="block">{isCollapsed ? "" : "Notice Board"}</span>
         </NavLink>
+
+        {/* ✅ Updated Test List link */}
         <NavLink
           to="/test-list"
-          className={({ isActive }) =>
-            `flex items-center py-2 px-4 mt-4 rounded hover:bg-blue-700 ${
-              isActive ? "bg-blue-700" : ""
-            }`
-          }
+          className={`flex items-center py-2 px-4 mt-4 rounded hover:bg-blue-700 ${
+            isActive("/test-list") || isActive("/view") || isActive("/chapter-view") ? "bg-blue-700" : ""
+          }`}
         >
-          <HiOutlineClipboardList className="mr-2" /> {/* Notice Board icon */}
+          <HiOutlineClipboardList className="mr-2" />
           <span className="block">{isCollapsed ? "" : "Test List"}</span>
         </NavLink>
 
-        {/* Separator Line */}
         <hr className="my-4 border-t border-white opacity-50" />
       </nav>
 
-      {/* Log out button */}
       <div className="mt-auto mb-20 md:mb-0">
         <button
           onClick={handleLogout}
