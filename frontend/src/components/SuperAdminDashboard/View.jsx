@@ -971,7 +971,7 @@ const View = () => {
                                     {question.correctAnswer}
                                   </span>
                                 </div>
-                                <div>
+{/*                                 <div>
                                   <strong>Marks:</strong>
                                   <span className="ml-1 md:ml-2">
                                     +
@@ -981,7 +981,7 @@ const View = () => {
                                     {question.negativeMarks ||
                                       editedDetails.negativeMarks}
                                   </span>
-                                </div>
+                                </div> */}
                               </div>
                               {question.correctAnswerImage && (
                                 <div className="relative mt-2">
