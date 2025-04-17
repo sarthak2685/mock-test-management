@@ -105,7 +105,7 @@ const ChapterTestInstructions = () => {
           // Store formatted start time when transitioning to step 2
           const startTimeFormatted = formatDateTime(new Date());
           localStorage.setItem("start_time", startTimeFormatted);
-          navigate("/chapter-exam"); // Navigate to the exam page
+          navigate("/chapter-exam",{ replace: true }); 
         })
         .catch((err) => {
           toast.error("Failed to enter full-screen mode.");

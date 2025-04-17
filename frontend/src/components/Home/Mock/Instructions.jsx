@@ -103,7 +103,7 @@ const Instructions = () => {
         .then(() => {
           const startTimeFormatted = formatDateTime(new Date());
           localStorage.setItem("start_time", startTimeFormatted); // Store start time in localStorage
-          navigate("/mock-demo");
+          navigate("/mock-demo",{replace: true}); // Navigate to the mock demo page
         })
         .catch((err) => {
           toast.error("Failed to enter full-screen mode.");

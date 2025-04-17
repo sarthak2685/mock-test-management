@@ -4,6 +4,7 @@ import Timer from "../Mock/Timer"; // Assuming Timer is a separate component
 import config from "../../../config";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useNavigate } from "react-router-dom";
 
 const InstructionsModal = ({ isVisible, onClose }) => {
   const [optionalSubject, setOptionalSubject] = useState(
@@ -306,6 +307,7 @@ const QuestionNavigation = ({
       prevSectionName.current = sectionName;
     }
   }, [sectionName, onSelectQuestion]);
+    const navigate = useNavigate();
 
   const filteredQuestions = showMarkedOnly
     ? questions.filter((_, i) => markedForReview.includes(i))
@@ -396,7 +398,8 @@ const QuestionNavigation = ({
 
         setTimeout(() => {
           localStorage.setItem("submissionInProgress", "false"); // Reset state
-          window.location.href = "/score"; // Redirect after short delay
+          navigate("/score", { replace: true });
+; // Redirect after short delay
         }, 1000);
       } else {
         const errorDetails = await response.json();

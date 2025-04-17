@@ -109,9 +109,15 @@ const Subject = () => {
   return (
     <div ref={ref} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       {loading ? (
+        <>
+        {" "}
+        <h1 className="text-5xl font-extrabold text-center text-gray-800 mb-6">
+        Explore Our <span className="text-blue-600">Subjects</span>
+      </h1>
         <div className="flex justify-center items-center h-96">
           <ClipLoader size={80} color="#007bff" />
         </div>
+        </>
       ) : (
         <>
       <h1 className="text-5xl font-extrabold text-center text-gray-800 mb-6">

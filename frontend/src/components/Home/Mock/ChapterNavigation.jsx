@@ -4,6 +4,7 @@ import Timer from "../Mock/Timer"; // Assuming Timer is a separate component
 import config from "../../../config";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useNavigate } from "react-router-dom";
 
 const InstructionsModal = ({ isVisible, onClose }) => {
   const [optionalSubject, setOptionalSubject] = useState(
@@ -30,6 +31,8 @@ const InstructionsModal = ({ isVisible, onClose }) => {
   const examDuration = duration || 0;
   const positiveMarks = storedDetails?.postiveMarks || 0;
   const negativeMarks = storedDetails?.negativeMarks || 0;
+    const navigate = useNavigate();
+  
 
   const subjectData = subjects.map((subject) => ({
     subject,
@@ -308,6 +311,7 @@ const ChapterNavigation = ({
       prevSectionName.current = sectionName;
     }
   }, [sectionName, onSelectQuestion]);
+  const navigate = useNavigate();
 
   const filteredQuestions = showMarkedOnly
     ? questions.filter((_, i) => markedForReview.includes(i))
@@ -396,7 +400,7 @@ const ChapterNavigation = ({
 
         setTimeout(() => {
           localStorage.setItem("submissionInProgress", "false"); // Reset state
-          window.location.href = "/scorecard"; // Navigate after a short delay
+          navigate("/scorecard", { replace: true });
         }, 1000);
       } else {
         const errorDetails = await response.json();

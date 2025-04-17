@@ -82,10 +82,19 @@ const Score = () => {
         navigate("/");
     };
 
-    window.history.pushState(null, null, window.location.href);
-    window.addEventListener("popstate", function () {
-        window.location.href = "/"; // Redirect to Home Page
-    });
+
+    useEffect(() => {
+      const handlePopState = () => {
+        // Redirect to home if back button is pressed
+        navigate('/', { replace: true });
+      };
+  
+      window.addEventListener('popstate', handlePopState);
+  
+      return () => {
+        window.removeEventListener('popstate', handlePopState);
+      };
+    }, [navigate]);
     
 
     const sectionData =

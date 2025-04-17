@@ -19,11 +19,13 @@ const Login = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const response = await axios.post(
         `${config.apiUrl}/admin-student-owner/login/`,
@@ -100,6 +102,8 @@ const Login = () => {
       }
     } catch (error) {
       setError("Login failed. username or Password is incorrect.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -266,11 +270,22 @@ const Login = () => {
                   </button>
                 </div>
                 <button
-                  type="submit"
-                  className="w-full bg-[#007bff] hover:bg-blue-700 text-white font-semibold py-3 rounded-md transition duration-300"
-                >
-                  Log In
-                </button>
+  type="submit"
+  disabled={loading}
+  className={`w-full bg-[#007bff] hover:bg-blue-700 text-white font-semibold py-3 rounded-md transition duration-300 flex items-center justify-center ${
+    loading ? "opacity-70 cursor-not-allowed" : ""
+  }`}
+>
+  {loading ? (
+    <div className="flex items-center space-y-1 gap-4">
+      <div className="animate-spin rounded-full h-6 w-6 border-t-4 border-white border-solid"></div>
+      <p className="text-sm font-medium">Logging into Mock Period...</p>
+    </div>
+  ) : (
+    "Log In"
+  )}
+</button>
+
               </form>
             )}
           </div>
