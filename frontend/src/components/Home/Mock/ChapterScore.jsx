@@ -9,13 +9,14 @@ import { RiCloseLine } from "react-icons/ri";
 import config from "../../../config";
 import { useNavigate } from "react-router-dom";
 import "jspdf-autotable";
-import katex from "katex";
-import html2canvas from "html2canvas";
+import { ImSpinner2 } from "react-icons/im";
+
 
 const ChapterScore = () => {
     const [activeTab, setActiveTab] = useState("testResult");
 
     const S = JSON.parse(localStorage.getItem("user"));
+    const institute_name = S.institute_name;
     const token = S.token;
     const [analysisData, setAnalysisData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -34,6 +35,8 @@ const ChapterScore = () => {
     const language = localStorage.getItem("selectedLanguage") || "english";
     const queryParams = `student_id=${studentId}&test_name=${testName}&start_time=${startTime}&end_time=${endTime}&language=${language}`;
     const apiUrl = `${config.apiUrl}/get-chapter-analysis/?${queryParams}`;
+    const [downloading, setDownloading] = useState(false);
+
 
     // Fetch analysis data
     useEffect(() => {
@@ -53,7 +56,7 @@ const ChapterScore = () => {
                 const data = await response.json();
                 setExamMarks(data);
                 setAnalysisData(data.data);
-                console.log("gautam",data.data)
+                console.log("gautam", data.data)
                 setSectionsData(data.average_marks);
                 setLeaderboardData(data.leaderboard || []);
             } catch (err) {
@@ -86,22 +89,23 @@ const ChapterScore = () => {
         navigate("/");
     };
 
- useEffect(() => {
-      const handlePopState = () => {
-        // Redirect to home if back button is pressed
-        navigate('/', { replace: true });
-      };
-  
-      window.addEventListener('popstate', handlePopState);
-  
-      return () => {
-        window.removeEventListener('popstate', handlePopState);
-      };
-    }, [navigate]);  
+    useEffect(() => {
+        const handlePopState = () => {
+            // Redirect to home if back button is pressed
+            navigate('/', { replace: true });
+        };
+
+        window.addEventListener('popstate', handlePopState);
+
+        return () => {
+            window.removeEventListener('popstate', handlePopState);
+        };
+    }, [navigate]);
 
     const reportRef = useRef();
     const handlePDFDownload = async () => {
-        const apiUrl = `${config.apiUrl}/generate-report/?student_id=${studentId}&exam_id=${examId}&test_name=${testName}`;
+        setDownloading(true);
+        const apiUrl = `${config.apiUrl}/generate-report/?student_id=${studentId}&exam_id=${examId}&test_name=${testName}&institute_name=${institute_name}&language=${language}`;
 
         try {
             const response = await fetch(apiUrl, {
@@ -152,6 +156,8 @@ const ChapterScore = () => {
         } catch (error) {
             console.error("Error downloading PDF:", error.message);
             alert("Failed to download the PDF. Please try again.");
+        } finally {
+            setDownloading(false);
         }
     };
 
@@ -279,11 +285,11 @@ const ChapterScore = () => {
                                             )[0];
                                             const chapter = Object.keys(analysisData?.[subject] || {}).find(
                                                 (key) => analysisData?.[subject]?.[key]?.hasOwnProperty("obtained_marks")
-                                              );
-                                              return (
+                                            );
+                                            return (
                                                 analysisData?.[subject]?.[chapter]?.obtained_marks?.toString() || "0"
-                                              );
-                                            })()}{" "}
+                                            );
+                                        })()}{" "}
                                     </p>
                                     <p className="text-xs md:text-sm lg:text-lg mt-1 md:mt-2 font-medium">
                                         Candidate's Mark
@@ -317,9 +323,13 @@ const ChapterScore = () => {
                                 <button
                                     onClick={handlePDFDownload}
                                     className="text-indigo-600 hover:text-indigo-400 text-4xl transition duration-300"
+                                    disabled={downloading}
                                 >
-                                    <FaCloudDownloadAlt />{" "}
-                                    {/* Cloud Download Icon */}
+                                    {downloading ? (
+                                        <ImSpinner2 className="animate-spin" />
+                                    ) : (
+                                        <FaCloudDownloadAlt />
+                                    )}
                                 </button>
 
                                 {/* Tooltip Popup */}
@@ -368,18 +378,18 @@ const ChapterScore = () => {
                                             )[0];
                                             const chapter = Object.keys(analysisData?.[subject] || {}).find(
                                                 (key) => analysisData?.[subject]?.[key]?.hasOwnProperty("question_stats")
-                                              );
-                                              
-                                              // Retrieve chapter data and question statistics
-                                              const chapterData = analysisData?.[subject]?.[chapter] || {};
-                                              const questionStats = chapterData?.question_stats || {};
-                                              
-                                              const {
+                                            );
+
+                                            // Retrieve chapter data and question statistics
+                                            const chapterData = analysisData?.[subject]?.[chapter] || {};
+                                            const questionStats = chapterData?.question_stats || {};
+
+                                            const {
                                                 correct_answers,
                                                 wrong_answers,
                                                 unattempted,
-                                              } = questionStats;
-                                              
+                                            } = questionStats;
+
 
                                             // Render the table row if data is available
                                             return (
@@ -417,24 +427,24 @@ const ChapterScore = () => {
                                 <div className="flex flex-wrap justify-between gap-4">
                                     {(() => {
                                         // Get the first subject from sectionData and analysisData
-const subject = Object.keys(sectionData || {})[0];
-const subj = Object.keys(analysisData || {})[0];
+                                        const subject = Object.keys(sectionData || {})[0];
+                                        const subj = Object.keys(analysisData || {})[0];
 
-// Dynamically find the first valid chapter/section under subject in sectionData
-const chapter = Object.keys(sectionData?.[subject] || {}).find(
-  (key) =>
-    typeof sectionData?.[subject]?.[key] === "object" &&
-    sectionData?.[subject]?.[key] !== null
-);
+                                        // Dynamically find the first valid chapter/section under subject in sectionData
+                                        const chapter = Object.keys(sectionData?.[subject] || {}).find(
+                                            (key) =>
+                                                typeof sectionData?.[subject]?.[key] === "object" &&
+                                                sectionData?.[subject]?.[key] !== null
+                                        );
 
-// Dynamically find the first valid chapter/section under subject in analysisData
-const chap = Object.keys(analysisData?.[subj] || {}).find(
-  (key) =>
-    typeof analysisData?.[subj]?.[key] === "object" &&
-    analysisData?.[subj]?.[key] !== null &&
-    (analysisData?.[subj]?.[key]?.hasOwnProperty("obtained_marks") ||
-     analysisData?.[subj]?.[key]?.hasOwnProperty("question_stats"))
-);
+                                        // Dynamically find the first valid chapter/section under subject in analysisData
+                                        const chap = Object.keys(analysisData?.[subj] || {}).find(
+                                            (key) =>
+                                                typeof analysisData?.[subj]?.[key] === "object" &&
+                                                analysisData?.[subj]?.[key] !== null &&
+                                                (analysisData?.[subj]?.[key]?.hasOwnProperty("obtained_marks") ||
+                                                    analysisData?.[subj]?.[key]?.hasOwnProperty("question_stats"))
+                                        );
 
                                         return (
                                             <div className="w-full sm:w-1/2 lg:w-1/3 bg-white rounded-lg p-4 shadow-md hover:shadow-lg transition duration-300">
@@ -482,6 +492,11 @@ const chap = Object.keys(analysisData?.[subj] || {}).find(
                             See how you rank among other participants. Top
                             performers are highlighted.
                         </p>
+                        <div className="flex justify-center  mt-4">
+                            <p className="text-base sm:text-base font-medium  text-gray-600">
+                                Institute Name: {institute_name}
+                            </p>
+                            </div>
 
                         {/* Leaderboard Table */}
                         <div className="mt-8 overflow-x-auto">
@@ -501,29 +516,28 @@ const chap = Object.keys(analysisData?.[subj] || {}).find(
                                             participant.rank === 1
                                                 ? "gold"
                                                 : participant.rank === 2
-                                                ? "silver"
-                                                : participant.rank === 3
-                                                ? "bronze"
-                                                : "gray";
+                                                    ? "silver"
+                                                    : participant.rank === 3
+                                                        ? "bronze"
+                                                        : "gray";
 
                                         return (
                                             <tr
                                                 key={participant.rank}
-                                                className={`border-b hover:bg-indigo-50 transition-all duration-300 ${
-                                                    participant.student_id ===
-                                                    user.id
+                                                className={`border-b hover:bg-indigo-50 transition-all duration-300 ${participant.student_id ===
+                                                        user.id
                                                         ? "bg-yellow-100 font-bold"
                                                         : ""
-                                                }`}
+                                                    }`}
                                             >
                                                 <td className="p-3 font-semibold text-indigo-600 text-left">
                                                     {participant.rank === 1 ? (
                                                         <AiOutlineTrophy className="text-red-500" />
                                                     ) : participant.rank ===
-                                                      2 ? (
+                                                        2 ? (
                                                         <AiOutlineTrophy className="text-gray-300" />
                                                     ) : participant.rank ===
-                                                      3 ? (
+                                                        3 ? (
                                                         <AiOutlineTrophy className="text-brown-400" />
                                                     ) : (
                                                         participant.rank
@@ -571,11 +585,10 @@ const chap = Object.keys(analysisData?.[subj] || {}).find(
                 <div className="flex justify-center space-x-6 sm:space-x-12 mb-8 flex-wrap">
                     <span
                         onClick={() => setActiveTab("testResult")}
-                        className={`px-6 sm:px-8 py-4 cursor-pointer text-lg sm:text-xl font-medium flex items-center transition-all duration-500 transform hover:scale-105 rounded-lg hover:bg-indigo-50 ${
-                            activeTab === "testResult"
+                        className={`px-6 sm:px-8 py-4 cursor-pointer text-lg sm:text-xl font-medium flex items-center transition-all duration-500 transform hover:scale-105 rounded-lg hover:bg-indigo-50 ${activeTab === "testResult"
                                 ? "text-indigo-600 border-b-4 border-indigo-600 bg-white shadow-xl"
                                 : "text-gray-600 hover:text-indigo-600"
-                        }`}
+                            }`}
                     >
                         <AiOutlineFileDone className="mr-2 text-xl sm:text-2xl" />{" "}
                         Test Result
@@ -583,11 +596,10 @@ const chap = Object.keys(analysisData?.[subj] || {}).find(
 
                     <span
                         onClick={() => setActiveTab("scoreReport")}
-                        className={`px-6 sm:px-8 py-4 cursor-pointer text-lg sm:text-xl font-medium flex items-center transition-all duration-500 transform hover:scale-105 rounded-lg hover:bg-indigo-50 ${
-                            activeTab === "scoreReport"
+                        className={`px-6 sm:px-8 py-4 cursor-pointer text-lg sm:text-xl font-medium flex items-center transition-all duration-500 transform hover:scale-105 rounded-lg hover:bg-indigo-50 ${activeTab === "scoreReport"
                                 ? "text-indigo-600 border-b-4 border-indigo-600 bg-white shadow-xl"
                                 : "text-gray-600 hover:text-indigo-600"
-                        }`}
+                            }`}
                     >
                         <HiOutlineDocumentText className="mr-2 text-xl sm:text-2xl" />{" "}
                         Score Report
@@ -595,11 +607,10 @@ const chap = Object.keys(analysisData?.[subj] || {}).find(
 
                     <span
                         onClick={() => setActiveTab("leaderboard")}
-                        className={`px-6 sm:px-8 py-4 cursor-pointer text-lg sm:text-xl font-medium flex items-center transition-all duration-500 transform hover:scale-105 rounded-lg hover:bg-indigo-50 ${
-                            activeTab === "leaderboard"
+                        className={`px-6 sm:px-8 py-4 cursor-pointer text-lg sm:text-xl font-medium flex items-center transition-all duration-500 transform hover:scale-105 rounded-lg hover:bg-indigo-50 ${activeTab === "leaderboard"
                                 ? "text-indigo-600 border-b-4 border-indigo-600 bg-white shadow-xl"
                                 : "text-gray-600 hover:text-indigo-600"
-                        }`}
+                            }`}
                     >
                         <AiOutlineTrophy className="mr-2 text-xl sm:text-2xl" />{" "}
                         Leaderboard

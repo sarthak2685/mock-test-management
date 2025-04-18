@@ -9,13 +9,13 @@ import { RiCloseLine } from "react-icons/ri";
 import config from "../../../config";
 import { useNavigate } from "react-router-dom";
 import "jspdf-autotable";
-import katex from "katex";
-import html2canvas from "html2canvas";
+import { ImSpinner2 } from "react-icons/im";
 
 const Score = () => {
     const [activeTab, setActiveTab] = useState("testResult");
 
     const S = JSON.parse(localStorage.getItem("user"));
+    const institute_name = S.institute_name;
     const token = S.token;
     const [analysisData, setAnalysisData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -32,6 +32,8 @@ const Score = () => {
     const reportRef = useRef(); // Added this
     const averageMarksData = analysisData?.average_marks_by_subject || []; // Added this
     const language = localStorage.getItem("selectedLanguage") || "english";
+    const [downloading, setDownloading] = useState(false);
+
 
     const queryParams = `student_id=${studentId}&test_name=${testName}&start_time=${startTime}&exam_id=${examId}&end_time=${endTime}&optional=${optional}&language=${language}`;
     const apiUrl = `${config.apiUrl}/get-analysis/?${queryParams}`;
@@ -110,7 +112,8 @@ const Score = () => {
             };
         });
     const handlePDFDownload = async () => {
-        const apiUrl = `${config.apiUrl}/generate-report/?student_id=${studentId}&exam_id=${examId}&test_name=${testName}`;
+        setDownloading(true);
+        const apiUrl = `${config.apiUrl}/generate-report/?student_id=${studentId}&exam_id=${examId}&test_name=${testName}&institute_name=${institute_name}&language=${language}`;
 
         try {
             const response = await fetch(apiUrl, {
@@ -161,6 +164,8 @@ const Score = () => {
         } catch (error) {
             console.error("Error downloading PDF:", error.message);
             alert("Failed to download the PDF. Please try again.");
+        } finally {
+            setDownloading(false);
         }
     };
 
@@ -268,13 +273,18 @@ const Score = () => {
                                 Score Report
                             </h3>
                             <div className="relative group flex items-center">
-                                <button
-                                    onClick={handlePDFDownload}
-                                    className="text-indigo-600 hover:text-indigo-400 text-4xl transition duration-300"
-                                >
-                                    <FaCloudDownloadAlt />{" "}
-                                    {/* Cloud Download Icon */}
-                                </button>
+                            <button
+                            onClick={handlePDFDownload}
+                            className="text-indigo-600 hover:text-indigo-400 text-4xl transition duration-300"
+                            disabled={downloading}
+                            >
+                            {downloading ? (
+                                <ImSpinner2 className="animate-spin" />
+                            ) : (
+                                <FaCloudDownloadAlt />
+                            )}
+                            </button>
+
 
                                 {/* Tooltip Popup */}
                                 <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 w-56 text-sm text-white bg-gradient-to-r from-indigo-500 to-blue-500 rounded-lg shadow-lg p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -396,6 +406,7 @@ const Score = () => {
             case "leaderboard":
                 return (
                     <div className="bg-white p-8 sm:p-12 rounded-3xl shadow-2xl transition-all duration-500 transform hover:scale-105">
+                        
                         <h3 className="text-2xl sm:text-3xl font-semibold text-gray-800">
                             Leaderboard
                         </h3>
@@ -403,6 +414,11 @@ const Score = () => {
                             See how you rank among other participants. Top
                             performers are highlighted.
                         </p>
+                        <div className="flex justify-center  mt-4">
+                            <p className="text-base sm:text-base font-medium  text-gray-600">
+                                Institute Name: {institute_name}
+                            </p>
+                            </div>
 
                         {/* Leaderboard Table */}
                         <div className="mt-8 overflow-x-auto">
