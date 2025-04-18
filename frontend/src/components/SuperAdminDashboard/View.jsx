@@ -390,14 +390,6 @@ const View = () => {
     }));
   };
 
-  const handleSelectChange = (option) => {
-    setEditingQuestion((prev) => ({
-      ...prev,
-      correctAnswer: option.text,
-      correctAnswerImage: option.image,
-    }));
-  };
-
   const saveEditedQuestion = async () => {
     if (editingIndex == null || !editingQuestion) {
       console.error("Editing index or editing question is not set");
@@ -525,6 +517,19 @@ const View = () => {
   useEffect(() => {
     fetchInstitutes();
   }, []);
+
+  const CustomOption = ({ innerProps, label, data }) => (
+    <div {...innerProps} className="flex items-center p-2 hover:bg-gray-100">
+      <div className="flex-1" dangerouslySetInnerHTML={{ __html: label }} />
+      {data.image && (
+        <img 
+          src={data.image.startsWith("data:image") ? data.image : `${config.apiUrl}${data.image}`} 
+          alt="Option" 
+          className="w-8 h-8 ml-2 object-contain"
+        />
+      )}
+    </div>
+  );
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -846,30 +851,69 @@ const View = () => {
                               <label className="block text-gray-700 font-semibold mb-2 text-sm sm:text-base">
                                 Correct Answer
                               </label>
-                              <select
-                                className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 text-xs sm:text-base"
-                                value={editingQuestion.correctAnswer || ""}
-                                onChange={(e) => {
-                                  const selectedOptionIndex =
-                                    e.target.selectedIndex - 1;
-                                  if (selectedOptionIndex >= 0) {
-                                    handleSelectChange(
-                                      editingQuestion.optionFiles[
-                                        selectedOptionIndex
-                                      ]
-                                    );
-                                  }
+                              <Select
+                                options={editingQuestion.optionFiles.map((option, idx) => ({
+                                  value: idx,
+                                  label: option.text,
+                                  image: option.image
+                                }))}
+                                value={editingQuestion.optionFiles.find((opt, idx) => 
+                                  opt.text === editingQuestion.correctAnswer
+                                ) ? {
+                                  value: editingQuestion.optionFiles.findIndex(
+                                    opt => opt.text === editingQuestion.correctAnswer
+                                  ),
+                                  label: editingQuestion.correctAnswer,
+                                  image: editingQuestion.correctAnswerImage
+                                } : null}
+                                onChange={(selectedOption) => {
+                                  const updatedEditingQuestion = { ...editingQuestion };
+                                  updatedEditingQuestion.correctAnswer = selectedOption?.label || "";
+                                  updatedEditingQuestion.correctAnswerImage = selectedOption?.image || null;
+                                  setEditingQuestion(updatedEditingQuestion);
                                 }}
-                              >
-                                <option value="">Select Correct Answer</option>
-                                {editingQuestion.optionFiles.map(
-                                  (option, idx) => (
-                                    <option key={idx} value={option.text}>
-                                      {option.text}
-                                    </option>
-                                  )
+                                components={{ Option: CustomOption }}
+                                className="basic-single"
+                                classNamePrefix="select"
+                                placeholder="Select Correct Answer"
+                                getOptionLabel={option => option.label}
+                                getOptionValue={option => option.value}
+                                styles={{
+                                  option: (provided) => ({
+                                    ...provided,
+                                    display: 'flex',
+                                    alignItems: 'center'
+                                  }),
+                                  singleValue: (provided) => ({
+                                    ...provided,
+                                    display: 'flex',
+                                    alignItems: 'center'
+                                  })
+                                }}
+                                formatOptionLabel={(option) => (
+                                  <div className="flex items-center">
+                                    <div dangerouslySetInnerHTML={{ __html: option.label }} />
+                                    {option.image && (
+                                      <img 
+                                        src={option.image.startsWith("data:image") ? 
+                                          option.image : 
+                                          `${config.apiUrl}${option.image}`} 
+                                        alt="Option" 
+                                        className="w-8 h-8 ml-2 object-contain"
+                                      />
+                                    )}
+                                  </div>
                                 )}
-                              </select>
+                              />
+                              {editingQuestion.correctAnswerImage && (
+                                <div className="mt-2">
+                                  <img
+                                    src={getImageUrl(editingQuestion.correctAnswerImage)}
+                                    alt="Correct answer"
+                                    className="h-16 w-16 object-cover rounded-lg shadow-md mt-2"
+                                  />
+                                </div>
+                              )}
                             </div>
                           </div>
                         ) : (
@@ -971,17 +1015,6 @@ const View = () => {
                                     {question.correctAnswer}
                                   </span>
                                 </div>
-{/*                                 <div>
-                                  <strong>Marks:</strong>
-                                  <span className="ml-1 md:ml-2">
-                                    +
-                                    {question.positiveMarks ||
-                                      editedDetails.positiveMarks}{" "}
-                                    / -
-                                    {question.negativeMarks ||
-                                      editedDetails.negativeMarks}
-                                  </span>
-                                </div> */}
                               </div>
                               {question.correctAnswerImage && (
                                 <div className="relative mt-2">

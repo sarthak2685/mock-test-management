@@ -22,7 +22,7 @@ const ChapterView = () => {
     positiveMarks: "",
     negativeMarks: "",
   });
-  const [chapterId, setChapterId] = useState(""); // New state for chapter ID
+  const [chapterId, setChapterId] = useState("");
 
   // State for editing questions
   const [editingIndex, setEditingIndex] = useState(null);
@@ -101,11 +101,6 @@ const ChapterView = () => {
       setUser(JSON.parse(storedUser));
     }
 
-    const savedQuestions = JSON.parse(
-      localStorage.getItem("questions") || "[]"
-    );
-    setQuestions(savedQuestions.length ? savedQuestions : []);
-
     if (examId) {
       fetchExamDetails();
     } else {
@@ -140,19 +135,16 @@ const ChapterView = () => {
 
       if (data.data?.chapters) {
         const chaptersList = Object.keys(data.data.chapters);
-        // Load questions from the first chapter automatically
         if (chaptersList.length > 0) {
           const firstChapter = chaptersList[0];
           setChapterName(firstChapter);
 
-          // Set chapter ID from the first question in the chapter
           if (data.data.chapters[firstChapter].length > 1) {
             setChapterId(data.data.chapters[firstChapter][1].chapter_id);
           }
 
           loadQuestionsForChapter(firstChapter, data.data.chapters);
 
-          // Set test details from the first chapter's metadata
           const chapterMeta = data.data.chapters[firstChapter][0];
           setEditedDetails({
             testName: chapterMeta.test_name || "",
@@ -170,7 +162,6 @@ const ChapterView = () => {
 
   const loadQuestionsForChapter = (chapter, chaptersData) => {
     if (chaptersData && chaptersData[chapter]) {
-      // Skip the first item as it contains metadata
       const chapterQuestions = chaptersData[chapter].slice(1);
 
       const formattedQuestions = chapterQuestions.map((q) => ({
@@ -190,14 +181,12 @@ const ChapterView = () => {
           { text: q.option_3, image: q.file_3 },
           { text: q.option_4, image: q.file_4 },
         ].filter((opt) => opt.text),
-        chapterId: q.chapter_id, // Include chapter ID from the question
+        chapterId: q.chapter_id,
       }));
 
       setQuestions(formattedQuestions);
-      localStorage.setItem("questions", JSON.stringify(formattedQuestions));
     } else {
       setQuestions([]);
-      localStorage.setItem("questions", JSON.stringify([]));
     }
   };
 
@@ -245,7 +234,7 @@ const ChapterView = () => {
 
   const getImageUrl = (path) => {
     if (!path) return null;
-    if (path.startsWith("http")) {
+    if (path.startsWith("http") || path.startsWith("data:image")) {
       return path;
     }
     return `${config.apiUrl}${path}`;
@@ -323,124 +312,84 @@ const ChapterView = () => {
     setEditingQuestion(updatedEditingQuestion);
   };
 
-  const handleSelectChange = (option) => {
-    const updatedEditingQuestion = { ...editingQuestion };
-    updatedEditingQuestion.correctAnswer = option.text;
-    updatedEditingQuestion.correctAnswerImage = option.image;
-    setEditingQuestion(updatedEditingQuestion);
-  };
-
   const saveEditedQuestion = async () => {
     if (editingIndex == null || !editingQuestion) {
       console.error("Editing index or editing question is not set");
       return;
     }
 
-    const updatedQuestions = [...questions];
-
-    // Safeguard: only update if the editing index is valid
-    if (editingIndex >= 0 && editingIndex < questions.length) {
-      updatedQuestions[editingIndex] = {
-        ...editingQuestion,
-        id:
-          questions[editingIndex]?.id ||
-          editingQuestion?.id ||
-          crypto.randomUUID(),
-      };
-    } else {
-      console.error("Invalid editing index");
-      return;
-    }
-
-    setQuestions(updatedQuestions);
-    localStorage.setItem("questions", JSON.stringify(updatedQuestions));
-
     try {
       const S = JSON.parse(localStorage.getItem("user"));
       const token = S?.token;
 
-      // Prepare the payload with all questions
-      const payload = updatedQuestions.map((changedQuestion) => {
-        const originalQuestion =
-          questions.find((q) => q.id === changedQuestion.id) || {};
+      const payload = {
+        id: editingQuestion.id,
+        question: editingQuestion.questionText || "",
+        option_1: editingQuestion.optionFiles?.[0]?.text || "",
+        option_2: editingQuestion.optionFiles?.[1]?.text || "",
+        option_3: editingQuestion.optionFiles?.[2]?.text || "",
+        option_4: editingQuestion.optionFiles?.[3]?.text || "",
+        correct_answer: editingQuestion.correctAnswer || "",
+        marks: editedDetails.positiveMarks || editingQuestion.positiveMarks,
+        negative_marks: editedDetails.negativeMarks || editingQuestion.negativeMarks || "0.50",
+        language: language || "en",
+        institutes: selectedInstitutes?.map((inst) => inst.value) || [],
+        for_exam_subjects_o: [examId] || " ",
+        for_exam_chapter_o_id: [editingQuestion.chapterId] || [chapterId],
+        test_name: editedDetails.testName,
+      };
 
-        // Function to check if a file is new/changed (base64 string)
-        const isNewFile = (file) => {
-          return file && file.startsWith("data:image");
-        };
+      // Handle image uploads if they are new files (data URLs)
+      if (editingQuestion.questionText2 && editingQuestion.questionText2.startsWith("data:image")) {
+        payload.question_1 = editingQuestion.questionText2;
+      }
 
-        // Prepare image data objects
-        const imageData = {};
+      if (editingQuestion.correctAnswerImage && editingQuestion.correctAnswerImage.startsWith("data:image")) {
+        payload.correct_answer2 = editingQuestion.correctAnswerImage;
+      }
 
-        // Handle question2 image
-        if (isNewFile(changedQuestion.questionText2)) {
-          imageData.question2 = changedQuestion.questionText2;
-        } else if (
-          changedQuestion.questionText2 !== originalQuestion.questionText2
-        ) {
-          imageData.question2 = changedQuestion.questionText2 || null;
+      for (let i = 0; i < 4; i++) {
+        const option = editingQuestion.optionFiles?.[i];
+        if (option?.image && option.image.startsWith("data:image")) {
+          payload[`file_${i + 1}`] = option.image;
         }
+      }
 
-        // Handle correct_answer2 image
-        if (isNewFile(changedQuestion.correctAnswerImage)) {
-          imageData.correct_answer2 = changedQuestion.correctAnswerImage;
-        } else if (
-          changedQuestion.correctAnswerImage !==
-          originalQuestion.correctAnswerImage
-        ) {
-          imageData.correct_answer2 =
-            changedQuestion.correctAnswerImage || null;
-        }
-
-        // Prepare option files data
-        for (let i = 0; i < 4; i++) {
-          const originalOption = originalQuestion.optionFiles?.[i] || {};
-          const changedOption = changedQuestion.optionFiles?.[i] || {};
-
-          if (isNewFile(changedOption.image)) {
-            imageData[`file_${i + 1}`] = changedOption.image;
-          } else if (changedOption.image !== originalOption.image) {
-            imageData[`file_${i + 1}`] = changedOption.image || null;
-          }
-        }
-
-        return {
-          id: changedQuestion.id,
-          question: changedQuestion.questionText || "",
-          option_1: changedQuestion.optionFiles?.[0]?.text || "",
-          option_2: changedQuestion.optionFiles?.[1]?.text || "",
-          option_3: changedQuestion.optionFiles?.[2]?.text || "",
-          option_4: changedQuestion.optionFiles?.[3]?.text || "",
-          correct_answer: changedQuestion.correctAnswer || "",
-           marks: editedDetails.positiveMarks || changedQuestion.positiveMarks,
-          negative_marks:
-            editedDetails.negativeMarks ||
-            changedQuestion.negativeMarks ||
-            "0.50",
-          language: language || "en",
-          institutes: selectedInstitutes?.map((inst) => inst.value) || [],
-          for_exam_subjects_o: [examId] || " ",
-          for_exam_chapter_o_id: [changedQuestion.chapterId] || [chapterId],
-          // for_exam_subjects_o__id: examId,
-          test_name: editedDetails.testName,
-          // chapter_id: changedQuestion.chapterId || chapterId, // Include chapter_id in payload
-          // Spread all image data (question2, correct_answer2, and file_x)
-          ...imageData,
-        };
-      });
-
-      await axios.put(`${config.apiUrl}/bulk-update-questions/`, payload, {
+      await axios.put(`${config.apiUrl}/bulk-update-questions/`, [payload], {
         headers: {
           Authorization: `Token ${token}`,
           "Content-Type": "application/json",
         },
       });
 
-      // Reset editing state
+      // Update local state immediately with the edited question
+      const updatedQuestions = [...questions];
+      updatedQuestions[editingIndex] = {
+        ...editingQuestion,
+        // Convert data URLs back to server paths if needed
+        questionText2: editingQuestion.questionText2?.startsWith("data:image") 
+          ? "updated-image.png" // This should be replaced with the actual path from the server response
+          : editingQuestion.questionText2,
+        correctAnswerImage: editingQuestion.correctAnswerImage?.startsWith("data:image")
+          ? "updated-correct-answer.png" // This should be replaced with the actual path from the server response
+          : editingQuestion.correctAnswerImage,
+        optionFiles: editingQuestion.optionFiles.map(opt => ({
+          text: opt.text,
+          image: opt.image?.startsWith("data:image") 
+            ? "updated-option-image.png" // This should be replaced with the actual path from the server response
+            : opt.image
+        }))
+      };
+
+      setQuestions(updatedQuestions);
+      
+      // Reset editing states
       setEditingIndex(null);
       setEditingQuestion(null);
       setText("");
       setIsEditingDetails(false);
+      
+      // Refresh data from server to get the actual paths
       fetchExamDetails();
     } catch (error) {
       console.error("Failed to update questions and exam details:", error);
@@ -456,7 +405,6 @@ const ChapterView = () => {
 
   const handleDetailsEdit = () => {
     setIsEditingDetails(true);
-    // Automatically edit the first question when editing test details
     if (questions.length > 0) {
       handleEditQuestion(0);
     }
@@ -472,7 +420,6 @@ const ChapterView = () => {
 
   const cancelDetailsEdit = () => {
     setIsEditingDetails(false);
-    // Reset to original values
     if (examDetails?.data?.chapters && chapterName) {
       const chapterMeta = examDetails.data.chapters[chapterName][0];
       setEditedDetails({
@@ -481,13 +428,25 @@ const ChapterView = () => {
         negativeMarks: chapterMeta._negative_marks || "",
       });
     }
-    // Also cancel any question editing
     cancelEditing();
   };
 
   useEffect(() => {
     fetchInstitutes();
   }, []);
+
+  const CustomOption = ({ innerProps, label, data }) => (
+    <div {...innerProps} className="flex items-center p-2 hover:bg-gray-100">
+      <div className="flex-1" dangerouslySetInnerHTML={{ __html: label }} />
+      {data.image && (
+        <img 
+          src={data.image.startsWith("data:image") ? data.image : `${config.apiUrl}${data.image}`} 
+          alt="Option" 
+          className="w-8 h-8 ml-2 object-contain"
+        />
+      )}
+    </div>
+  );
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -515,31 +474,30 @@ const ChapterView = () => {
                 <div className="flex flex-wrap gap-1 md:gap-4 mb-2 md:mb-6 mt-1 md:mt-4">
                   <div className="flex gap-1 md:gap-4 w-full">
                     <div className="flex-grow">
-<div className="bg-white p-2 rounded-md border border-gray-300 shadow-sm flex items-center gap-2">
-  {isEditingDetails ? (
-    <input
-      type="text"
-      name="testName"
-      value={editedDetails.testName}
-      onChange={handleDetailsChange}
-      disabled
-      className="border border-gray-300 p-2 rounded w-full bg-gray-100 text-gray-500 cursor-not-allowed focus:outline-none"
-    />
-  ) : (
-    <>
-      <span className="text-blue-600 font-semibold">
-        Test Name: {editedDetails.testName}
-      </span>
-      <button
-        onClick={handleDetailsEdit}
-        className="text-blue-600 hover:text-blue-800 ml-auto"
-      >
-        <FaEdit />
-      </button>
-    </>
-  )}
-</div>
-
+                      <div className="bg-white p-2 rounded-md border border-gray-300 shadow-sm flex items-center gap-2">
+                        {isEditingDetails ? (
+                          <input
+                            type="text"
+                            name="testName"
+                            value={editedDetails.testName}
+                            onChange={handleDetailsChange}
+                            disabled
+                            className="border border-gray-300 p-2 rounded w-full bg-gray-100 text-gray-500 cursor-not-allowed focus:outline-none"
+                          />
+                        ) : (
+                          <>
+                            <span className="text-blue-600 font-semibold">
+                              Test Name: {editedDetails.testName}
+                            </span>
+                            <button
+                              onClick={handleDetailsEdit}
+                              className="text-blue-600 hover:text-blue-800 ml-auto"
+                            >
+                              <FaEdit />
+                            </button>
+                          </>
+                        )}
+                      </div>
                     </div>
 
                     <div className="flex-grow bg-white p-2 rounded-md border border-gray-300 shadow-sm text-blue-600 font-semibold">
@@ -688,7 +646,7 @@ const ChapterView = () => {
                                 {editingQuestion?.questionText2 && (
                                   <div className="relative">
                                     <img
-                                      src={editingQuestion.questionText2}
+                                      src={getImageUrl(editingQuestion.questionText2)}
                                       alt="Uploaded"
                                       className="h-16 w-16 object-cover rounded-md shadow-md cursor-pointer"
                                     />
@@ -765,7 +723,7 @@ const ChapterView = () => {
                                         {option?.image && (
                                           <div className="relative mt-2">
                                             <img
-                                              src={option.image}
+                                              src={getImageUrl(option.image)}
                                               alt={`Option ${optionIndex + 1}`}
                                               className="w-16 h-16 object-cover rounded-lg cursor-pointer"
                                             />
@@ -803,30 +761,69 @@ const ChapterView = () => {
                               <label className="block text-gray-700 font-semibold mb-2 text-sm sm:text-base">
                                 Correct Answer
                               </label>
-                              <select
-                                className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 text-xs sm:text-base"
-                                value={editingQuestion?.correctAnswer || ""}
-                                onChange={(e) => {
-                                  const selectedOptionIndex =
-                                    e.target.selectedIndex - 1;
-                                  if (selectedOptionIndex >= 0) {
-                                    handleSelectChange(
-                                      editingQuestion.optionFiles[
-                                        selectedOptionIndex
-                                      ]
-                                    );
-                                  }
+                              <Select
+                                options={editingQuestion?.optionFiles?.map((option, idx) => ({
+                                  value: idx,
+                                  label: option.text,
+                                  image: option.image
+                                }))}
+                                value={editingQuestion?.optionFiles?.find((opt, idx) => 
+                                  opt.text === editingQuestion.correctAnswer
+                                ) ? {
+                                  value: editingQuestion?.optionFiles?.findIndex(
+                                    opt => opt.text === editingQuestion.correctAnswer
+                                  ),
+                                  label: editingQuestion.correctAnswer,
+                                  image: editingQuestion.correctAnswerImage
+                                } : null}
+                                onChange={(selectedOption) => {
+                                  const updatedEditingQuestion = { ...editingQuestion };
+                                  updatedEditingQuestion.correctAnswer = selectedOption?.label || "";
+                                  updatedEditingQuestion.correctAnswerImage = selectedOption?.image || null;
+                                  setEditingQuestion(updatedEditingQuestion);
                                 }}
-                              >
-                                <option value="">Select Correct Answer</option>
-                                {editingQuestion?.optionFiles?.map(
-                                  (option, idx) => (
-                                    <option key={idx} value={option.text}>
-                                      {option.text}
-                                    </option>
-                                  )
+                                components={{ Option: CustomOption }}
+                                className="basic-single"
+                                classNamePrefix="select"
+                                placeholder="Select Correct Answer"
+                                getOptionLabel={option => option.label}
+                                getOptionValue={option => option.value}
+                                styles={{
+                                  option: (provided) => ({
+                                    ...provided,
+                                    display: 'flex',
+                                    alignItems: 'center'
+                                  }),
+                                  singleValue: (provided) => ({
+                                    ...provided,
+                                    display: 'flex',
+                                    alignItems: 'center'
+                                  })
+                                }}
+                                formatOptionLabel={(option) => (
+                                  <div className="flex items-center">
+                                    <div dangerouslySetInnerHTML={{ __html: option.label }} />
+                                    {option.image && (
+                                      <img 
+                                        src={option.image.startsWith("data:image") ? 
+                                          option.image : 
+                                          `${config.apiUrl}${option.image}`} 
+                                        alt="Option" 
+                                        className="w-8 h-8 ml-2 object-contain"
+                                      />
+                                    )}
+                                  </div>
                                 )}
-                              </select>
+                              />
+                              {editingQuestion?.correctAnswerImage && (
+                                <div className="mt-2">
+                                  <img
+                                    src={getImageUrl(editingQuestion.correctAnswerImage)}
+                                    alt="Correct answer"
+                                    className="h-16 w-16 object-cover rounded-lg shadow-md mt-2"
+                                  />
+                                </div>
+                              )}
                             </div>
                           </div>
                         ) : (
@@ -951,4 +948,4 @@ const ChapterView = () => {
   );
 };
 
-export default ChapterView;
+export default ChapterView; 
