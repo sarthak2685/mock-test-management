@@ -79,7 +79,7 @@ function Subscription() {
                             <h3 className="mb-4 text-2xl flex justify-center font-semibold text-gray-900">
                                 {plan.name}
                             </h3>
-                            <p className="font-light flex justify-center text-gray-500 text-lg">
+                            <p className="font-semibold flex justify-center text-gray-500 text-lg">
                                 {plan.description}
                             </p>
                             <div className="flex justify-center items-baseline my-8">
