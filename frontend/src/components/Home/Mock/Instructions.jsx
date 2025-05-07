@@ -30,6 +30,7 @@ const Instructions = () => {
     setLanguage(selectedLanguage);
     setError1(""); // Clear error when a language is selected
     localStorage.setItem("selectedLanguage", selectedLanguage);
+    console.log("selectedLanguage", selectedLanguage);
   };
 
   const fetchSerial = async () => {
@@ -271,9 +272,9 @@ const Instructions = () => {
                   {/* Render rows for subjects */}
                   {subjectData.map((subject, index) => {
                     if (
-                      subjects.includes("Hindi") &&
-                      subjects.includes("English") &&
-                      subject.subject === "Hindi" // Render dropdown for Hindi (skip separate English row)
+                      subjects.some((s) => s.startsWith("Hindi")) &&
+  subjects.some((s) => s.startsWith("English")) &&
+  subject.subject.startsWith("Hindi")
                     ) {
                       return (
                         <tr key={index}>
@@ -281,29 +282,32 @@ const Instructions = () => {
                             <select
                               value={language}
                               onChange={(e) => {
-                                const selectedLang = e.target.value;
-                                const nonSelectedLang =
-                                  selectedLang === "English"
-                                    ? "Hindi"
-                                    : "English";
-                                setLanguage(selectedLang); // Update the language state
-                                localStorage.setItem(
-                                  "selectedLanguage",
-                                  selectedLang
-                                ); // Save selected language to localStorage
-                                localStorage.setItem(
-                                  "nonSelectedLanguage",
-                                  nonSelectedLang
-                                ); // Save non-selected language to localStorage
-                          
+                                const selectedLang = e.target.value; // "Hindi" or "English"
+                              
+                                // Find the full names based on what starts with that
+                                const selectedFull = subjects.find((s) =>
+                                  s.startsWith(selectedLang)
+                                );
+                              
+                                const nonSelectedLang = selectedLang === "English" ? "Hindi" : "English";
+                                const nonSelectedFull = subjects.find((s) =>
+                                  s.startsWith(nonSelectedLang)
+                                );
+                              
+                                setLanguage(selectedLang);
+                                localStorage.setItem("selectedLanguagess", selectedFull || selectedLang);
+                                localStorage.setItem("nonSelectedLanguage", nonSelectedFull || nonSelectedLang);
                               }}
+                              
                               className="border border-gray-300 rounded px-2 py-1"
                             >
-                              <option value="" disabled>
-                                Select Optional Subject
-                              </option>{" "}
-                              <option value="English">English</option>
-                              <option value="Hindi">Hindi</option>
+                            <option value={subjects.find(s => s.startsWith("English"))}>
+  {subjects.find(s => s.startsWith("English")) || "English"}
+</option>
+<option value={subjects.find(s => s.startsWith("Hindi"))}>
+  {subjects.find(s => s.startsWith("Hindi")) || "Hindi"}
+</option>
+
                             </select>
                           </td>
                           <td className="px-2 sm:px-4 py-2 border border-gray-300">
@@ -318,14 +322,15 @@ const Instructions = () => {
                         </tr>
                       );
                     } else if (
-                      (subject.subject === "Hindi" ||
-                        subject.subject === "English") &&
-                      subjects.includes("Hindi") &&
-                      subjects.includes("English")
+                      (subject.subject.startsWith("Hindi") ||
+                        subject.subject.startsWith("English")) &&
+                      subjects.some((s) => s.startsWith("Hindi")) &&
+                      subjects.some((s) => s.startsWith("English"))
                     ) {
-                      // Skip rendering separate row for English if dropdown is shown
+                      // Skip rendering if dropdown is already shown
                       return null;
-                    } else {
+                    }
+                     else {
                       // Render rows for other subjects
                       return (
                         <tr key={index}>

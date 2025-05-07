@@ -71,7 +71,9 @@ const MockDemo = () => {
   const [timerDuration, setTimerDuration] = useState(0); // State for timer
   const SubjectId = localStorage.getItem("selectedSubjectId");
   const optional = localStorage.getItem("nonSelectedLanguage");
+  console.log("SubjectId", optional);
   const language = localStorage.getItem("selectedLanguage") || "english";
+  console.log("Language", language);
 
   useEffect(() => {
     const fetchMockTests = async () => {
