@@ -157,14 +157,20 @@ const Instructions = () => {
   };
 
   useEffect(() => {
-    if (subjects.includes("Hindi") && subjects.includes("English")) {
-      setLanguage("English"); // Default to English if both languages are available
-      localStorage.setItem("selectedLanguage", "English");
-      localStorage.setItem("nonSelectedLanguage", "Hindi");
+    const englishFull = subjects.find((s) => s.startsWith("English"));
+    const hindiFull = subjects.find((s) => s.startsWith("Hindi"));
+  
+    if (englishFull && hindiFull) {
+      setLanguage(englishFull); // Set the full string, like "English Language"
+      localStorage.setItem("languageinitial", englishFull);
+      localStorage.setItem("nonSelectedLanguage", hindiFull);
     } else {
-      setLanguage(""); // No default selection if dropdown is not needed
+      setLanguage(""); // No default selection if not both present
     }
   }, []);
+  
+  const lang = localStorage.getItem("nonSelectedLanguage");
+  console.log("lang", lang);
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-screen-3xl mx-auto bg-white shadow-md rounded-lg flex flex-col lg:flex-row">
@@ -289,13 +295,13 @@ const Instructions = () => {
                                   s.startsWith(selectedLang)
                                 );
                               
-                                const nonSelectedLang = selectedLang === "English" ? "Hindi" : "English";
+                                const nonSelectedLang = selectedFull.startsWith("English") ? "Hindi" : "English";
                                 const nonSelectedFull = subjects.find((s) =>
                                   s.startsWith(nonSelectedLang)
                                 );
-                              
-                                setLanguage(selectedLang);
-                                localStorage.setItem("selectedLanguagess", selectedFull || selectedLang);
+                              console.log("selectedFull", selectedFull);
+                                console.log("nonSelectedFull", nonSelectedFull);
+                                localStorage.setItem("languageinitial", selectedFull || selectedLang);
                                 localStorage.setItem("nonSelectedLanguage", nonSelectedFull || nonSelectedLang);
                               }}
                               
