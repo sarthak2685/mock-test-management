@@ -145,6 +145,9 @@ const Instructions = () => {
       time: examDuration / subjects.length, // Assuming equal time distribution
     };
   });
+  const [optionalLanguage, setOptionalLanguage] = useState(() => {
+    return subjects.find(s => s.startsWith("English")) || "";
+  });
   
   console.log("hi",subjectData);
   
@@ -285,36 +288,37 @@ const Instructions = () => {
                       return (
                         <tr key={index}>
                           <td className="px-2 sm:px-4 py-2 border border-gray-300">
-                            <select
-                              value={language}
-                              onChange={(e) => {
-                                const selectedLang = e.target.value; // "Hindi" or "English"
-                              
-                                // Find the full names based on what starts with that
-                                const selectedFull = subjects.find((s) =>
-                                  s.startsWith(selectedLang)
-                                );
-                              
-                                const nonSelectedLang = selectedFull.startsWith("English") ? "Hindi" : "English";
-                                const nonSelectedFull = subjects.find((s) =>
-                                  s.startsWith(nonSelectedLang)
-                                );
-                              console.log("selectedFull", selectedFull);
-                                console.log("nonSelectedFull", nonSelectedFull);
-                                localStorage.setItem("languageinitial", selectedFull || selectedLang);
-                                localStorage.setItem("nonSelectedLanguage", nonSelectedFull || nonSelectedLang);
-                              }}
-                              
-                              className="border border-gray-300 rounded px-2 py-1"
-                            >
-                            <option value={subjects.find(s => s.startsWith("English"))}>
-  {subjects.find(s => s.startsWith("English")) || "English"}
-</option>
-<option value={subjects.find(s => s.startsWith("Hindi"))}>
-  {subjects.find(s => s.startsWith("Hindi")) || "Hindi"}
-</option>
+                          <select
+  value={optionalLanguage}
+  onChange={(e) => {
+    const selectedLang = e.target.value;
 
-                            </select>
+    const selectedFull = subjects.find((s) =>
+      s.startsWith(selectedLang)
+    );
+
+    const nonSelectedLang = selectedFull?.startsWith("English") ? "Hindi" : "English";
+    const nonSelectedFull = subjects.find((s) =>
+      s.startsWith(nonSelectedLang)
+    );
+
+    console.log("selectedFull", selectedFull);
+    console.log("nonSelectedFull", nonSelectedFull);
+
+    setOptionalLanguage(selectedFull);
+    localStorage.setItem("languageinitial", selectedFull || selectedLang);
+    localStorage.setItem("nonSelectedLanguage", nonSelectedFull || nonSelectedLang);
+  }}
+  className="border border-gray-300 rounded px-2 py-1"
+>
+  <option value={subjects.find((s) => s.startsWith("English"))}>
+    {subjects.find((s) => s.startsWith("English")) || "English"}
+  </option>
+  <option value={subjects.find((s) => s.startsWith("Hindi"))}>
+    {subjects.find((s) => s.startsWith("Hindi")) || "Hindi"}
+  </option>
+</select>
+
                           </td>
                           <td className="px-2 sm:px-4 py-2 border border-gray-300">
                             {subject.questions}
