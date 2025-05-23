@@ -179,6 +179,7 @@ const View = () => {
                   q.option_2,
                   q.option_3,
                   q.option_4,
+                  q.option_5,
                 ].filter(Boolean),
                 correctAnswer: q.correct_ans,
                 correctAnswerImage: q.correct_ans2,
@@ -189,6 +190,7 @@ const View = () => {
                   { text: q.option_2, image: q.file_2 },
                   { text: q.option_3, image: q.file_3 },
                   { text: q.option_4, image: q.file_4 },
+                  { text: q.option_5, image: q.file_5 },
                 ].filter((opt) => opt.text),
               }));
 
@@ -264,7 +266,7 @@ const View = () => {
             id: q.id,
             questionText: q.question,
             questionText2: q.question2,
-            options: [q.option_1, q.option_2, q.option_3, q.option_4].filter(
+            options: [q.option_1, q.option_2, q.option_3, q.option_4, q.option_5].filter(
               Boolean
             ),
             correctAnswer: q.correct_ans,
@@ -276,6 +278,7 @@ const View = () => {
               { text: q.option_2, image: q.file_2 },
               { text: q.option_3, image: q.file_3 },
               { text: q.option_4, image: q.file_4 },
+               { text: q.option_5, image: q.file_5 },
             ].filter((opt) => opt.text),
           })
         );
@@ -441,7 +444,7 @@ const View = () => {
             changedQuestion.correctAnswerImage || null;
         }
 
-        for (let i = 0; i < 4; i++) {
+        for (let i = 0; i < 5; i++) {
           const originalOption = originalQuestion.optionFiles?.[i] || {};
           const changedOption = changedQuestion.optionFiles?.[i] || {};
 
@@ -459,6 +462,7 @@ const View = () => {
           option_2: changedQuestion.optionFiles?.[1]?.text || "",
           option_3: changedQuestion.optionFiles?.[2]?.text || "",
           option_4: changedQuestion.optionFiles?.[3]?.text || "",
+          option_5: changedQuestion.optionFiles?.[4]?.text || "",
           correct_answer: changedQuestion.correctAnswer || "",
           marks: editedDetails.positiveMarks || changedQuestion.positiveMarks,
           negative_marks:

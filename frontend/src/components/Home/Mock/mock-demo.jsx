@@ -75,7 +75,7 @@ const MockDemo = () => {
   const language = localStorage.getItem("selectedLanguage") || "english";
   console.log("Language", language);
 
-  useEffect(() => {
+useEffect(() => {
     const fetchMockTests = async () => {
       try {
         const response = await fetch(
@@ -125,18 +125,22 @@ const MockDemo = () => {
                       marks: question.positive_marks,
                       negativeMarks: question.negative_marks,
                       subject: question.subject || subjectName,
+                      // Filter out null, empty, or whitespace-only options
                       options: [
                         question.option_1,
                         question.option_2,
                         question.option_3,
                         question.option_4,
-                      ], // Dynamically map the options
+                        question.option_5,
+                      ].filter(option => option && option.trim() !== ""), // Remove empty options
+                      // Filter out null, empty, or whitespace-only files
                       files: [
                         question.file_1,
                         question.file_2,
                         question.file_3,
                         question.file_4,
-                      ], // Dynamically map the files
+                        question.file_5,
+                      ].filter(file => file && file.trim() !== ""), // Remove empty files
                     }));
                   }
 
@@ -606,7 +610,7 @@ const MockDemo = () => {
                   : "Loading..."}
               </p>
 
-              {/* Log options */}
+{/* Log options */}
               <div className="grid grid-cols-2 gap-6 mb-10">
                 {mockTestData[currentSectionIndex]?.questions[
                   currentQuestionIndex
@@ -621,23 +625,31 @@ const MockDemo = () => {
                     const defaultFileValue =
                       "/media/uploads/questions/option_4_uFtm5qj.png";
 
-                    // Check if valid files exist, excluding the default placeholder
+                    // Check if valid files exist, excluding the default placeholder and null/empty values
                     const validFiles = currentQuestion?.files?.filter(
-                      (file) => file && file !== defaultFileValue
+                      (file) => file && file !== defaultFileValue && file.trim() !== ""
                     );
 
-                    // Use options if no valid files exist
+                    // Filter out null, empty, or whitespace-only options
+                    const validOptions = currentQuestion?.options?.filter(
+                      (option) => option && option.trim() !== ""
+                    );
+
+                    // Use valid files if they exist, otherwise use valid options
                     const displayItems =
-                      validFiles?.length > 0
-                        ? validFiles
-                        : currentQuestion?.options;
+                      validFiles?.length > 0 ? validFiles : validOptions;
 
                     return displayItems?.map((item, index) => {
                       const isFile = item.startsWith("/media/uploads/");
-                      const optionText =
-                        currentQuestion?.options?.[index]?.trim() || null;
+                      
+                      // For files, get the corresponding option text (if exists)
+                      // For options, use the item itself as option text
+                      const optionText = isFile 
+                        ? validOptions?.[index]?.trim() || null
+                        : item?.trim() || null;
 
-                      return item ? (
+                      // Only render if we have either a valid file or valid option text
+                      return (item && item.trim() !== "") ? (
                         <label
                           key={index}
                           className={`border border-gray-300 rounded-lg p-4 flex items-center justify-center text-center cursor-pointer transition duration-200 transform ${
