@@ -611,105 +611,105 @@ useEffect(() => {
               </p>
 
 {/* Log options */}
-              <div className="grid grid-cols-2 gap-6 mb-10">
-                {mockTestData[currentSectionIndex]?.questions[
-                  currentQuestionIndex
-                ] ? (
-                  (() => {
-                    const currentQuestion =
-                      mockTestData[currentSectionIndex]?.questions[
-                        currentQuestionIndex
-                      ];
+<div className="grid grid-cols-2 gap-6 mb-10">
+  {mockTestData[currentSectionIndex]?.questions[currentQuestionIndex] ? (
+    (() => {
+      const currentQuestion =
+        mockTestData[currentSectionIndex]?.questions[currentQuestionIndex];
 
-                    const baseUrl = `${config.apiUrl}`;
-                    const defaultFileValue =
-                      "/media/uploads/questions/option_4_uFtm5qj.png";
+      const baseUrl = `${config.apiUrl}`;
+      const defaultFileValue = "/media/uploads/questions/option_4_uFtm5qj.png";
 
-                    // Check if valid files exist, excluding the default placeholder and null/empty values
-                    const validFiles = currentQuestion?.files?.filter(
-                      (file) => file && file !== defaultFileValue && file.trim() !== ""
-                    );
+      // Clean options: remove null, empty, whitespace, and "None" strings
+      const cleanedOptions = currentQuestion?.options?.filter(
+        (option) =>
+          option &&
+          option.trim() !== "" &&
+          option.trim().toLowerCase() !== "none"
+      );
 
-                    // Filter out null, empty, or whitespace-only options
-                    const validOptions = currentQuestion?.options?.filter(
-                      (option) => option && option.trim() !== ""
-                    );
+      // Clean files: remove null, empty, default image, and "None"
+      const cleanedFiles = currentQuestion?.files?.filter(
+        (file) =>
+          file &&
+          file.trim() !== "" &&
+          file !== defaultFileValue &&
+          file.trim().toLowerCase() !== "none"
+      );
 
-                    // Use valid files if they exist, otherwise use valid options
-                    const displayItems =
-                      validFiles?.length > 0 ? validFiles : validOptions;
+      // Prefer files if valid, else use options
+      const displayItems =
+        cleanedFiles?.length > 0 ? cleanedFiles : cleanedOptions;
 
-                    return displayItems?.map((item, index) => {
-                      const isFile = item.startsWith("/media/uploads/");
-                      
-                      // For files, get the corresponding option text (if exists)
-                      // For options, use the item itself as option text
-                      const optionText = isFile 
-                        ? validOptions?.[index]?.trim() || null
-                        : item?.trim() || null;
+      return displayItems?.map((item, index) => {
+        const isFile = item.startsWith("/media/uploads/");
+        const optionText = isFile
+          ? cleanedOptions?.[index]?.trim() || null
+          : item?.trim() || null;
 
-                      // Only render if we have either a valid file or valid option text
-                      return (item && item.trim() !== "") ? (
-                        <label
-                          key={index}
-                          className={`border border-gray-300 rounded-lg p-4 flex items-center justify-center text-center cursor-pointer transition duration-200 transform ${
-                            selectedOption === item
-                              ? "bg-blue-200 border-blue-800 shadow-md"
-                              : "hover:bg-gray-50 hover:shadow-sm"
-                          }`}
-                        >
-                          <input
-                            type="radio"
-                            name="option"
-                            value={item}
-                            checked={selectedOption === item}
-                            onChange={() => handleOptionChange(item)}
-                            className="hidden"
-                          />
-                          <div className="flex flex-col items-center">
-                            {/* Show image if item is a valid file */}
-                            {isFile && (
-                              <img
-                                src={`${baseUrl}${item}`}
-                                alt={`Option ${index + 1}`}
-                                className="max-w-full max-h-24 object-contain mb-2"
-                              />
-                            )}
-                            {/* Display text with LaTeX and normal text */}
-                            {optionText && (
-                              <div className="text-gray-800 font-medium text-center">
-                                {optionText
-                                  .replace(/\\n/g, "\n")
-                                  .split("\n")
-                                  .map((line, idx) => (
-                                    <p
-                                      key={idx}
-                                      className="flex flex-wrap items-center gap-2"
-                                    >
-                                      {line
-                                        .split(/(\$[^$]+\$)/g)
-                                        .map((part, i) =>
-                                          /^\$[^$]+\$$/.test(part) ? ( // Check if part is LaTeX
-                                            <StaticMathField key={i}>
-                                              {part.slice(1, -1)}
-                                            </StaticMathField>
-                                          ) : (
-                                            <span key={i}>{part}</span>
-                                          )
-                                        )}
-                                    </p>
-                                  ))}
-                              </div>
-                            )}
-                          </div>
-                        </label>
-                      ) : null;
-                    });
-                  })()
-                ) : (
-                  <p>Loading...</p>
-                )}
-              </div>
+        // Skip rendering if item is still invalid
+        if (!item || item.trim().toLowerCase() === "none") return null;
+
+        return (
+          <label
+            key={index}
+            className={`border border-gray-300 rounded-lg p-4 flex items-center justify-center text-center cursor-pointer transition duration-200 transform ${
+              selectedOption === item
+                ? "bg-blue-200 border-blue-800 shadow-md"
+                : "hover:bg-gray-50 hover:shadow-sm"
+            }`}
+          >
+            <input
+              type="radio"
+              name="option"
+              value={item}
+              checked={selectedOption === item}
+              onChange={() => handleOptionChange(item)}
+              className="hidden"
+            />
+            <div className="flex flex-col items-center">
+              {isFile && (
+                <img
+                  src={`${baseUrl}${item}`}
+                  alt={`Option ${index + 1}`}
+                  className="max-w-full max-h-24 object-contain mb-2"
+                />
+              )}
+              {optionText && (
+                <div className="text-gray-800 font-medium text-center">
+                  {optionText
+                    .replace(/\\n/g, "\n")
+                    .split("\n")
+                    .map((line, idx) => (
+                      <p
+                        key={idx}
+                        className="flex flex-wrap items-center gap-2"
+                      >
+                        {line
+                          .split(/(\$[^$]+\$)/g)
+                          .map((part, i) =>
+                            /^\$[^$]+\$$/.test(part) ? (
+                              <StaticMathField key={i}>
+                                {part.slice(1, -1)}
+                              </StaticMathField>
+                            ) : (
+                              <span key={i}>{part}</span>
+                            )
+                          )}
+                      </p>
+                    ))}
+                </div>
+              )}
+            </div>
+          </label>
+        );
+      });
+    })()
+  ) : (
+    <p>Loading...</p>
+  )}
+</div>
+
 
               {/* Question Navigation and Actions */}
               <div className="grid grid-cols-12 items-center lg:mt-[25%] xl:mt-[20%] 2xl:mt-[17%]">
