@@ -8,10 +8,10 @@ function Subscription() {
         {
             id: "38da1dce-e1f6-46c3-98ca-8851299b9a0d", // Basic Plan ID
             name: "Basic Plan",
-            price: "₹145",
-            description: "Ideal for a student group of up to 10 friends.",
+            price: "₹600",
+            description: "Ideal for Institute and Coaching Center - up to 40 students.",
             features: [
-                { text: "Full-Length Mock Tests", available: true },
+                { text: "Mock Tests", available: true },
                 { text: "Weekly Practice Tests", available: true },
                 { text: "Chapter-Wise Tests", available: true },
                 { text: "Performance Tracking", available: true },
@@ -27,11 +27,11 @@ function Subscription() {
         {
             id: "1dc81c46-980d-4777-aba0-6a6a76ce9a03", // Advanced Plan ID
             name: "Advanced Plan",
-            price: "₹649",
+            price: "₹1200",
             description:
-                "For large institutes or coaching batches - Up to 120 students.",
+                "For large institutes or coaching batches - Up to 80 students.",
             features: [
-                { text: "Full-Length Mock Tests", available: true },
+                { text: "Mock Tests", available: true },
                 { text: "Weekly Practice Tests", available: true },
                 { text: "Chapter-Wise Tests", available: true },
                 { text: "Performance Tracking", available: true },
