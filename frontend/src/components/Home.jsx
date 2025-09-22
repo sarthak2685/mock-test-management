@@ -40,7 +40,8 @@ function Home() {
       </Helmet>
       <Banner />
       <Exam />
-      {shouldRenderMockTest && <FreeMock />}
+{/*       {shouldRenderMockTest && <FreeMock />}
+       */}
       <Subject />
       {shouldRenderMockTest && <WhyUs />}
       {shouldRenderMockTest && <Subscription />}
