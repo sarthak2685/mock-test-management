@@ -38,8 +38,9 @@ const View = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const testName = queryParams.get("test");
-  const language = queryParams.get("lang");
+  const language = queryParams.get("lang") || queryParams.get("language") || "en"; // Handle both parameter names
   const examId = queryParams.get("exam_id");
+  const subjectId = queryParams.get("subject_id"); // For subject tests
 
   // Initialize MathJax and set up configuration
   useEffect(() => {
@@ -101,7 +102,7 @@ const View = () => {
       setUser(JSON.parse(storedUser));
     }
 
-    if (examId) {
+    if (examId || subjectId) {
       fetchExamDetails();
     } else {
       setLoading(false);
@@ -110,7 +111,7 @@ const View = () => {
     optionMathJaxRefs.current = optionMathJaxRefs.current.slice(0, 4);
     optionFileInputRefs.current = optionFileInputRefs.current.slice(0, 4);
     optionTextRefs.current = optionTextRefs.current.slice(0, 4);
-  }, [examId]);
+  }, [examId, subjectId]);
 
   const fetchExamDetails = async () => {
     setLoading(true);
@@ -124,12 +125,22 @@ const View = () => {
         return;
       }
 
-      const { data } = await axios.get(
-        `${config.apiUrl}/get-single-exam-details/?exam_id=${examId}`,
-        {
-          headers: { Authorization: `Token ${token}` },
-        }
-      );
+      let apiUrl = '';
+      
+      // Use appropriate API endpoint based on whether it's an exam or subject test
+      if (examId) {
+        apiUrl = `${config.apiUrl}/get-single-exam-details/?exam_id=${examId}&language=${language}`;
+      } else if (subjectId) {
+        apiUrl = `${config.apiUrl}/get-single-exam-details/?subject_id=${subjectId}&language=${language}`;
+      } else {
+        console.error("No exam_id or subject_id provided");
+        setLoading(false);
+        return;
+      }
+
+      const { data } = await axios.get(apiUrl, {
+        headers: { Authorization: `Token ${token}` },
+      });
 
       setExamDetails(data);
 
@@ -469,7 +480,7 @@ const View = () => {
             editedDetails.negativeMarks ||
             changedQuestion.negativeMarks ||
             "0.50",
-          language: language || "en",
+          language: language, // Use the language from query parameter
           institutes: selectedInstitutes?.map((inst) => inst.value) || [],
           for_exam_subjects_o: [selectedSubject.id] || " ",
           for_exam_chapter_o: [],
@@ -548,7 +559,7 @@ const View = () => {
           <div className="p-4 md:p-8">
             <h1 className="text-sm md:text-3xl font-bold mb-2 md:mb-6">
               {testName
-                ? `Questions for ${testName} (${language || "English"})`
+                ? `Questions for ${testName} (${language === 'hi' ? 'Hindi' : 'English'})`
                 : "Questions"}
             </h1>
 
