@@ -7,7 +7,7 @@ const Instructions = () => {
   const [isChecked, setIsChecked] = useState(false);
   const [step, setStep] = useState(1);
   const [language, setLanguage] = useState(
-    localStorage.getItem("selectedLanguage") || "english" // Default to English
+    localStorage.getItem("selectedLanguage") || "en"
   );
   const [optionalSubject, setOptionalSubject] = useState(
     localStorage.getItem("selectedOptionalSubject") || ""
@@ -28,8 +28,18 @@ const Instructions = () => {
   const handleLanguageChange = (e) => {
     const selectedLanguage = e.target.value;
     setLanguage(selectedLanguage);
-    setError1(""); // Clear error when a language is selected
+    setError1("");
     localStorage.setItem("selectedLanguage", selectedLanguage);
+    
+    const subjects = storedDetails?.subjects || [];
+    if (selectedLanguage === "en") {
+      const hindiSubject = subjects.find(s => s.startsWith("Hindi"));
+      localStorage.setItem("nonSelectedLanguage", hindiSubject || "hi");
+    } else if (selectedLanguage === "hi") {
+      const englishSubject = subjects.find(s => s.startsWith("English"));
+      localStorage.setItem("nonSelectedLanguage", englishSubject || "en");
+    }
+    
     console.log("selectedLanguage", selectedLanguage);
   };
 
@@ -51,13 +61,12 @@ const Instructions = () => {
   const handleOptionalSubjectChange = (e) => {
     const selectedSubject = e.target.value;
     setOptionalSubject(selectedSubject);
-    setError2(""); // Clear error when a subject is selected
+    setError2("");
     localStorage.setItem("selectedOptionalSubject", selectedSubject);
   };
 
   const handleNextStep = async () => {
     if (step === 1) {
-      // Validate language selection if both Hindi and English are present
       if (
         storedDetails?.subjects.includes("Hindi") &&
         storedDetails?.subjects.includes("English") &&
@@ -66,9 +75,8 @@ const Instructions = () => {
         setError1("Please select a language before proceeding.");
         return;
       }
-      setStep(2); // Move to the next step
+      setStep(2);
     } else if (step === 2 && isChecked) {
-      // Proceed to the mock demo
       const formatDateTime = (date) => {
         return new Intl.DateTimeFormat("en-GB", {
           year: "numeric",
@@ -84,7 +92,7 @@ const Instructions = () => {
           .replace(/\//g, "-");
       };
       const enableFullScreen = () => {
-        const elem = document.documentElement; // The root element
+        const elem = document.documentElement;
         if (elem.requestFullscreen) {
           return elem.requestFullscreen();
         } else if (elem.mozRequestFullScreen) {
@@ -103,8 +111,13 @@ const Instructions = () => {
       enableFullScreen()
         .then(() => {
           const startTimeFormatted = formatDateTime(new Date());
-          localStorage.setItem("start_time", startTimeFormatted); // Store start time in localStorage
-          navigate("/mock-demo",{replace: true}); // Navigate to the mock demo page
+          localStorage.setItem("start_time", startTimeFormatted);
+          
+          const selectedLang = localStorage.getItem("selectedLanguage");
+          const nonSelectedLang = localStorage.getItem("nonSelectedLanguage");
+          console.log("Navigating with - Selected:", selectedLang, "Non-selected:", nonSelectedLang);
+          
+          navigate("/mock-demo", { replace: true });
         })
         .catch((err) => {
           toast.error("Failed to enter full-screen mode.");
@@ -132,46 +145,35 @@ const Instructions = () => {
   const positiveMarks = storedDetails?.postiveMarks || 0;
   const negativeMarks = storedDetails?.negativeMarks || 0;
   const subject_new = storedDetails?.subjects_new || [];
-  // console.log("subject", subject_new, storedDetails);
 
   const subjectData = subjects.map((subject) => {
-    // Find the matching subject from subjects_new
     const subjectInfo = subject_new.find((item) => item.name === subject);
   
     return {
       subject,
-      questions: subjectInfo ? subjectInfo.total_questions : 0, // Use total_questions or 0 if not found
+      questions: subjectInfo ? subjectInfo.total_questions : 0,
       marks: subjectInfo ? subjectInfo.total_questions * positiveMarks : 0,
-      time: examDuration / subjects.length, // Assuming equal time distribution
+      time: examDuration / subjects.length,
     };
   });
+
   const [optionalLanguage, setOptionalLanguage] = useState(() => {
     return subjects.find(s => s.startsWith("English")) || "";
   });
   
-  console.log("hi",subjectData);
-  
-
-  const optionalSubjectData = {
-    subject: optionalSubject || "Optional Subject",
-    questions: 10,
-    marks: 20,
-    time: 15,
-  };
-
   useEffect(() => {
     const englishFull = subjects.find((s) => s.startsWith("English"));
     const hindiFull = subjects.find((s) => s.startsWith("Hindi"));
   
     if (englishFull && hindiFull) {
-      setLanguage(englishFull); // Set the full string, like "English Language"
-      localStorage.setItem("languageinitial", englishFull);
+      setLanguage("en");
+      localStorage.setItem("selectedLanguage", "en");
       localStorage.setItem("nonSelectedLanguage", hindiFull);
     } else {
-      setLanguage(""); // No default selection if not both present
+      setLanguage("");
     }
   }, []);
-  
+
   const lang = localStorage.getItem("nonSelectedLanguage");
   console.log("lang", lang);
 
@@ -197,8 +199,8 @@ const Instructions = () => {
                   value={language}
                   onChange={handleLanguageChange}
                 >
-                  <option value="english">English</option>
-                  <option value="hindi">Hindi</option>
+                  <option value="en">English</option>
+                  <option value="hi">Hindi</option>
                 </select>
               </div>
             </div>
@@ -278,47 +280,23 @@ const Instructions = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {/* Render rows for subjects */}
                   {subjectData.map((subject, index) => {
                     if (
                       subjects.some((s) => s.startsWith("Hindi")) &&
-  subjects.some((s) => s.startsWith("English")) &&
-  subject.subject.startsWith("Hindi")
+                      subjects.some((s) => s.startsWith("English")) &&
+                      subject.subject.startsWith("Hindi")
                     ) {
                       return (
                         <tr key={index}>
                           <td className="px-2 sm:px-4 py-2 border border-gray-300">
-                          <select
-  value={optionalLanguage}
-  onChange={(e) => {
-    const selectedLang = e.target.value;
-
-    const selectedFull = subjects.find((s) =>
-      s.startsWith(selectedLang)
-    );
-
-    const nonSelectedLang = selectedFull?.startsWith("English") ? "Hindi" : "English";
-    const nonSelectedFull = subjects.find((s) =>
-      s.startsWith(nonSelectedLang)
-    );
-
-    console.log("selectedFull", selectedFull);
-    console.log("nonSelectedFull", nonSelectedFull);
-
-    setOptionalLanguage(selectedFull);
-    localStorage.setItem("languageinitial", selectedFull || selectedLang);
-    localStorage.setItem("nonSelectedLanguage", nonSelectedFull || nonSelectedLang);
-  }}
-  className="border border-gray-300 rounded px-2 py-1"
->
-  <option value={subjects.find((s) => s.startsWith("English"))}>
-    {subjects.find((s) => s.startsWith("English")) || "English"}
-  </option>
-  <option value={subjects.find((s) => s.startsWith("Hindi"))}>
-    {subjects.find((s) => s.startsWith("Hindi")) || "Hindi"}
-  </option>
-</select>
-
+                            <select
+                              value={language}
+                              onChange={handleLanguageChange}
+                              className="border border-gray-300 rounded px-2 py-1"
+                            >
+                              <option value="en">English</option>
+                              <option value="hi">Hindi</option>
+                            </select>
                           </td>
                           <td className="px-2 sm:px-4 py-2 border border-gray-300">
                             {subject.questions}
@@ -337,11 +315,8 @@ const Instructions = () => {
                       subjects.some((s) => s.startsWith("Hindi")) &&
                       subjects.some((s) => s.startsWith("English"))
                     ) {
-                      // Skip rendering if dropdown is already shown
                       return null;
-                    }
-                     else {
-                      // Render rows for other subjects
+                    } else {
                       return (
                         <tr key={index}>
                           <td className="px-2 sm:px-4 py-2 border border-gray-300">

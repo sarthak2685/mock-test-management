@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useMediaQuery } from "react-responsive";
-// import { quizData } from "../Mock/quiz";
 import ChapterNavigation from "../Mock/ChapterNavigation";
 import ChapterMobile from "../Mock/ChapterMobile";
 import config from "../../../config";
-// import { FaBrain, FaBook, FaCalculator, FaLanguage } from "react-icons/fa"; // Icons for sections
 import Timer from "../Mock/Timer";
 import UserProfile from "../Mock/UserProfile";
 import { StaticMathField } from "react-mathquill";
@@ -13,101 +11,35 @@ const MockChapter = () => {
   const user = {
     name: "John Doe",
     role: "Student",
-    profileImage: "", // Empty string or null means it will show initials
+    profileImage: "",
   };
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [submitted, setSubmitted] = useState(false);
-  //const [students, setStudents] = useState([]);
-  //const [error, setError] = useState("");
 
   const S = JSON.parse(localStorage.getItem("user"));
   const token = S.token;
   const institueName = S.institute_name;
 
-  // const sectionIcons = [
-  //   <FaBrain />,
-  //   <FaBook />,
-  //   <FaCalculator />,
-  //   <FaLanguage />,
-  //   <FaLanguage />,
-  // ];
-
-  // const UserProfile = () => {
-  //   const [user, setUser] = useState({ name: "Unknown User", role: "Student" }); // Default user state with name and role
-  //   useEffect(() => {
-  //     // Fetch user details from local storage
-  //     const storedData = localStorage.getItem("user"); // Assuming JSON object is stored under this key
-  //     if (storedData) {
-  //       try {
-  //         const parsedData = JSON.parse(storedData); // Parse the JSON string
-  //         if (parsedData && parsedData.name) {
-  //           setUser({ name: parsedData.name, role: parsedData.type }); // Set user name and role (assuming type is role)
-  //         }
-  //       } catch (error) {
-  //         console.error("Error parsing stored user data:", error);
-  //         setUser({ name: "Unknown User", role: "Student" }); // Fallback in case of error
-  //       }
-  //     }
-  //   }, []); // Runs once when the component mounts
-
-  //   return (
-  //     <div className="flex items-center space-x-3 px-2 bg-gray-50 rounded-lg shadow-sm">
-  //       {/* Render initials based on user name */}
-  //       <div className="w-12 h-12 p-2 rounded-full bg-blue-500 text-white flex items-center justify-center">
-  //         <span className="text-lg font-semibold">
-  //           {user.name ? user.name.charAt(0).toUpperCase() : "U"}
-  //         </span>{" "}
-  //         {/* Initial of the name */}
-  //       </div>
-
-  //       <div>
-  //         <h2 className="text-lg font-semibold text-gray-700">{user.name}</h2>{" "}
-  //         {/* Display the user's name */}
-  //         <p className="text-sm text-gray-500">{user.role}</p>{" "}
-  //         {/* Display the user's role */}
-  //       </div>
-  //     </div>
-  //   );
-  // };
-
-  // const [answeredQuestions, setAnsweredQuestions] = useState(
-  //   quizData.map(() => [])
-  // );
-
-  // const [markedForReview, setMarkedForReview] = useState(
-  //   quizData.map(() => [])
-  // );
-
-  // const [selectedSubject, setSelectedSubject] = useState(
-  //   localStorage.getItem("selectedOptionalSubject") || ""
-  // );
-
-  // Function to handle filtered data (to display only relevant sections)
-  // const filteredQuizData = quizData.filter((section) => {
-  //   if (selectedSubject) {
-  //     return (
-  //       section.section === "General Intelligence and Reasoning" ||
-  //       section.section === "General Awareness" ||
-  //       section.section === "Quantitative Aptitude" ||
-  //       section.section === selectedSubject
-  //     );
-  //   }
-  //   return true;
-  // });
-
   const [mockTestData, setMockTestData] = useState([]);
-  const [timerDuration, setTimerDuration] = useState(0); // State for timer
+  const [timerDuration, setTimerDuration] = useState(0);
   const SubjectId = localStorage.getItem("selectedSubjectId");
-  const language = localStorage.getItem("selectedLanguage") || "english";
+  
+  // Get language parameters - use short codes
+  const selectedLanguage = localStorage.getItem("selectedLanguage") || "en";
+  const optional = localStorage.getItem("nonSelectedLanguage") || "";
+  
+  console.log("Language Params - Selected:", selectedLanguage, "Optional:", optional);
 
   useEffect(() => {
     const fetchMockTests = async () => {
       try {
+        console.log("API Call - Language:", selectedLanguage, "Optional:", optional);
+        
         const response = await fetch(
-          `${config.apiUrl}/get-single-exam-details-based-on-subjects/?subject_id=${SubjectId}&institute_name=${institueName}&language=${language}`,
+          `${config.apiUrl}/get-single-exam-details-based-on-subjects/?subject_id=${SubjectId}&institute_name=${institueName}&language=${selectedLanguage}`,
           {
             headers: {
               Authorization: `Token ${token}`,
@@ -212,20 +144,39 @@ const MockChapter = () => {
     if (SubjectId) {
       fetchMockTests();
     }
-  }, [SubjectId]);
+  }, [SubjectId, selectedLanguage, token, institueName]); // Added language dependency
 
   // Debugging: Check the timerDuration and mockTestData
-  useEffect(() => {}, [timerDuration, mockTestData]);
+  useEffect(() => {
+    console.log("Timer Duration:", timerDuration);
+    console.log("Mock Test Data:", mockTestData);
+  }, [timerDuration, mockTestData]);
 
   const [answeredQuestions, setAnsweredQuestions] = useState(
-    mockTestData.map((subject) => new Array(subject.no_of_questions).fill(null)) // Initialize with null (or any default value)
+    mockTestData.map((subject) => new Array(subject.no_of_questions).fill(null))
   );
 
   const [markedForReview, setMarkedForReview] = useState(
     mockTestData.map((subject) =>
       new Array(subject.no_of_questions).fill(false)
-    ) // Initialize with false (not marked for review)
+    )
   );
+
+  useEffect(() => {
+    // When mockTestData is fetched, update the answeredQuestions and markedForReview state
+    if (mockTestData.length > 0) {
+      setAnsweredQuestions(
+        mockTestData.map((subject) =>
+          new Array(subject.no_of_questions).fill(null)
+        )
+      );
+      setMarkedForReview(
+        mockTestData.map((subject) =>
+          new Array(subject.no_of_questions).fill(false)
+        )
+      );
+    }
+  }, [mockTestData]);
 
   // Ensure that the current section is correctly assigned based on index
   const currentSection = mockTestData[currentSectionIndex] || {};
@@ -259,6 +210,7 @@ const MockChapter = () => {
       return updatedAnswers;
     });
   };
+
   useEffect(() => {
     const handleBeforeUnload = (event) => {
       const isTestSubmitted = localStorage.getItem("submissionResult");
@@ -268,7 +220,7 @@ const MockChapter = () => {
       if (submissionInProgress === "true" || isTestSubmitted) return;
 
       event.preventDefault();
-      event.returnValue = "Are you sure you want to refresh?"; // Standard browser warning
+      event.returnValue = "Are you sure you want to refresh?";
     };
 
     const handleUnload = () => {
@@ -324,7 +276,7 @@ const MockChapter = () => {
 
       // Fetch the user's answer for the current question
       const userAnswer =
-        answeredQuestions[currentSectionIndex]?.[currentQuestionIndex] || {}; // Fetch based on both section and question index
+        answeredQuestions[currentSectionIndex]?.[currentQuestionIndex] || {};
       const user = JSON.parse(localStorage.getItem("user"));
 
       if (!user) {
@@ -337,15 +289,13 @@ const MockChapter = () => {
 
       // Ensure the section exists in stored data
       if (!storedData[sectionName]) {
-        storedData[sectionName] = { questions: [] }; // Initialize section with empty questions array
+        storedData[sectionName] = { questions: [] };
       }
 
-      // If the section already has answers, accumulate them; otherwise, initialize the section with an empty object
       if (!storedData[sectionName].questions) {
         storedData[sectionName].questions = {};
       }
 
-      // Ensure questions is always an array
       if (!Array.isArray(storedData[sectionName].questions)) {
         storedData[sectionName].questions = [];
       }
@@ -355,24 +305,24 @@ const MockChapter = () => {
         typeof userAnswer === "string" &&
         !userAnswer.startsWith("/media/uploads/")
           ? userAnswer
-          : null; // Assign text answer if it's not an image
+          : null;
       const selectedAnswer2 =
         typeof userAnswer === "string" &&
         userAnswer.startsWith("/media/uploads/")
           ? userAnswer
-          : null; // Assign image answer if it's a URL
+          : null;
 
       // Update the selected answer for the current question
       storedData[sectionName].questions = [
         ...storedData[sectionName].questions.filter(
           (q) => q.question !== currentQuestion.id
-        ), // Remove the old entry with the same question ID (if exists)
+        ),
         {
           question: currentQuestion.id,
-          selected_answer: selectedAnswer || null, // Assign text if present
-          selected_answer_2: selectedAnswer2 || null, // Assign image if present
+          selected_answer: selectedAnswer || null,
+          selected_answer_2: selectedAnswer2 || null,
           student: student_id,
-          language: language,
+          language: selectedLanguage, // Use selectedLanguage instead of language
         },
       ];
 
@@ -381,19 +331,10 @@ const MockChapter = () => {
 
       // Move to the next question or section
       if (currentQuestionIndex < currentSection.questions.length - 1) {
-        // Move to the next question in the current section
         setCurrentQuestionIndex(currentQuestionIndex + 1);
       } else if (currentSectionIndex < mockTestData.length - 1) {
-        // Move to the next section and reset question index
         setCurrentSectionIndex(currentSectionIndex + 1);
         setCurrentQuestionIndex(0);
-
-        // Update the selected subject for the new section
-        // const nextSubject =
-        //   mockTestData[currentSectionIndex + 1]?.test_name || "Unknown Subject";
-        // setSelectedSubject(nextSubject); // Update the selected subject dynamically
-      } else {
-        // End of all sections and questions
       }
     } catch (error) {
       console.error("Error in handleSubmitNext:", error);
@@ -408,11 +349,6 @@ const MockChapter = () => {
   const isLastSection =
     (mockTestData?.length || 0) > 0 &&
     currentSectionIndex === (mockTestData?.length || 0) - 1;
-
-  //   const handleSectionChange = (sectionIndex, subject) => {
-  //     setCurrentSectionIndex(sectionIndex); // Update the active section index
-  //     setSelectedSubject(subject); // Update the active subject
-  //   };
 
   const handleMarkForReview = () => {
     setMarkedForReview((prevMarked) => {
@@ -441,8 +377,7 @@ const MockChapter = () => {
       setSubmitted={setSubmitted}
       submitted={submitted}
       mockTestData={mockTestData}
-      // quizData={quizData} // Pass the fetched data here
-      currentSection={mockTestData[currentSectionIndex]} // Adjusted to the fetched data
+      currentSection={mockTestData[currentSectionIndex]}
       currentQuestion={
         mockTestData[currentSectionIndex]?.questions[currentQuestionIndex]
       }
@@ -502,7 +437,6 @@ const MockChapter = () => {
               <h2 className="text-3xl font-bold text-blue-600 mb-6">
                 Question {currentQuestionIndex + 1}
               </h2>
-              {/* Log current question */}
               <p className="text-lg font-medium mb-8">
                 {mockTestData[currentSectionIndex]?.questions[
                   currentQuestionIndex
@@ -516,7 +450,6 @@ const MockChapter = () => {
                       const defaultFileValue =
                         "/media/uploads/questions/option_4_uFtm5qj.png";
 
-                      // Replace '\\n' with actual newlines and split into an array
                       const formattedQuestion =
                         currentQuestion?.question
                           .replace(/\\n/g, "\n")
@@ -530,7 +463,7 @@ const MockChapter = () => {
                               className="mb-2 flex flex-wrap items-center gap-2"
                             >
                               {line.split(/(\$[^$]+\$)/g).map((part, i) =>
-                                /^\$[^$]+\$$/.test(part) ? ( // Check if part is LaTeX
+                                /^\$[^$]+\$$/.test(part) ? (
                                   <StaticMathField key={i}>
                                     {part.slice(1, -1)}
                                   </StaticMathField>
@@ -541,7 +474,6 @@ const MockChapter = () => {
                             </p>
                           ))}
 
-                          {/* Additional question (question_1), skipping the default value */}
                           {currentQuestion?.question_1 &&
                           currentQuestion.question_1 !== defaultFileValue ? (
                             currentQuestion.question_1.startsWith(
@@ -564,7 +496,7 @@ const MockChapter = () => {
                   : "Loading..."}
               </p>
 
-              {/* Log options */}
+              {/* Options */}
               <div className="grid grid-cols-2 gap-6 mb-10">
                 {mockTestData[currentSectionIndex]?.questions[
                   currentQuestionIndex
@@ -579,12 +511,10 @@ const MockChapter = () => {
                     const defaultFileValue =
                       "/media/uploads/questions/option_4_uFtm5qj.png";
 
-                    // Check if valid files exist, excluding the default placeholder
                     const validFiles = currentQuestion?.files?.filter(
                       (file) => file && file !== defaultFileValue
                     );
 
-                    // Use options if no valid files exist
                     const displayItems =
                       validFiles?.length > 0
                         ? validFiles
@@ -613,7 +543,6 @@ const MockChapter = () => {
                             className="hidden"
                           />
                           <div className="flex flex-col items-center">
-                            {/* Show image if item is a valid file */}
                             {isFile && (
                               <img
                                 src={`${baseUrl}${item}`}
@@ -621,7 +550,6 @@ const MockChapter = () => {
                                 className="max-w-full max-h-24 object-contain mb-2"
                               />
                             )}
-                            {/* Display text with LaTeX and normal text */}
                             {optionText && (
                               <div className="text-gray-800 font-medium text-center">
                                 {optionText
@@ -635,7 +563,7 @@ const MockChapter = () => {
                                       {line
                                         .split(/(\$[^$]+\$)/g)
                                         .map((part, i) =>
-                                          /^\$[^$]+\$$/.test(part) ? ( // Check if part is LaTeX
+                                          /^\$[^$]+\$$/.test(part) ? (
                                             <StaticMathField key={i}>
                                               {part.slice(1, -1)}
                                             </StaticMathField>
@@ -694,13 +622,7 @@ const MockChapter = () => {
 
                 <button
                   onClick={handleSubmitNext}
-                  // disabled={isLastQuestion && isLastSection}
-                  className={`px-5 py-3 col-span-3 rounded-lg shadow-md ${
-                    // isLastQuestion && isLastSection
-                    //   ? "bg-green-200 text-green-700 cursor-not-allowed"
-                    // :
-                    "bg-green-500 text-white hover:bg-green-600"
-                  }`}
+                  className="px-5 py-3 col-span-3 rounded-lg shadow-md bg-green-500 text-white hover:bg-green-600"
                 >
                   Save & Next
                 </button>

@@ -7,7 +7,7 @@ const ChapterTestInstructions = () => {
   const [isChecked, setIsChecked] = useState(false);
   const [step, setStep] = useState(1);
   const [language, setLanguage] = useState(
-    localStorage.getItem("selectedLanguage") || "english"
+    localStorage.getItem("selectedLanguage") || "en" // Changed to short code
   );
   const [optionalSubject, setOptionalSubject] = useState(
     localStorage.getItem("selectedOptionalSubject") || ""
@@ -23,9 +23,21 @@ const ChapterTestInstructions = () => {
   const handleLanguageChange = (e) => {
     const selectedLanguage = e.target.value;
     setLanguage(selectedLanguage);
-    setError1(""); // Clear error when a language is selected
+    setError1("");
+    
+    // Store short codes in localStorage
     localStorage.setItem("selectedLanguage", selectedLanguage);
+    
+    // Also store non-selected language
+    if (selectedLanguage === "en") {
+      localStorage.setItem("nonSelectedLanguage", "hi");
+    } else if (selectedLanguage === "hi") {
+      localStorage.setItem("nonSelectedLanguage", "en");
+    }
+    
+    console.log("Selected Language:", selectedLanguage);
   };
+
   const [selectedChapter, setSelectedChapter] = useState("");
   const [testDuration, setTestDuration] = useState("");
   const [noOfQuestions, setNoOfQuestions] = useState("");
@@ -38,25 +50,18 @@ const ChapterTestInstructions = () => {
     const chapter = localStorage.getItem("selectedChapter");
     const duration = localStorage.getItem("testDuration");
     const questions = localStorage.getItem("noOfQuestions");
-    const positiveMarks = localStorage.getItem("positiveMarks");
-    const negativeMarks = localStorage.getItem("negativeMarks");
-    const totalMarks = questions * positiveMarks;
+    const positiveMarksValue = localStorage.getItem("positiveMarks");
+    const negativeMarksValue = localStorage.getItem("negativeMarks");
+    const totalMarksValue = questions * positiveMarksValue;
 
     // Set them in state
     setSelectedChapter(chapter || "");
     setTestDuration(duration || "");
     setNoOfQuestions(questions || "");
-    setPositiveMarks(positiveMarks || 0);
-    setNegativeMarks(negativeMarks || 0);
-    setTotalMarks(totalMarks || 0);
+    setPositiveMarks(positiveMarksValue || 0);
+    setNegativeMarks(negativeMarksValue || 0);
+    setTotalMarks(totalMarksValue || 0);
   }, []);
-
-  // const handleOptionalSubjectChange = (e) => {
-  //   const selectedSubject = e.target.value;
-  //   setOptionalSubject(selectedSubject);
-  //   setError2(""); // Clear error when a subject is selected
-  //   localStorage.setItem("selectedOptionalSubject", selectedSubject);
-  // };
 
   const handleNextStep = () => {
     if (step === 1) {
@@ -105,7 +110,13 @@ const ChapterTestInstructions = () => {
           // Store formatted start time when transitioning to step 2
           const startTimeFormatted = formatDateTime(new Date());
           localStorage.setItem("start_time", startTimeFormatted);
-          navigate("/chapter-exam",{ replace: true }); 
+          
+          // Log the language parameters being passed
+          const selectedLang = localStorage.getItem("selectedLanguage");
+          const nonSelectedLang = localStorage.getItem("nonSelectedLanguage");
+          console.log("Navigating with - Selected:", selectedLang, "Non-selected:", nonSelectedLang);
+          
+          navigate("/chapter-exam", { replace: true }); 
         })
         .catch((err) => {
           toast.error("Failed to enter full-screen mode.");
@@ -153,9 +164,8 @@ const ChapterTestInstructions = () => {
                   onChange={handleLanguageChange}
                 >
                   <option value="">Select Language</option>
-                  <option value="english">English</option>
-                  <option value="hindi">Hindi</option>
-                  {/* Add more languages as needed */}
+                  <option value="en">English</option>
+                  <option value="hi">Hindi</option>
                 </select>
               </div>
             </div>
@@ -251,14 +261,6 @@ const ChapterTestInstructions = () => {
                     </td>
                   </tr>
                 </tbody>
-                <tfoot>
-                  {/* <tr className="font-semibold ">
-                    <td className="px-4 py-2 border border-gray-300">Total</td>
-                    <td className="px-4 py-2 border border-gray-300">25</td>
-                    <td className="px-4 py-2 border border-gray-300">100</td>
-                    <td className="px-4 py-2 border border-gray-300">60 min</td>
-                  </tr> */}
-                </tfoot>
               </table>
             </div>
           </>

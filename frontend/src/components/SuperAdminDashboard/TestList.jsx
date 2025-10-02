@@ -317,14 +317,14 @@ const TestList = () => {
                 // Links for exam tests
                 <>
                   <Link
-                    to={`/view?test=${selectedTestName}&lang=english&exam_id=${selectedExamId}`}
+                    to={`/view?test=${selectedTestName}&language=en&exam_id=${selectedExamId}`}
                     className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition text-center"
                     onClick={() => setIsLangModalOpen(false)}
                   >
                     English
                   </Link>
                   <Link
-                    to={`/view?test=${selectedTestName}&lang=hindi&exam_id=${selectedExamId}`}
+                    to={`/view?test=${selectedTestName}&language=hi&exam_id=${selectedExamId}`}
                     className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition text-center"
                     onClick={() => setIsLangModalOpen(false)}
                   >
