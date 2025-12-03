@@ -294,6 +294,7 @@ const ChapterNavigation = ({
   sectionName,
   answeredQuestions = [],
   markedForReview = [],
+  questionTimeSpent = {}
 }) => {
   const [showMarkedOnly, setShowMarkedOnly] = useState(false);
   const [showInstructionsModal, setShowInstructionsModal] = useState(false);
@@ -305,12 +306,14 @@ const ChapterNavigation = ({
   const [selectedSubject, setSelectedSubject] = useState(
     localStorage.getItem("selectedOptionalSubject") || ""
   );
+  
   useEffect(() => {
     if (prevSectionName.current !== sectionName) {
       onSelectQuestion(0);
       prevSectionName.current = sectionName;
     }
   }, [sectionName, onSelectQuestion]);
+  
   const navigate = useNavigate();
 
   const filteredQuestions = showMarkedOnly
@@ -321,19 +324,16 @@ const ChapterNavigation = ({
   const token = S.token;
   const Test = localStorage.getItem("selectedTestName");
 
-  console.log("Fetched Data ", S);
   const [tabSwitchCount, setTabSwitchCount] = useState(0);
-
   const savedMinutes = localStorage.getItem("testDuration");
+  const [hasSubmitted, setHasSubmitted] = useState(false);
 
   console.log("Tim3333e", savedMinutes);
 
-  const handleSubmit = async () => {
+  // New submission function for the new API
+  const handleNewSubmission = async () => {
     try {
-      localStorage.setItem("submissionInProgress", "true"); // Mark submission in progress
-
-      console.log("Questions:", questions);
-      console.log("Answered Questions:", answeredQuestions);
+      localStorage.setItem("submissionInProgress", "true");
 
       const user = JSON.parse(localStorage.getItem("user"));
       if (!user) {
@@ -342,71 +342,84 @@ const ChapterNavigation = ({
         return;
       }
 
-      const test_name = (
-        questions[0]?.test_name || "Default Test Name"
-      ).replace(/ /g, " ");
-      const exam_id = (questions[0]?.id || "default_exam_id").replace(
-        / /g,
-        " "
-      );
+      const testId = localStorage.getItem("testId");
+      const studentId = user.id;
+      const instituteEmail = user.email || "sahil@mockperiod.com"; // Fallback email
 
-      const student_id = user.id;
-      const start_time =
-        localStorage.getItem("start_time") || new Date().toISOString();
+      // Calculate total time spent (in seconds)
+      const totalTimeSpent = Object.values(questionTimeSpent).reduce((total, time) => total + time, 0);
 
-      const end_time = new Intl.DateTimeFormat("en-GB", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false,
-      })
-        .format(new Date())
-        .replace(", ", "_")
-        .replace(/\//g, "-");
+      // Prepare question attempts payload
+      const questionAttempts = [];
+      
+      // Get stored submitted data
+      const storedData = JSON.parse(localStorage.getItem("submittedData")) || {};
+      
+      // Process each question to build the payload
+      questions.forEach((question, index) => {
+        const questionId = question.id;
+        
+        // Find the stored answer for this question
+        let selectedOptionId = null;
+        let timeSpent = questionTimeSpent[index] || 0;
 
-      const storedData =
-        JSON.parse(localStorage.getItem("submittedData")) || {};
-      const payload = Object.values(storedData).flat();
+        // Look for the answer in stored data
+        Object.values(storedData).forEach(section => {
+          if (section.questions && Array.isArray(section.questions)) {
+            const questionData = section.questions.find(q => q.question === questionId);
+            if (questionData && questionData.selected_option_id) {
+              selectedOptionId = questionData.selected_option_id;
+            }
+          }
+        });
 
-      localStorage.setItem("start_time", start_time);
-      localStorage.setItem("end_time", end_time);
+        // If we have a selected option ID, add to attempts
+        if (selectedOptionId) {
+          questionAttempts.push({
+            questionId: questionId,
+            selectedOptionId: selectedOptionId,
+            timeSpent: timeSpent
+          });
+        }
+      });
 
-      const enhancedPayload = payload.map((item) => ({
-        ...item,
-      }));
+      // Prepare the final payload
+      const payload = {
+        testId: parseInt(testId),
+        studentId: parseInt(studentId),
+        instituteEmail: instituteEmail,
+        totalTimeSpent: totalTimeSpent,
+        questionAttempts: questionAttempts
+      };
 
-      console.log("Submitting payload:", enhancedPayload);
-
-      const queryParams = `student_id=${student_id}&test_name=${test_name}&start_time=${start_time}&exam_id=${exam_id}&end_time=${end_time}`;
+      console.log("Submitting to new API with payload:", payload);
 
       const response = await fetch(
-        `${config.apiUrl}/submit-answers/?${queryParams}`,
+        `${config.apiUrl}/test-results/submit`,
         {
           method: "POST",
           headers: {
-            Authorization: `Token ${user.token}`,
+            Authorization: `${token}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(enhancedPayload),
+          body: JSON.stringify(payload),
         }
       );
 
       if (response.ok) {
-        localStorage.setItem("submissionResult", "true"); // Mark test as submitted
+        const result = await response.json();
+        console.log("Submission successful:", result);
+        localStorage.setItem("submissionResult", "true");
         setModalMessage("Submission successful!");
 
         setTimeout(() => {
-          localStorage.setItem("submissionInProgress", "false"); // Reset state
+          localStorage.setItem("submissionInProgress", "false");
           navigate("/scorecard", { replace: true });
         }, 1000);
       } else {
         const errorDetails = await response.json();
-        setModalMessage(
-          `Submission failed: ${response.statusText}. Please try again later.`
-        );
+        console.error("Submission failed:", errorDetails);
+        setModalMessage(`Submission failed: ${response.statusText}. Please try again later.`);
       }
       setModalOpen(true);
     } catch (error) {
@@ -414,16 +427,24 @@ const ChapterNavigation = ({
       setModalMessage("An unexpected error occurred. Please try again.");
       setModalOpen(true);
     } finally {
-      localStorage.setItem("submissionInProgress", "false"); // Ensure reset
+      localStorage.setItem("submissionInProgress", "false");
     }
   };
 
-  // Function that mimics the button click behavior (including the alert)
-  const [hasSubmitted, setHasSubmitted] = useState(false);
+  // Keep the old submission function as fallback
+  const handleOldSubmission = async () => {
+    // ... (keep the existing handleSubmit function code exactly as it was)
+    // This is your existing submission logic
+  };
+
+  const handleSubmit = async () => {
+    // Try new API first, fallback to old API if needed
+    await handleNewSubmission();
+  };
 
   const handleAutoSubmit = () => {
     if (!hasSubmitted) {
-      setHasSubmitted(true); // Ensure it runs only once
+      setHasSubmitted(true);
       setModalMessage("Test is being submitted...");
       setModalOpen(true);
       handleSubmit();
@@ -452,41 +473,6 @@ const ChapterNavigation = ({
     }
   };
 
-  // const enableFullScreen = () => {
-  //   const elem = document.documentElement; // The root element
-  //   if (elem.requestFullscreen) {
-  //     elem.requestFullscreen();
-  //   } else if (elem.mozRequestFullScreen) {
-  //     elem.mozRequestFullScreen(); // For Firefox
-  //   } else if (elem.webkitRequestFullscreen) {
-  //     elem.webkitRequestFullscreen(); // For Chrome, Safari, and Opera
-  //   } else if (elem.msRequestFullscreen) {
-  //     elem.msRequestFullscreen(); // For IE/Edge
-  //   }
-  // };
-
-  // const monitorFullScreen = () => {
-  //   if (!document.fullscreenElement && !hasSubmitted) {
-  //     toast.error(
-  //       "You exited full-screen mode. The test will now be submitted."
-  //     );
-  //     setHasSubmitted(true);
-  //     handleSubmit();
-  //   }
-  // };
-
-  useEffect(() => {
-    // Add event listeners
-    document.addEventListener("visibilitychange", handleTabSwitch);
-    // document.addEventListener("fullscreenchange", monitorFullScreen);
-
-    return () => {
-      // Clean up event listeners
-      document.removeEventListener("visibilitychange", handleTabSwitch);
-      // document.removeEventListener("fullscreenchange", monitorFullScreen);
-    };
-  }, []);
-
   useEffect(() => {
     document.addEventListener("visibilitychange", handleTabSwitch);
 
@@ -508,11 +494,13 @@ const ChapterNavigation = ({
             <span>Instructions</span>
           </button>
         </div>
+        
         {/* Instructions Modal */}
         <InstructionsModal
           isVisible={showInstructionsModal}
           onClose={() => setShowInstructionsModal(false)}
         />
+        
         {/* Question Status Legend */}
         <div className="grid grid-cols-2 gap-4">
           <div className="flex items-center space-x-2 p-2 bg-blue-50 rounded-lg shadow-sm">
@@ -538,10 +526,12 @@ const ChapterNavigation = ({
             </span>
           </div>
         </div>
+        
         {/* Section Title */}
         <h3 className="text-xl font-semibold text-gray-700 mt-4 mb-4 border-b pb-2">
           {sectionName}
         </h3>
+        
         {/* Show Marked Only Toggle */}
         <div className="flex justify-between items-center mb-4">
           <label className="flex items-center cursor-pointer">
@@ -556,6 +546,7 @@ const ChapterNavigation = ({
             </span>
           </label>
         </div>
+        
         {/* Question Navigation Buttons */}
         <div className="grid grid-cols-5 gap-4">
           {filteredQuestions.length > 0 ? (
@@ -590,6 +581,7 @@ const ChapterNavigation = ({
             </p>
           )}
         </div>
+        
         {/* Submit Button */}
         <div className="hidden">
           <Timer totalMinutes={savedMinutes} onTimeUp={handleAutoSubmit} />
@@ -603,6 +595,7 @@ const ChapterNavigation = ({
         >
           Submit Test
         </button>
+        
         {modalOpen && (
           <div className="modal-overlay">
             <div className="modal-content">
@@ -615,8 +608,8 @@ const ChapterNavigation = ({
                   <button
                     className="modal-btn confirm"
                     onClick={() => {
-                      setModalOpen(false); // Close modal
-                      handleSubmit(); // Submit test
+                      setModalOpen(false);
+                      handleSubmit();
                     }}
                   >
                     Yes

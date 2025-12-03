@@ -12,7 +12,7 @@ const Chapters = () => {
   const [error, setError] = useState(null);
   const S = JSON.parse(localStorage.getItem("user"));
   const id = S.id;
-  const institueName = S.institute_name;
+  const instituteId = S.instituteId;
   const token = S.token;
   const navigate = useNavigate();
   const [studentGivenTests, setStudentGivenTests] = useState([]);
@@ -21,10 +21,10 @@ const Chapters = () => {
     const fetchChapters = async () => {
       try {
         const response = await fetch(
-          `${config.apiUrl}/get-single-exam-details-based-on-subjects/?subject_id=${SubjectId}&institue_name=${institueName}`,
+          `${config.apiUrl}/tests/subject/${SubjectId}/institute/${instituteId}`,
           {
             headers: {
-              Authorization: `Token ${token}`,
+              Authorization: `${token}`,
               "Content-Type": "application/json",
             },
           }
@@ -35,29 +35,25 @@ const Chapters = () => {
         }
 
         const data = await response.json();
+        console.log("API Response:", data);
 
-        // Extract chapter data and filter out question details
-        const formattedData = Object.entries(data?.data?.chapters || {}).map(
-          ([chapterName, items]) => ({
-            name: chapterName,
-            tests: items
-              .filter(
-                (item) =>
-                  item.test_name &&
-                  item.duration &&
-                  item.total_no_of_questions &&
-                  item._negative_marks &&
-                  item._positive_marks
-              )
-              .map((test) => ({
-                testName: test.test_name,
-                examDuration: test.duration,
-                noOfQuestions: test.total_no_of_questions,
-                negativeMarks: test._negative_marks,
-                positiveMarks: test._positive_marks,
-              })),
-          })
-        );
+        // Transform the new API response format to match existing structure
+        const formattedData = data.map((test) => ({
+          name: test.chapterNames && test.chapterNames.length > 0 ? test.chapterNames[0] : "Unnamed Chapter",
+          tests: [
+            {
+              testName: test.testName,
+              examDuration: test.durationMinutes,
+              noOfQuestions: test.totalQuestions,
+              negativeMarks: test.negativeMark,
+              positiveMarks: test.correctMark,
+              testId: test.id,
+              language: test.language,
+              examType: test.examType,
+              subjectName: test.subjectName
+            }
+          ]
+        }));
 
         setChapters(formattedData);
       } catch (err) {
@@ -71,7 +67,7 @@ const Chapters = () => {
     const fetchStudentGivenTests = async () => {
       try {
         const response = await fetch(
-          `${config.apiUrl}/tests_point/?student_id=${id}&institute_name=${institueName}`,
+          `${config.apiUrl}/tests_point/?student_id=${id}&institute_name=${instituteId}`,
           {
             headers: {
               Authorization: `Token ${token}`,
@@ -91,68 +87,58 @@ const Chapters = () => {
       }
     };
 
-    if (SubjectId) {
+    if (SubjectId && instituteId) {
       setLoading(true);
       fetchChapters();
       fetchStudentGivenTests();
     } else {
-      setError("No subject selected.");
+      setError("No subject selected or institute ID missing.");
       setLoading(false);
     }
-  }, [SubjectId, institueName, id, token]);
+  }, [SubjectId, instituteId, id, token]);
 
-  const handleChapterClick = (chapterName) => {
-    // Find the chapter in the chapters state
-    const selectedChapter = chapters.find(
-      (chapter) => chapter.name === chapterName
-    );
+  const handleChapterClick = (chapterName, testDetails) => {
+    if (testDetails) {
+      const {
+        testName,
+        examDuration,
+        noOfQuestions,
+        positiveMarks,
+        negativeMarks,
+        testId,
+        language,
+        examType,
+        subjectName
+      } = testDetails;
 
-    if (selectedChapter) {
-      // Check if the chapter has tests
-      const testDetails = selectedChapter.tests[0]; // Assuming you want the first test details
-      if (testDetails) {
-        const {
-          testName,
-          examDuration,
-          noOfQuestions,
-          positiveMarks,
-          negativeMarks,
-        } = testDetails;
+      // Store selected chapter, test name, and duration in local storage
+      localStorage.setItem("selectedChapter", chapterName);
+      localStorage.setItem("selectedTestName", testName);
+      localStorage.setItem("testDuration", examDuration);
+      localStorage.setItem("noOfQuestions", noOfQuestions);
+      localStorage.setItem("positiveMarks", positiveMarks);
+      localStorage.setItem("negativeMarks", negativeMarks);
+      localStorage.setItem("testId", testId);
+      localStorage.setItem("testLanguage", JSON.stringify(language));
+      localStorage.setItem("examType", examType);
+      localStorage.setItem("testSubjectName", subjectName);
 
-        // Store selected chapter, test name, and duration in local storage
-        localStorage.setItem("selectedChapter", chapterName);
-        localStorage.setItem("selectedTestName", testName);
-        localStorage.setItem("testDuration", examDuration);
-        localStorage.setItem("noOfQuestions", noOfQuestions);
-        localStorage.setItem("positiveMarks", positiveMarks);
-        localStorage.setItem("negativeMarks", negativeMarks);
+      // Log the values to the console
+      console.log("Chapter Selected:", chapterName);
+      console.log("Test Name:", testName || "No test name provided");
+      console.log("Test Duration:", examDuration || "No duration provided");
+      console.log("No of Questions:", noOfQuestions || "No questions provided");
+      console.log("Positive Marks:", positiveMarks || "No positive marks provided");
+      console.log("Negative Marks:", negativeMarks || "No negative marks provided");
+      console.log("Test ID:", testId);
+      console.log("Language:", language);
+      console.log("Exam Type:", examType);
 
-        // Log the values to the console
-        console.log("Chapter Selected:", chapterName);
-        console.log("Test Name:", testName || "No test name provided");
-        console.log("Test Duration:", examDuration || "No duration provided");
-        console.log(
-          "No of Questions:",
-          noOfQuestions || "No questions provided"
-        );
-        console.log(
-          "Positive Marks:",
-          positiveMarks || "No positive marks provided"
-        );
-        console.log(
-          "Negative Marks:",
-          negativeMarks || "No negative marks provided"
-        );
-
-        // Navigate to the chapter instruction page
-        navigate("/chapterinstruction");
-      } else {
-        console.error("No test details found for the selected chapter.");
-        setError("No test details available for this chapter.");
-      }
+      // Navigate to the chapter instruction page
+      navigate("/chapterinstruction");
     } else {
-      console.error("Chapter not found.");
-      setError("Selected chapter does not exist.");
+      console.error("No test details provided.");
+      setError("No test details available for this chapter.");
     }
   };
 
@@ -223,14 +209,7 @@ const Chapters = () => {
                               return; // Prevent any further action
                             }
                             // Proceed if not attempted
-                            handleChapterClick(
-                              chapter.name,
-                              test.testName,
-                              test.examDuration,
-                              test.total_no_of_questions,
-                              test.positiveMarks,
-                              test.negativeMarks
-                            );
+                            handleChapterClick(chapter.name, test);
                           }}
                         >
                           {test.testName}
@@ -257,6 +236,16 @@ const Chapters = () => {
                               {test.noOfQuestions || "N/A"} Questions
                             </span>
                           </div>
+                          {test.language && (
+                            <div className="flex items-center space-x-3 text-base mt-2">
+                              <span className="text-purple-600 text-lg">
+                                <strong>🌐</strong>
+                              </span>
+                              <span className="font-semibold">
+                                {test.language.join(", ")}
+                              </span>
+                            </div>
+                          )}
                         </div>
                       </div>
                     );
@@ -276,7 +265,7 @@ const Chapters = () => {
                         autoClose: 3000,
                       });
                     } else {
-                      handleChapterClick(chapter.name, null, null);
+                      handleChapterClick(chapter.name, chapter.tests[0]);
                     }
                   }}
                   className={`inline-block text-white font-semibold py-2 px-4 rounded-lg ${

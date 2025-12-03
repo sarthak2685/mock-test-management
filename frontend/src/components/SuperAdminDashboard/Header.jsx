@@ -13,10 +13,10 @@ const Header = ({ toggleSidebar }) => {
 
   // Fetch user data from localStorage
   const user = JSON.parse(localStorage.getItem("user")) || {
-    type: "guest",
+    role: "guest",
     user: "Guest",
   };
-
+// console.log("user",user)
   // Fetch notifications from API
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -171,7 +171,7 @@ const Header = ({ toggleSidebar }) => {
         <div className="flex items-center space-x-4">
           <span className="font-semibold text-gray-700">{user.user}</span>
           <div className="w-10 h-10 rounded-full bg-neutral-500 text-white flex items-center justify-center">
-            {user.user.charAt(0).toUpperCase()}
+            {user.name.charAt(0).toUpperCase()}
           </div>
         </div>
       </div>

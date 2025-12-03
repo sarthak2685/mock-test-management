@@ -34,10 +34,10 @@ const AdminList = () => {
   useEffect(() => {
     const fetchAdmins = async () => {
       try {
-        const response = await fetch(`${config.apiUrl}/vendor-admin-crud/`, {
+        const response = await fetch(`${config.apiUrl}/users/role/ADMIN`, {
           method: "GET",
           headers: {
-            Authorization: `Token ${token}`,
+            Authorization: `${token}`,
             "Content-Type": "application/json",
           },
         });
@@ -47,10 +47,10 @@ const AdminList = () => {
         }
 
         const result = await response.json();
-        if (Array.isArray(result.data)) {
-          setAdmins(result.data);
+        if (Array.isArray(result)) {
+          setAdmins(result);
         } else {
-          console.error("Expected an array but received:", result.data);
+          console.error("Expected an array but received:", result);
         }
       } catch (error) {
         console.error("Error fetching admins:", error);
@@ -255,13 +255,13 @@ const AdminList = () => {
                           </td>
                           <td className="px-1 py-1 sm:px-2 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
                             <p className="text-gray-900 font-medium whitespace-no-wrap">
-                              {admin.institute_name}
+                              {admin.instituteName}
                             </p>
                           </td>
                           <td className="px-1 py-1 sm:px-2 sm:py-2 md:px-4 md:py-3 border-b border-gray-200 text-xs sm:text-sm md:text-sm">
                             <p className="text-gray-900 font-bold whitespace-no-wrap">
-                              {admin.licence && admin.licence.licence_expiry
-                                ? `${admin.licence.licence_expiry} Month`
+                              {admin.plans && admin.plans
+                                ? `${admin.plans} Month`
                                 : ""}
                             </p>
                           </td>
@@ -272,8 +272,8 @@ const AdminList = () => {
                                   isExpired ? "text-red-500" : "text-green-500"
                                 } whitespace-no-wrap`}
                               >
-                                {admin.licence && admin.licence.name
-                                  ? `${admin.licence.name}`
+                                {admin.plans && admin.plans
+                                  ? `${admin.plans}`
                                   : "No Plan"}
                               </p>
                               <span

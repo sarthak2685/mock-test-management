@@ -19,11 +19,11 @@ function Home() {
 
     if (userData) {
       setUser(userData);
-      setUserRole(userData.type); // Set user role based on type
+      setUserRole(userData.role); // Set user role based on type
       Cookies.set("loginToken", "true", { expires: 1 }); // Set login cookie
     }
   }, []);
-  const shouldRenderMockTest = userRole !== "student";
+  const shouldRenderMockTest = userRole !== "STUDENT";
 
   return (
     <>

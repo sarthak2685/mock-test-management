@@ -59,13 +59,16 @@ import NotFound from "./components/NotFound.jsx";
 import { useEffect, useState } from "react";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import AddExams from "./components/SuperAdminDashboard/AddExams.jsx";
+import AddChapterSubject from "./components/SuperAdminDashboard/AddChapterSubject.jsx";
 
 function ProtectedRoute({ element, allowedRoles }) {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user")) || {};
-  const userRole = user.type || "student";
+  // console.log("user: ", user);
+  const userRole = user.role || "STUDENT";
 
-  console.log("user role: ", allowedRoles);
+  // console.log("user role: ", allowedRoles);
 
   useEffect(() => {
     if (!allowedRoles.includes(userRole)) {
@@ -86,8 +89,8 @@ function App() {
   const userRole = localStorage.getItem("userRole");
 
   const isNavbarFooterVisible =
-    userRole !== "owner" &&
-    userRole !== "admin" &&
+    userRole !== "SUPERADMIN" &&
+    userRole !== "ADMIN" &&
     ["/", "/login", "/contact", "/subscriptionform"].includes(
       location.pathname
     );
@@ -103,7 +106,7 @@ function App() {
           <Route
             path="/"
             element={
-              <ProtectedRoute element={<Home />} allowedRoles={["student"]} />
+              <ProtectedRoute element={<Home />} allowedRoles={["STUDENT"]} />
             }
           />
           <Route path="/login" element={<Login />} />
@@ -113,7 +116,7 @@ function App() {
             element={
               <ProtectedRoute
                 element={<Dashboard />}
-                allowedRoles={["admin"]}
+                allowedRoles={["ADMIN"]}
               />
             }
           />
@@ -122,7 +125,7 @@ function App() {
             element={
               <ProtectedRoute
                 element={<SuperAdminDashboard />}
-                allowedRoles={["owner"]}
+                allowedRoles={["SUPERADMIN"]}
               />
             }
           />
@@ -182,6 +185,8 @@ function App() {
           <Route path="/announcement" element={<Announcement />} />
           <Route path="/test-list" element={<TestList />} />
           <Route path="*" element={<NotFound />} />
+          <Route path="/create-exams" element={<AddExams />} />
+          <Route path="/subject-chapter" element={<AddChapterSubject />} />
         </Routes>
         {isNavbarFooterVisible && <Footer />}
       </div>

@@ -4,6 +4,7 @@ import { FiUsers, FiBarChart } from "react-icons/fi";
 import { HomeIcon, ArrowLeftOnRectangleIcon } from "@heroicons/react/24/solid";
 import { FaTimes } from "react-icons/fa";
 import { HiUserGroup, HiOutlineBell, HiOutlineClipboardList } from "react-icons/hi";
+import { FaCircleQuestion } from "react-icons/fa6";
 
 const Sidebar = ({ isCollapsed, toggleSidebar }) => {
   const navigate = useNavigate();
@@ -81,7 +82,30 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
           <FiBarChart className="mr-2" />
           <span className="block">{isCollapsed ? "" : "Create Test"}</span>
         </NavLink>
-
+          {/* //create exam */}
+          <NavLink
+          to="/create-exams"
+          className={({ isActive }) =>
+            `flex items-center py-2 px-4 mt-4 rounded hover:bg-blue-700 ${
+              isActive ? "bg-blue-700" : ""
+            }`
+          }
+        >
+          <FaCircleQuestion className="mr-2" />
+          <span className="block">{isCollapsed ? "" : "Create Exam"}</span>
+        </NavLink>
+        {/* subject chapter */}
+        <NavLink
+          to="/subject-chapter"
+          className={({ isActive }) =>
+            `flex items-center py-2 px-4 mt-4 rounded hover:bg-blue-700 ${
+              isActive ? "bg-blue-700" : ""
+            }`
+          }
+        >
+          <HiUserGroup className="mr-2" />
+          <span className="block">{isCollapsed ? "" : "Subject Chapter"}</span>
+        </NavLink>
         <NavLink
           to="/notice-owner"
           className={({ isActive }) =>

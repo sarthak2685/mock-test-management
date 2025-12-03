@@ -5,8 +5,8 @@ import Sidebar from "./Sidebar/SideBars";
 import DashboardHeader from "./DashboardHeader";
 
 function TestDetail() {
-  const [testGroups, setTestGroups] = useState({}); // Exam Tests
-  const [subjectTestGroups, setSubjectTestGroups] = useState({}); // Subject Tests
+  const [examTests, setExamTests] = useState([]); // EXAM_WISE tests
+  const [subjectTests, setSubjectTests] = useState([]); // SUBJECT_WISE tests
   const S = JSON.parse(localStorage.getItem("user"));
   const [isCollapsed, setIsCollapsed] = useState(window.innerWidth < 768);
   const user = S.name;
@@ -26,147 +26,157 @@ function TestDetail() {
     };
   }, []);
 
-  // Fetch Exam Tests
-  const fetchTests = async () => {
+  // Fetch EXAM_WISE tests
+  const fetchExamTests = async () => {
     try {
-      const selectedInstituteNames = S?.institute_name;
-      const queryParams = new URLSearchParams({
-        student_id: "3738837e-c8bd-458d-9152-634378b01060",
-        institute_name: selectedInstituteNames,
-      });
-
       const response = await fetch(
-        `${config.apiUrl}/tests_point/?${queryParams.toString()}`,
+        `${config.apiUrl}/tests/exam-type/EXAM_WISE`,
         {
           headers: {
-            Authorization: `Token ${token}`,
+            Authorization: `${token}`,
             "Content-Type": "application/json",
           },
         }
       );
 
       if (!response.ok) {
-        throw new Error("Failed to fetch student test data");
+        throw new Error("Failed to fetch exam-wise test data");
       }
 
       const data = await response.json();
-
-      // Group tests by `for_exam__name`
-      const groupedTests = data.test_names
-        .filter((test) => test.for_exam__name !== null) // Ignore null exams
-        .reduce((acc, test) => {
-          if (!acc[test.for_exam__name]) {
-            acc[test.for_exam__name] = [];
-          }
-          acc[test.for_exam__name].push(test.test_name);
-          return acc;
-        }, {});
-
-      setTestGroups(groupedTests);
+      console.log("Fetched EXAM_WISE test data:", data);
+      setExamTests(data);
     } catch (error) {
-      console.error("Error fetching student test data:", error);
+      console.error("Error fetching exam-wise test data:", error);
     }
   };
 
-  // Fetch Subject Tests
-  const fetchSubjectTest = async () => {
+  // Fetch SUBJECT_WISE tests
+  const fetchSubjectTests = async () => {
     try {
-      const selectedInstituteNames = S?.institute_name;
-      const queryParams = new URLSearchParams({
-        institute_name: selectedInstituteNames,
-      });
-
       const response = await fetch(
-        `${config.apiUrl}/get-test-by-subject-name/?${queryParams.toString()}`,
+        `${config.apiUrl}/tests/exam-type/SUBJECT_WISE`,
         {
           headers: {
-            Authorization: `Token ${token}`,
+            Authorization: `${token}`,
             "Content-Type": "application/json",
           },
         }
       );
 
       if (!response.ok) {
-        throw new Error("Failed to fetch subject test data");
+        throw new Error("Failed to fetch subject-wise test data");
       }
 
       const data = await response.json();
-
-      // Transform data into { subject: [test1, test2, ...] }
-      const groupedSubjects = data.reduce((acc, subjectObj) => {
-        const [subject, tests] = Object.entries(subjectObj)[0];
-        acc[subject] = [...new Set(tests)]; // Remove duplicate test names
-        return acc;
-      }, {});
-
-      setSubjectTestGroups(groupedSubjects);
+      console.log("Fetched SUBJECT_WISE test data:", data);
+      setSubjectTests(data);
     } catch (error) {
-      console.error("Error fetching subject test data:", error);
+      console.error("Error fetching subject-wise test data:", error);
     }
   };
 
   useEffect(() => {
-    fetchTests();
-    fetchSubjectTest();
+    fetchExamTests();
+    fetchSubjectTests();
   }, []);
+
+  // Group exam tests by exam name
+  const groupExamTests = () => {
+    const grouped = {};
+    examTests.forEach(test => {
+      const examName = test.examName || 'Unknown Exam';
+      if (!grouped[examName]) {
+        grouped[examName] = [];
+      }
+      grouped[examName].push(test);
+    });
+    return grouped;
+  };
+
+  // Group subject tests by subject name
+  const groupSubjectTests = () => {
+    const grouped = {};
+    subjectTests.forEach(test => {
+      const subjectName = test.subjectName || 'Unknown Subject';
+      if (!grouped[subjectName]) {
+        grouped[subjectName] = [];
+      }
+      grouped[subjectName].push(test);
+    });
+    return grouped;
+  };
+
+  const examTestGroups = groupExamTests();
+  const subjectTestGroups = groupSubjectTests();
 
   return (
     <>
-        <div className="flex flex-col min-h-screen overflow-auto bg-gray-50">
+      <div className="flex flex-col min-h-screen overflow-auto bg-gray-50">
+        <Sidebar
+          isCollapsed={isCollapsed}
+          toggleSidebar={toggleSidebar}
+          className="hidden md:block"
+        />
 
-      <Sidebar
-        isCollapsed={isCollapsed}
-        toggleSidebar={toggleSidebar}
-        className="hidden md:block"
-      />
+        <div
+          className={`flex-grow transition-all duration-300 ease-in-out ${
+            isCollapsed ? "ml-0" : "ml-64"
+          }`}
+        >
+          <DashboardHeader user={user} toggleSidebar={toggleSidebar} />
 
-      <div
-        className={`flex-grow transition-all duration-300 ease-in-out ${
-          isCollapsed ? "ml-0" : "ml-64"
-        }`}
-      >
-        <DashboardHeader user={user} toggleSidebar={toggleSidebar} />
+          <div className="test-container">
+            {/* Exam-based Tests */}
+            <h2 className="test-title">Available Tests by Exam (EXAM_WISE)</h2>
+            <div className="test-grid">
+              {Object.entries(examTestGroups).map(([exam, tests]) => (
+                <div key={exam} className="test-card">
+                  <h3 className="exam-title">
+                    <FaGraduationCap className="icon" /> {exam}
+                  </h3>
+                  <ul className="test-list">
+                    {tests.map((test, index) => (
+                      <li key={test.id} className="test-item">
+                        <FaClipboardList className="icon test-icon" /> 
+                        {test.testName}
+                        {/* <span className="test-meta">
+                          ({test.language?.join(', ')} - {test.durationMinutes} mins)
+                        </span> */}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
 
-        <div className="test-container ">
-          {/* Exam-based Tests */}
-          <h2 className="test-title">Available Tests by Exam</h2>
-          <div className="test-grid">
-            {Object.entries(testGroups).map(([exam, tests]) => (
-              <div key={exam} className="test-card">
-                <h3 className="exam-title">
-                  <FaGraduationCap className="icon" /> {exam}
-                </h3>
-                <ul className="test-list">
-                  {tests.map((test, index) => (
-                    <li key={index} className="test-item">
-                      <FaClipboardList className="icon test-icon" /> {test}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-
-          {/* Subject-based Tests */}
-          <h2 className="test-title mt-4">Available Tests by Subject</h2>
-          <div className="test-grid">
-            {Object.entries(subjectTestGroups).map(([subject, tests]) => (
-              <div key={subject} className="test-card">
-                <h3 className="exam-title">
-                  <FaBook className="icon" /> {subject}
-                </h3>
-                <ul className="test-list">
-                  {tests.map((test, index) => (
-                    <li key={index} className="test-item">
-                      <FaClipboardList className="icon test-icon" /> {test}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+            {/* Subject-based Tests */}
+            <h2 className="test-title mt-8">Available Tests by Subject (SUBJECT_WISE)</h2>
+            <div className="test-grid">
+              {Object.entries(subjectTestGroups).map(([subject, tests]) => (
+                <div key={subject} className="test-card">
+                  <h3 className="exam-title">
+                    <FaBook className="icon" /> {subject}
+                  </h3>
+                  <ul className="test-list">
+                    {tests.map((test, index) => (
+                      <li key={test.id} className="test-item">
+                        <FaClipboardList className="icon test-icon" /> 
+                        {test.testName}
+                        <span className="test-meta">
+                          {/* ({test.language?.join(', ')} - {test.durationMinutes} mins) */}
+                          {test.chapterNames && test.chapterNames.length > 0 && (
+                            <div>Chapters: {test.chapterNames.join(', ')}</div>
+                          )}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
       </div>
 
       {/* CSS Styling */}
@@ -223,17 +233,24 @@ function TestDetail() {
 
           .test-item {
             display: flex;
-            align-items: center;
-            gap: 8px;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
             font-size: 16px;
             color: #495057;
-            padding: 5px 0;
+            padding: 8px 0;
             border-bottom: 1px solid #e9ecef;
             transition: color 0.2s;
           }
 
           .test-item:hover {
             color: #007bff;
+          }
+
+          .test-meta {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 2px;
           }
 
           .icon {

@@ -7,7 +7,7 @@ const Instructions = () => {
   const [isChecked, setIsChecked] = useState(false);
   const [step, setStep] = useState(1);
   const [language, setLanguage] = useState(
-    localStorage.getItem("selectedLanguage") || "en"
+    localStorage.getItem("selectedLanguage") || "ENGLISH"
   );
   const [optionalSubject, setOptionalSubject] = useState(
     localStorage.getItem("selectedOptionalSubject") || ""
@@ -32,12 +32,12 @@ const Instructions = () => {
     localStorage.setItem("selectedLanguage", selectedLanguage);
     
     const subjects = storedDetails?.subjects || [];
-    if (selectedLanguage === "en") {
-      const hindiSubject = subjects.find(s => s.startsWith("Hindi"));
-      localStorage.setItem("nonSelectedLanguage", hindiSubject || "hi");
-    } else if (selectedLanguage === "hi") {
-      const englishSubject = subjects.find(s => s.startsWith("English"));
-      localStorage.setItem("nonSelectedLanguage", englishSubject || "en");
+    if (selectedLanguage === "ENGLISH") {
+      const hindiSubject = subjects.find(s => s.startsWith("HINDI"));
+      localStorage.setItem("nonSelectedLanguage", hindiSubject || "HINDI");
+    } else if (selectedLanguage === "HINDI") {
+      const englishSubject = subjects.find(s => s.startsWith("ENGLISH"));
+      localStorage.setItem("nonSelectedLanguage", englishSubject || "ENGLISH");
     }
     
     console.log("selectedLanguage", selectedLanguage);
@@ -199,8 +199,8 @@ const Instructions = () => {
                   value={language}
                   onChange={handleLanguageChange}
                 >
-                  <option value="en">English</option>
-                  <option value="hi">Hindi</option>
+                  <option value="ENGLISH">English</option>
+                  <option value="HINDI">Hindi</option>
                 </select>
               </div>
             </div>

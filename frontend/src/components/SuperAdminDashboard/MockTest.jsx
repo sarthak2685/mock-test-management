@@ -66,7 +66,10 @@ const MockTestManagement = ({ user }) => {
   const S = JSON.parse(localStorage.getItem("user"));
   const token = S.token;
   const [subjects, setSubjects] = useState([]);
-
+  //csv upload 
+const [file, setFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [result, setResult] = useState(null);
   const toggleSidebar = () => {
     setIsCollapsed((prev) => !prev);
   };
@@ -425,81 +428,76 @@ const MockTestManagement = ({ user }) => {
 
   const [domains, setDomains] = useState([]);
 
-  const fetchDomains = async () => {
-    if (!token) {
-      console.log("No token found, unable to fetch Domain.");
-      return;
-    }
+const fetchDomains = async () => {
+  if (!token) {
+    console.log("No token found");
+    return;
+  }
 
-    try {
-      const response = await fetch(`${config.apiUrl}/exams/`, {
-        method: "GET",
-        headers: {
-          Authorization: `Token ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-      const result = await response.json();
+  try {
+    const response = await fetch(`${config.apiUrl}/exams`, {
+      method: "GET",
+      headers: {
+        Authorization: `${token}`,
+        "Content-Type": "application/json",
+      },
+    });
 
-      if (Array.isArray(result)) {
-        setDomains(result);
-      } else {
-        console.error("no domain available", result);
-      }
-    } catch (error) {
-      console.log("Error fetching Domain:", error);
-      if (error.response) {
-        console.log("Error Response:", error.response); // Check the response error
-      }
+    const result = await response.json();
+
+    if (Array.isArray(result)) {
+      // convert API response to format required by Select
+      const formatted = result.map((exam) => ({
+        value: exam.id,       // <--- send this later
+        label: exam.examName, // <--- show this in dropdown
+      }));
+
+      setDomains(formatted);
+    } else {
+      console.error("Unexpected API response:", result);
     }
-  };
+  } catch (error) {
+    console.log("Error fetching Domain:", error);
+  }
+};
+
 
   useEffect(() => {
     fetchDomains();
   }, []); // Run once when the component mounts
 
-  const fetchSubjects = async () => {
-    if (!token) {
-      console.log("No token found, unable to fetch Domain.");
-      return;
+ const fetchSubjects = async () => {
+  if (!token) {
+    console.log("No token found, unable to fetch Domain.");
+    return;
+  }
+
+  try {
+    const apiUrl = newTest.domain
+      ? `${config.apiUrl}/subjects/exam/${newTest.domain}`
+      : `${config.apiUrl}/subjects`;
+
+    const response = await fetch(apiUrl, {
+      method: "GET",
+      headers: {
+        Authorization: `${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    const result = await response.json();
+    console.log("API Response for Subjects:", result);
+    if (result && Array.isArray(result)) {
+      setSubjects(result); // ⬅ directly set subjects
+      console.log("Fetched Subjects:", result.data);
+    } else {
+      console.error("No Subjects Available or Invalid Response Format", result);
     }
+  } catch (error) {
+    console.log("Error fetching Subjects:", error);
+  }
+};
 
-    try {
-      // Construct the API URL with or without the domain ID based on the availability of newTest.domain
-      const apiUrl = newTest.domain
-        ? `${config.apiUrl}/get-subject/?id=${newTest.domain}`
-        : `${config.apiUrl}/get-subject/`;
-
-      const response = await fetch(apiUrl, {
-        method: "GET",
-        headers: {
-          Authorization: `Token ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-
-      const result = await response.json();
-
-      if (result.data && Array.isArray(result.data)) {
-        const RES = result.data;
-
-        // Conditionally add 'ALL Subjects' only if newTest.domain is available
-        if (newTest.domain) {
-          const allOption = { name: "ALL Subjects", id: "ALL" };
-          setSubjects([allOption, ...RES]);
-        } else {
-          setSubjects(RES);
-        }
-      } else {
-        console.error(
-          "No Subjects Available or Invalid Response Format",
-          result
-        );
-      }
-    } catch (error) {
-      console.log("Error fetching Subjects:", error);
-    }
-  };
 
   useEffect(() => {
     fetchSubjects();
@@ -551,9 +549,9 @@ const MockTestManagement = ({ user }) => {
     }
   };
 
-  useEffect(() => {
-    fetchSubtopic();
-  }, []);
+  // useEffect(() => {
+  //   fetchSubtopic();
+  // }, []);
 
   const [chapters, setChapters] = useState([]);
 
@@ -569,7 +567,7 @@ const MockTestManagement = ({ user }) => {
     }
 
     try {
-      const response = await fetch(`${config.apiUrl}/exam-subject-chapters`, {
+      const response = await fetch(`${config.apiUrl}/chapters/subject/${newTest.subject}`, {
         method: "GET",
         headers: {
           Authorization: `Token ${token}`,
@@ -579,16 +577,9 @@ const MockTestManagement = ({ user }) => {
 
       const result = await response.json();
 
-      if (Array.isArray(result)) {
-        // Filter chapters where for_exam_subject matches newTest.subject
-        const filteredChapters = result.filter(
-          (chapter) => chapter.for_exam_subject === newTest.subject
-        );
-
-        // Add the "ALL Chapter" option at the beginning
-        // const allOption = { name: "ALL Chapter", id: "all" };
-        setChapters([...filteredChapters]);
-      } else {
+     if (Array.isArray(result)) {
+      setChapters(result);
+    } else {
         console.error("Unexpected response format:", result);
       }
     } catch (error) {
@@ -599,43 +590,45 @@ const MockTestManagement = ({ user }) => {
     }
   };
 
-  useEffect(() => {
+// Add this useEffect to fetch chapters when subject changes
+useEffect(() => {
+  if (newTest.subject) {
     fetchChapters();
-  }, []); // Run once when the component mounts
+  } else {
+    setChapters([]); // Clear chapters if no subject is selected
+  }
+}, [newTest.subject]);
 
   const [institutes, setInstitutes] = useState([]); // State to hold institutes
 
-  const fetchInstitutes = async () => {
-    try {
-      const response = await fetch(`${config.apiUrl}/vendor-admin-crud/`, {
-        method: "GET",
-        headers: {
-          Authorization: `Token ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+const fetchInstitutes = async () => {
+  try {
+    const response = await fetch(`${config.apiUrl}/users/role/ADMIN`, {
+      method: "GET",
+      headers: {
+        Authorization: `${token}`,
+        "Content-Type": "application/json",
+      },
+    });
 
-      if (!response.ok) {
-        throw new Error(`Error: ${response.statusText}`);
-      }
+    const result = await response.json();
 
-      const result = await response.json();
+    if (Array.isArray(result)) {
+      // map to { value, label }
+      const formatted = result.map((item) => ({
+        value: item.id,                   // Send this ID when selected
+        label: item.instituteName || "-", // Display name
+      }));
 
-      // Assuming result.data contains the list of institutes with institute_name and id
-      if (Array.isArray(result.data)) {
-        const formattedInstitutes = result.data.map((institute) => ({
-          value: institute.id, // Use id as value
-          label: institute.institute_name, // Use institute_name as label
-        }));
-
-        setInstitutes(formattedInstitutes); // Set the institutes state in the correct format
-      } else {
-        console.error("Expected an array but received:", result.data);
-      }
-    } catch (error) {
-      console.error("Error fetching institutes:", error);
+      setInstitutes(formatted);
+    } else {
+      console.error("Expected an array but got:", result);
     }
-  };
+  } catch (error) {
+    console.error("Error fetching institutes:", error);
+  }
+};
+
 
   // Handle changes in the select component
   const handleInstituteChange = (selectedOptions) => {
@@ -664,189 +657,193 @@ const MockTestManagement = ({ user }) => {
   }, []); // Run once when the component mounts
 
   const [isFormValid, setIsFormValid] = useState(false); // Existing state from previous code
+useEffect(() => {
+  const isValid =
+    selectedOptions.length > 0 &&
+    newTest.testName &&
+    newTest.duration &&
+    newTest.correctMark !== "" &&
+    newTest.negativeMark !== "" &&
+    newTest.language && // Added language validation
+    (
+      // Validation based on exam selection
+      newTest.domain 
+        ? newTest.subject // When exam is selected, subject is required
+        : newTest.subject && newTest.chapter // When no exam, both subject and chapter are required
+    );
 
-  useEffect(() => {
-    const isValid =
-      selectedOptions.length > 0 &&
-      newTest.testName &&
-      newTest.duration &&
-      newTest.subject &&
-      newTest.correctMark !== "" &&
-      newTest.negativeMark !== "" &&
-      (!newTest.domain || (newTest.domain && !newTest.chapter)) &&
-      (newTest.subject !== "ALL" ||
-        (newTest.subject === "ALL" && newTest.subtopic));
-
-    setIsFormValid(isValid);
-  }, [selectedOptions, newTest]);
+  setIsFormValid(isValid);
+}, [selectedOptions, newTest]);
 
   const [isClicked, setIsClicked] = useState(false);
 
-  const handleTest = async () => {
-    if (!isFormValid) {
-      alert("Please fill in all required fields before submitting the test.");
+const handleTest = async () => {
+  if (!isFormValid) {
+    alert("Please fill in all required fields before submitting the test.");
+    return;
+  }
+
+  if (isClicked) return;
+  setIsClicked(true);
+
+  try {
+    const currentQuestion = newTest.questions[currentQuestionIndex];
+    if (!currentQuestion) {
+      console.error("No questions found at index:", currentQuestionIndex);
+      setIsClicked(false);
       return;
     }
 
-    if (isClicked) return;
-    setIsClicked(true);
+    const fileToBase64 = (file) => {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    };
 
-    try {
-      const currentQuestion = newTest.questions[currentQuestionIndex];
-      if (!currentQuestion) {
-        console.error("No questions found at index:", currentQuestionIndex);
-        setIsClicked(false);
-        return;
-      }
+    // Prepare options data
+    const options = await Promise.all(
+      currentQuestion.options.map(async (option, index) => {
+        let optionText = "";
+        let optionImage = null;
 
-      const fileToBase64 = (file) => {
-        return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result);
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
-      };
-
-      const options = await Promise.all(
-        currentQuestion.options.map(async (option) => {
-          if (typeof option === "string") {
-            return option;
-          }
+        if (typeof option === "string") {
+          optionText = option;
+        } else {
+          optionText = option?.text || "";
           if (option?.image instanceof File) {
-            return await fileToBase64(option.image);
+            optionImage = await fileToBase64(option.image);
+          } else if (option?.image) {
+            optionImage = option.image;
           }
-          return option?.image || option?.text || "";
-        })
-      );
-
-      const truncatedOptions = options.map((option) =>
-        typeof option === "string" && option.length > 100
-          ? option.slice(0, 100)
-          : option
-      );
-
-      let correctAnswer = null;
-      let correctAnswer2 = null;
-
-      if (currentQuestion.correctAnswer?.text) {
-        correctAnswer = currentQuestion.correctAnswer.text;
-      } else if (currentQuestion.correctAnswer?.image instanceof File) {
-        correctAnswer2 = await fileToBase64(
-          currentQuestion.correctAnswer.image
-        );
-      } else if (currentQuestion.correctAnswer?.image) {
-        correctAnswer2 = currentQuestion.correctAnswer.image;
-      }
-
-      if (typeof correctAnswer === "string" && correctAnswer.length > 100) {
-        correctAnswer = correctAnswer.slice(0, 100);
-      }
-
-      let forExamSubjects = [];
-      if (newTest.subject === "ALL") {
-        forExamSubjects = subTopic
-          .filter((sub) => sub.name === newTest.subtopic)
-          .map((sub) => sub.id);
-      } else {
-        forExamSubjects =
-          newTest.selectedSubjects?.filter((id) => id !== "ALL") || [];
-      }
-
-      console.log("forExamSubjects:", forExamSubjects);
-
-      const formData = new FormData();
-      formData.append("test_name", newTest.testName);
-      formData.append("exam_duration", newTest.duration);
-      formData.append("for_exam", newTest.domain);
-
-      if (!selectedOptions.some((option) => option.value === "allInstitutes")) {
-        selectedOptions.forEach((option) =>
-          formData.append("institutes", option.value)
-        );
-      }
-
-      forExamSubjects.forEach((id) =>
-        formData.append("for_exam_subjects_o", id)
-      );
-
-      if (newTest.chapter?.id) {
-        formData.append("for_exam_chapter_o", newTest.chapter.id);
-      }
-
-      formData.append("marks", newTest.correctMark);
-      formData.append("negative_marks", newTest.negativeMark);
-
-      currentQuestion.questionText = text;
-      formData.append("question", currentQuestion.questionText || "");
-
-      if (currentQuestion.image) {
-        if (currentQuestion.image instanceof File) {
-          const base64Image = await fileToBase64(currentQuestion.image);
-          formData.append("question_1", base64Image);
-        } else if (typeof currentQuestion.image === "string") {
-          formData.append("question_1", currentQuestion.image);
         }
+
+        return {
+          optionText: optionText,
+          optionNumber: index + 1,
+          isCorrect: false // Will be set based on correct answer
+        };
+      })
+    );
+
+    // Set correct answer
+    const correctOptionIndex = currentQuestion.options.findIndex(option => {
+      if (typeof option === "string") {
+        return option === currentQuestion.correctAnswer?.text;
+      } else {
+        return option.text === currentQuestion.correctAnswer?.text;
       }
+    });
 
-      if (newTest.subject === "ALL") {
-        formData.append("subtopic", newTest.subtopic);
+    if (correctOptionIndex !== -1) {
+      options[correctOptionIndex].isCorrect = true;
+    }
+
+    // Prepare question data
+    const questionData = {
+      questionText: text,
+      marks: parseFloat(newTest.correctMark) || 1.0,
+      options: options
+    };
+
+    // Prepare main test data based on examId presence
+    const testData = {
+      instituteIds: selectedOptions.map(opt => opt.value),
+      testName: newTest.testName,
+      durationMinutes: parseInt(newTest.duration) || 60,
+      correctMark: parseFloat(newTest.correctMark) || 1.0,
+      negativeMark: Math.abs(parseFloat(newTest.negativeMark)) || 0.25, // Ensure positive value
+      examId: newTest.domain || null,
+      language: [newTest.language?.toUpperCase() || "ENGLISH"],
+      questionDto: questionData
+    };
+
+    // Add subject data based on examId
+    if (newTest.domain) {
+      // When examId is present, send subjectIds as array
+      testData.subjectsIds = newTest.selectedSubjects ? 
+        (Array.isArray(newTest.selectedSubjects) ? newTest.selectedSubjects : [newTest.selectedSubjects]) : 
+        [];
+    } else {
+      // When examId is null, send single subjectId and chapterIds
+      testData.subjectId = newTest.subject;
+      testData.chapterIds = newTest.chapter?.id ? [newTest.chapter.id] : [];
+    }
+
+    // Prepare form data
+    const formData = new FormData();
+    formData.append("testData", JSON.stringify(testData));
+
+    // Handle question image
+    if (currentQuestion.image) {
+      if (currentQuestion.image instanceof File) {
+        formData.append("questionImage", currentQuestion.image);
+      } else {
+        // If it's base64, convert to blob or handle appropriately
+        const blob = await fetch(currentQuestion.image).then(r => r.blob());
+        formData.append("questionImage", blob, "question.png");
       }
+    } else {
+      formData.append("questionImage", "");
+    }
 
-      await Promise.all(
-        currentQuestion.options.map(async (option, index) => {
-          const optionTextKey = `option_${index + 1}`;
-          const optionImageKey = `file_${index + 1}`;
-
-          const optionText =
-            typeof option === "string" ? option : option?.text || "";
-          formData.append(optionTextKey, optionText);
-
-          if (option?.image) {
-            if (option.image instanceof File) {
-              const base64Image = await fileToBase64(option.image);
-              formData.append(optionImageKey, base64Image);
-            } else if (typeof option.image === "string") {
-              formData.append(optionImageKey, option.image);
-            }
+    // Handle option files
+    await Promise.all(
+      currentQuestion.options.map(async (option, index) => {
+        const fileKey = `Option${index + 1}File`;
+        
+        if (option?.image) {
+          if (option.image instanceof File) {
+            formData.append(fileKey, option.image);
+          } else {
+            // If it's base64, convert to blob
+            const blob = await fetch(option.image).then(r => r.blob());
+            formData.append(fileKey, blob, `option${index + 1}.png`);
           }
-        })
-      );
-
-      formData.append("correct_answer", correctAnswer || "");
-      if (correctAnswer2) {
-        formData.append("correct_answer2", correctAnswer2);
-      }
-
-      if (newTest.language) {
-        formData.append("language", newTest.language);
-      }
-
-      const response = await fetch(
-        `${config.apiUrl}/exam-subject-chapter-questions/`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Token ${token}`,
-          },
-          body: formData,
+        } else {
+          formData.append(fileKey, "");
         }
-      );
+      })
+    );
 
-      if (response.ok) {
-        await response.json();
-        handleSaveAndNext();
-        setIsClicked(false);
-      } else {
-        const errorData = await response.json();
-        console.error("Failed to submit test:", errorData);
-        setIsClicked(false);
+    // Add language if present
+    // if (newTest.language) {
+    //   formData.append("language", newTest.language);
+    // }
+
+    console.log("Submitting test data:", testData);
+
+    const response = await fetch(
+      `${config.apiUrl}/tests`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `${token}`,
+        },
+        body: formData,
       }
-    } catch (error) {
-      console.error("Error while submitting test:", error);
+    );
+
+    if (response.ok) {
+      const result = await response.json();
+      console.log("Test submitted successfully:", result);
+      handleSaveAndNext();
+      setIsClicked(false);
+    } else {
+      const errorData = await response.json();
+      console.error("Failed to submit test:", errorData);
+      alert(`Failed to submit test: ${errorData.message || 'Unknown error'}`);
       setIsClicked(false);
     }
-  };
+  } catch (error) {
+    console.error("Error while submitting test:", error);
+    alert("Error submitting test. Please try again.");
+    setIsClicked(false);
+  }
+};
+
 
   const removeImage = (index) => {
     const updatedQuestions = newTest.questions.map((question, i) =>
@@ -967,6 +964,73 @@ const MockTestManagement = ({ user }) => {
     setDropdownOpen(false); // Close dropdown when switching questions
   }, [currentQuestionIndex]);
 
+
+  //file upload api
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+  };
+
+ const uploadFile = async () => {
+  if (!file) {
+    alert("Please select a CSV/Excel file");
+    return;
+  }
+
+  // Prepare test data based on exam selection
+  const testData = {
+    testName: newTest.testName,
+    instituteIds: selectedOptions.map(opt => opt.value),
+    durationMinutes: parseInt(newTest.duration) || 60,
+    correctMark: parseFloat(newTest.correctMark) || 1.0,
+    negativeMark: Math.abs(parseFloat(newTest.negativeMark)) || 0.25,
+    language: [newTest.language?.toUpperCase() || "ENGLISH"]
+  };
+
+  // Add exam/subject data based on whether exam is selected
+  if (newTest.domain) {
+    // When exam is selected
+    testData.examId = newTest.domain;
+    testData.subjectsIds = newTest.selectedSubjects ? 
+      (Array.isArray(newTest.selectedSubjects) ? newTest.selectedSubjects : [newTest.selectedSubjects]) : 
+      [];
+  } else {
+    // When no exam selected (subject-wise)
+    testData.examId = null;
+    testData.subjectId = newTest.subject;
+    testData.chapterIds = newTest.chapter?.id ? [newTest.chapter.id] : [];
+  }
+
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("testData", JSON.stringify(testData));
+
+  try {
+    setUploading(true);
+
+    const response = await fetch(`${config.apiUrl}/tests/create-with-excel`, {
+      method: "POST",
+      headers: {
+        Authorization: `${token}`, // Add authorization header if needed
+      },
+      body: formData,
+    });
+
+    const data = await response.json();
+    setResult(data);
+    
+    if (response.ok) {
+      alert("File uploaded successfully!");
+    } else {
+      alert(`Upload failed: ${data.message || 'Unknown error'}`);
+    }
+  } catch (error) {
+    console.error("Upload error:", error);
+    alert("Error uploading file. Please try again.");
+  } finally {
+    setUploading(false);
+  }
+};
+
   return (
     <div className="flex flex-col min-h-screen">
       <div className="flex flex-row flex-grow">
@@ -1010,58 +1074,23 @@ const MockTestManagement = ({ user }) => {
                   <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4">
                     {/* Institute Name Selection */}
                     <div className="flex-grow" onClick={fetchInstitutes}>
-                      <Select
-                        options={[
-                          { value: "allInstitutes", label: "All Institutes" }, // Single-select option
-                          ...institutes, // Institutes for multi-select
-                        ]}
-                        onChange={(selected) => {
-                          if (selected?.value === "allInstitutes") {
-                            // If "All Institutes" is selected, reset other selections
-                            handleInstituteChange([
-                              {
-                                value: "allInstitutes",
-                                label: "All Institutes",
-                              },
-                            ]);
-                            setSelectedOptions([
-                              {
-                                value: "allInstitutes",
-                                label: "All Institutes",
-                              },
-                            ]);
-                          } else {
-                            // Handle specific institute selection
-                            handleInstituteChange(selected ? [selected] : []); // Wrap in array
-                            setSelectedOptions(selected ? [selected] : []); // Update state correctly
-                          }
-                        }}
-                        value={selectedOptions} // Ensure selectedOptions is an array
-                        isMulti={false} // Single select
-                        className="basic-single-select"
-                        classNamePrefix="select"
-                        placeholder="Select Institute(s)"
-                        // required
-                        styles={{
-                          control: (base) => ({
-                            ...base,
-                            borderColor: "lightgray",
-                            boxShadow: "none",
-                            "&:hover": {
-                              borderColor: "blue",
-                            },
-                          }),
-                          option: (base) => ({
-                            ...base,
-                            textAlign: "center",
-                          }),
-                          menu: (base) => ({
-                            ...base,
-                            display: "flex",
-                            flexDirection: "column",
-                          }),
-                        }}
-                      />
+                    <Select
+  options={[
+    { value: "allInstitutes", label: "All Institutes" },
+    ...institutes,
+  ]}
+  value={selectedOptions}
+  isMulti={false}
+  placeholder="Select Institute"
+  onChange={(selected) => {
+    if (selected?.value === "allInstitutes") {
+      setSelectedOptions([{ value: "allInstitutes", label: "All Institutes" }]);
+    } else {
+      setSelectedOptions(selected ? [selected] : []);
+    }
+  }}
+/>
+
                     </div>
 
 {/* Domain Dropdown */}
@@ -1089,8 +1118,8 @@ const MockTestManagement = ({ user }) => {
       Select Domain
     </option>
     {domains.map((domain) => (
-      <option key={domain.id} value={domain.id}>
-        {domain.name}
+      <option key={domain.value} value={domain.value}>
+        {domain.label}
       </option>
     ))}
   </select>
@@ -1144,106 +1173,68 @@ const MockTestManagement = ({ user }) => {
                   {/*Subject, Chapter, Sub Subject */}
                   <div className="flex flex-wrap gap-4 w-full mt-3">
                     {/* Subject Dropdown */}
-                    <div
-                      className="flex-1 min-w-[200px]"
-                      onClick={fetchSubjects}
-                    >
-                      <select
-                        name="subject"
-                        value={newTest.subject}
-                        onChange={(e) => {
-                          const selectedSubjectId = e.target.value;
-
-                          if (selectedSubjectId === "ALL") {
-                            setNewTest((prevTest) => ({
-                              ...prevTest,
-                              subject: selectedSubjectId,
-                              selectedSubjects: subjects.map(
-                                (subject) => subject.id
-                              ),
-                            }));
-                          } else {
-                            setNewTest((prevTest) => ({
-                              ...prevTest,
-                              subject: selectedSubjectId,
-                              selectedSubjects: prevTest.selectedSubjects
-                                ? [
-                                    ...prevTest.selectedSubjects,
-                                    selectedSubjectId,
-                                  ]
-                                : [selectedSubjectId],
-                            }));
-                          }
-
-                          if (selectedSubjectId !== "ALL") {
-                            const updatedQuestions = newTest.questions.map(
-                              (question) => ({
-                                ...question,
-                                subtopic: "", // Reset subtopics
-                              })
-                            );
-
-                            setNewTest((prevTest) => ({
-                              ...prevTest,
-                              mainSubtopic: "", // Reset main subtopic
-                              questions: updatedQuestions,
-                            }));
-                          }
-                        }}
-                        className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
-                        required
-                      >
-                        <option value="" disabled>
-                          Select Subject
-                        </option>
-                        {subjects.map((subject) => (
-                          <option key={subject.id} value={subject.id}>
-                            {subject.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                   {/* Subject Dropdown */}
+<div className="flex-1 min-w-[200px]" onClick={fetchSubjects}>
+  <select
+    name="subject"
+    value={newTest.subject || ""}
+    onChange={(e) => {
+      const selectedSubjectId = e.target.value;
+      setNewTest((prevTest) => ({
+        ...prevTest,
+        subject: selectedSubjectId,
+        selectedSubjects: [selectedSubjectId], // Store as array for API
+      }));
+    }}
+    className="border p-2 w-full rounded-md focus:outline-none focus:ring focus:ring-blue-400 transition duration-200"
+    required
+  >
+    <option value="" disabled>Select Subject</option>
+    {subjects.map((subject) => (
+      <option key={subject.id} value={subject.id}>
+        {subject.name}
+      </option>
+    ))}
+  </select>
+</div>
 
                     {/* Chapter Dropdown */}
-                    <div
-                      className="flex-1 min-w-[200px]"
-                      onClick={fetchChapters}
-                    >
-                      <select
-                        name="chapter"
-                        value={newTest.chapter?.id || ""}
-                        onChange={(e) => {
-                          const selectedChapterId = e.target.value;
-                          const selectedChapter = chapters.find(
-                            (chapter) => chapter.id === selectedChapterId
-                          );
+<div className="flex-1 min-w-[200px]">
+  <select
+    name="chapter"
+    value={newTest.chapter?.id || ""}
+    onChange={(e) => {
+      const selectedChapterId = e.target.value;
+      const selectedChapter = chapters.find(
+        (chapter) => chapter.id.toString() === selectedChapterId.toString()
+      );
 
-                          setNewTest((prevTest) => ({
-                            ...prevTest,
-                            chapter: selectedChapter || null,
-                          }));
-                        }}
-                        disabled={!!newTest.domain}
-                        className={`border p-2 w-full rounded-md transition duration-200 ${
-                          newTest.domain
-                            ? "bg-gray-200 cursor-not-allowed focus:ring-0"
-                            : "focus:outline-none focus:ring focus:ring-blue-400"
-                        }`}
-                        required={!newTest.domain}
-                      >
-                        <option value="" disabled>
-                          Select Chapter
-                        </option>
-                        {chapters.map((chapter) => (
-                          <option key={chapter.id} value={chapter.id}>
-                            {chapter.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+      setNewTest((prevTest) => ({
+        ...prevTest,
+        chapter: selectedChapter || null,
+      }));
+    }}
+    disabled={!!newTest.domain}
+    className={`border p-2 w-full rounded-md transition duration-200 ${
+      newTest.domain
+        ? "bg-gray-200 cursor-not-allowed focus:ring-0"
+        : "focus:outline-none focus:ring focus:ring-blue-400"
+    }`}
+    required={!newTest.domain}
+  >
+    <option value="" disabled>
+      Select Chapter
+    </option>
+    {chapters.map((chapter) => (
+      <option key={chapter.id} value={chapter.id}>
+        {chapter.name}
+      </option>
+    ))}
+  </select>
+</div>
 
                     {/* Subtopic Dropdown */}
-                    <div className="flex-1 min-w-[200px]">
+                    {/* <div className="flex-1 min-w-[200px]">
                       <select
                         value={newTest.subtopic || ""}
                         onClick={() => {
@@ -1274,7 +1265,7 @@ const MockTestManagement = ({ user }) => {
                           </option>
                         ))}
                       </select>
-                    </div>
+                    </div> */}
                   </div>
 
                   {/* Correct Mark, Negative Mark, and Language Selection in Same Row */}
@@ -1364,7 +1355,37 @@ const MockTestManagement = ({ user }) => {
                   </div>
                 </div>
               </div>
+  <div className="p-6 max-w-lg mx-auto">
+      <h1 className="text-xl font-semibold mb-4 text-center">
+        Excel / CSV Upload
+      </h1>
 
+      {/* File Selector */}
+      <div className="mb-4">
+        <input
+          type="file"
+          accept=".csv, .xls, .xlsx"
+          onChange={handleFileChange}
+          className="block w-full text-sm text-gray-500
+                     file:mr-4 file:py-2 file:px-4
+                     file:rounded-lg file:border-0
+                     file:text-sm file:font-semibold
+                     file:bg-blue-600 file:text-white
+                     hover:file:bg-blue-700 cursor-pointer"
+        />
+      </div>
+
+      {/* Upload Button */}
+      <div className="flex justify-center">
+      <button
+        onClick={uploadFile}
+        disabled={uploading}
+        className=" bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
+      >
+        {uploading ? "Uploading..." : "Upload File"}
+      </button>
+      </div>
+    </div>
               {/* Questions Section */}
               <div className="bg-white p-3 sm:p-6 shadow-md rounded-lg mb-3 sm:mb-8">
                 <h2 className="text-md sm:text-xl font-semibold mb-2 sm:mb-4">

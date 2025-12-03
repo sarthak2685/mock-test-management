@@ -29,10 +29,10 @@ const ChapterTestInstructions = () => {
     localStorage.setItem("selectedLanguage", selectedLanguage);
     
     // Also store non-selected language
-    if (selectedLanguage === "en") {
-      localStorage.setItem("nonSelectedLanguage", "hi");
+    if (selectedLanguage === "ENGLISH") {
+      localStorage.setItem("nonSelectedLanguage", "HINDI");
     } else if (selectedLanguage === "hi") {
-      localStorage.setItem("nonSelectedLanguage", "en");
+      localStorage.setItem("nonSelectedLanguage", "ENGLISH");
     }
     
     console.log("Selected Language:", selectedLanguage);
@@ -164,8 +164,8 @@ const ChapterTestInstructions = () => {
                   onChange={handleLanguageChange}
                 >
                   <option value="">Select Language</option>
-                  <option value="en">English</option>
-                  <option value="hi">Hindi</option>
+                  <option value="ENGLISH">English</option>
+                  <option value="HINDI">Hindi</option>
                 </select>
               </div>
             </div>

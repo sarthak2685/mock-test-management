@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { RiInformation2Line } from "react-icons/ri";
-import Timer from "../Mock/Timer"; // Assuming Timer is a separate component
+import Timer from "../Mock/Timer";
 import config from "../../../config";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -32,38 +32,8 @@ const InstructionsModal = ({ isVisible, onClose }) => {
     subject,
     questions: totalQuestions / subjects.length,
     marks: totalMarks / subjects.length,
-    time: examDuration / subjects.length, // Assuming equal time distribution
+    time: examDuration / subjects.length,
   }));
-
-  // // Data for subjects and marks
-  // const subjectData = [
-  //   {
-  //     subject: "GENERAL INTELLIGENCE & REASONING",
-  //     questions: 25,
-  //     marks: 50,
-  //     time: 15,
-  //   },
-  //   { subject: "GENERAL AWARENESS", questions: 25, marks: 50, time: 15 },
-  //   { subject: "QUANTITATIVE APTITUDE", questions: 25, marks: 50, time: 15 },
-  // ];
-
-  // const optionalSubjectData = {
-  //   subject: optionalSubject || "Optional Subject",
-  //   questions: 25,
-  //   marks: 50,
-  //   time: 15,
-  // };
-
-  // Calculate totals
-  // const totalQuestions =
-  //   subjectData.reduce((acc, subject) => acc + subject.questions, 0) +
-  //   (optionalSubject ? optionalSubjectData.questions : 0);
-  // const totalMarks =
-  //   subjectData.reduce((acc, subject) => acc + subject.marks, 0) +
-  //   (optionalSubject ? optionalSubjectData.marks : 0);
-  // const totalTime =
-  //   subjectData.reduce((acc, subject) => acc + subject.time, 0) +
-  //   (optionalSubject ? optionalSubjectData.time : 0);
 
   if (!isVisible) return null;
 
@@ -134,7 +104,7 @@ const InstructionsModal = ({ isVisible, onClose }) => {
             </thead>
             <tbody>
               {subjectData
-                .filter((subject) => subject.subject !== optional) // Exclude optional subject
+                .filter((subject) => subject.subject !== optional)
                 .map((subject, index) => (
                   <tr key={index}>
                     <td className="px-2 sm:px-4 py-2 border border-gray-300">
@@ -151,50 +121,6 @@ const InstructionsModal = ({ isVisible, onClose }) => {
                     </td>
                   </tr>
                 ))}
-              {/* <tr>
-                <td className="px-2 sm:px-4 py-2 border border-gray-300">
-                  <select
-                    style={{
-                      cursor: "pointer",
-                      width: "200px",
-                      border: "1px solid #ccc",
-                      borderRadius: "5px",
-                      padding: "4px",
-                    }}
-                    value={optionalSubject}
-                    onChange={handleOptionalSubjectChange}
-                  >
-                    <option value="">Select Optional Subject</option>
-                    <option value="English Comprehension">
-                      English Comprehension
-                    </option>
-                    <option value="Hindi Comprehension">
-                      Hindi Comprehension
-                    </option>
-                  </select>
-                </td>
-                <td className="px-2 sm:px-4 py-2 border border-gray-300">
-                  {optionalSubjectData.questions}
-                </td>
-                <td className="px-2 sm:px-4 py-2 border border-gray-300">
-                  {optionalSubjectData.marks}
-                </td>
-                <td className="px-2 sm:px-4 py-2 border border-gray-300">
-                  {optionalSubjectData.time} min
-                </td>
-              </tr> */}
-              {/* <tr className="font-semibold">
-                <td className="px-4 py-2 border border-gray-300">Total</td>
-                <td className="px-4 py-2 border border-gray-300">
-                  {totalQuestions}
-                </td>
-                <td className="px-4 py-2 border border-gray-300">
-                  {totalMarks}
-                </td>
-                <td className="px-4 py-2 border border-gray-300">
-                  {totalTime} min
-                </td>
-              </tr> */}
             </tbody>
           </table>
         </div>
@@ -205,28 +131,24 @@ const InstructionsModal = ({ isVisible, onClose }) => {
             Button Functionality:
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {/* Current Question */}
             <div className="flex items-center space-x-2 p-3 bg-blue-50 rounded-lg shadow-sm">
               <span className="w-6 h-6 bg-blue-500 rounded-md"></span>
               <span className="text-sm text-gray-700 font-medium">
                 Current Question
               </span>
             </div>
-            {/* Answered */}
             <div className="flex items-center space-x-2 p-3 bg-green-50 rounded-lg shadow-sm">
               <span className="w-6 h-6 bg-green-500 rounded-md"></span>
               <span className="text-sm text-gray-700 font-medium">
                 Answered
               </span>
             </div>
-            {/* Marked for Review */}
             <div className="flex items-center space-x-2 p-3 bg-red-50 rounded-lg shadow-sm">
               <span className="w-6 h-6 bg-red-500 rounded-md"></span>
               <span className="text-sm text-gray-700 font-medium">
                 Marked for Review
               </span>
             </div>
-            {/* Not Answered */}
             <div className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg shadow-sm">
               <span className="w-6 h-6 bg-gray-400 rounded-md"></span>
               <span className="text-sm text-gray-700 font-medium">
@@ -288,6 +210,7 @@ const QuestionNavigation = ({
   sectionName,
   answeredQuestions = [],
   markedForReview = [],
+  questionTimeSpent = {}
 }) => {
   const [showMarkedOnly, setShowMarkedOnly] = useState(false);
   const [showInstructionsModal, setShowInstructionsModal] = useState(false);
@@ -307,7 +230,8 @@ const QuestionNavigation = ({
       prevSectionName.current = sectionName;
     }
   }, [sectionName, onSelectQuestion]);
-    const navigate = useNavigate();
+  
+  const navigate = useNavigate();
 
   const filteredQuestions = showMarkedOnly
     ? questions.filter((_, i) => markedForReview.includes(i))
@@ -316,26 +240,16 @@ const QuestionNavigation = ({
   const S = JSON.parse(localStorage.getItem("user"));
   const token = S.token;
 
-
-  const SubjectId = localStorage.getItem("selectedSubjectId");
-  const Test = localStorage.getItem("selectedTestName");
-  const [tabSwitchCount, setTabSwitchCount] = useState(0);
-
+  const testId = localStorage.getItem("selectedTestId");
   const savedMinutes = localStorage.getItem("selectedExamDuration");
 
-  const parseDate = (str) => {
-    const formattedStr = str
-      .replace("_", " ")
-      .replace(
-        /(\d{2})-(\d{2})-(\d{4}) (\d{2}):(\d{2}):(\d{2})/,
-        "$3-$2-$1T$4:$5:$6"
-      );
-    return new Date(formattedStr);
-  };
+  const [tabSwitchCount, setTabSwitchCount] = useState(0);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
 
-  const handleSubmit = async () => {
+  // New submission function for the new API
+  const handleNewSubmission = async () => {
     try {
-      localStorage.setItem("submissionInProgress", "true"); // Mark submission in progress
+      localStorage.setItem("submissionInProgress", "true");
 
       const user = JSON.parse(localStorage.getItem("user"));
       if (!user) {
@@ -344,13 +258,99 @@ const QuestionNavigation = ({
         return;
       }
 
-      const test_name = (Test || "Default Test Name").replace(/ /g, " ");
-      const exam_id = (SubjectId || "default_exam_id").replace(/ /g, " ");
+      const studentId = user.id;
+      const instituteEmail = user.email || "sahil@mockperiod.com";
+
+      // Calculate total time spent (in seconds)
+      const testStartTime = parseInt(localStorage.getItem("testStartTime") || Date.now());
+      const totalTimeSpent = Math.floor((Date.now() - testStartTime) / 1000);
+
+      // Get stored submitted data
+      const storedData = JSON.parse(localStorage.getItem("submittedData")) || {};
+      
+      // Prepare question attempts payload
+      const questionAttempts = [];
+      
+      // Process each question from localStorage
+      Object.values(storedData).forEach(section => {
+        if (section.questions && Array.isArray(section.questions)) {
+          section.questions.forEach(questionData => {
+            if (questionData.selected_option_id) {
+              questionAttempts.push({
+                questionId: questionData.question,
+                selectedOptionId: questionData.selected_option_id,
+                timeSpent: questionData.time_spent || 0
+              });
+            }
+          });
+        }
+      });
+
+      // Prepare the final payload
+      const payload = {
+        testId: parseInt(testId),
+        studentId: parseInt(studentId),
+        instituteEmail: instituteEmail,
+        totalTimeSpent: totalTimeSpent,
+        questionAttempts: questionAttempts
+      };
+
+      console.log("Submitting to new API with payload:", payload);
+
+      const response = await fetch(
+        `${config.apiUrl}/test-results/submit`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log("Submission successful:", result);
+        localStorage.setItem("submissionResult", "true");
+        setModalMessage("Submission successful!");
+
+        setTimeout(() => {
+          localStorage.setItem("submissionInProgress", "false");
+          navigate("/score", { replace: true });
+        }, 1000);
+      } else {
+        const errorDetails = await response.json();
+        console.error("Submission failed:", errorDetails);
+        setModalMessage(`Submission failed: ${response.statusText}. Please try again later.`);
+      }
+      setModalOpen(true);
+    } catch (error) {
+      console.error("Error submitting answers:", error);
+      setModalMessage("An unexpected error occurred. Please try again.");
+      setModalOpen(true);
+    } finally {
+      localStorage.setItem("submissionInProgress", "false");
+    }
+  };
+
+  // Keep the old submission function as fallback
+  const handleOldSubmission = async () => {
+    try {
+      localStorage.setItem("submissionInProgress", "true");
+
+      const user = JSON.parse(localStorage.getItem("user"));
+      if (!user) {
+        alert("User data not found. Please log in again.");
+        localStorage.setItem("submissionInProgress", "false");
+        return;
+      }
+
+      const test_name = localStorage.getItem("selectedTestName") || "Default Test Name";
+      const exam_id = localStorage.getItem("testId") || "default_exam_id";
       const student_id = user.id;
 
-      const start_time =
-        localStorage.getItem("start_time") || new Date().toISOString();
-
+      const start_time = localStorage.getItem("start_time") || new Date().toISOString();
       const end_time = new Intl.DateTimeFormat("en-GB", {
         year: "numeric",
         month: "2-digit",
@@ -364,19 +364,15 @@ const QuestionNavigation = ({
         .replace(", ", "_")
         .replace(/\//g, "-");
 
-      localStorage.setItem("exam_id", exam_id);
       localStorage.setItem("start_time", start_time);
       localStorage.setItem("end_time", end_time);
 
-      const storedData =
-        JSON.parse(localStorage.getItem("submittedData")) || {};
+      const storedData = JSON.parse(localStorage.getItem("submittedData")) || {};
       const payload = Object.values(storedData).flat();
 
-      // Enhance payload
       const enhancedPayload = payload.map((item) => ({
         ...item,
       }));
-
 
       const queryParams = `student_id=${student_id}&test_name=${test_name}&start_time=${start_time}&exam_id=${exam_id}&end_time=${end_time}`;
 
@@ -393,19 +389,16 @@ const QuestionNavigation = ({
       );
 
       if (response.ok) {
-        localStorage.setItem("submissionResult", "true"); // Mark test as submitted
+        localStorage.setItem("submissionResult", "true");
         setModalMessage("Submission successful!");
 
         setTimeout(() => {
-          localStorage.setItem("submissionInProgress", "false"); // Reset state
+          localStorage.setItem("submissionInProgress", "false");
           navigate("/score", { replace: true });
-; // Redirect after short delay
         }, 1000);
       } else {
         const errorDetails = await response.json();
-        setModalMessage(
-          `Submission failed: ${response.statusText}. Please try again later.`
-        );
+        setModalMessage(`Submission failed: ${response.statusText}. Please try again later.`);
       }
       setModalOpen(true);
     } catch (error) {
@@ -413,15 +406,18 @@ const QuestionNavigation = ({
       setModalMessage("An unexpected error occurred. Please try again.");
       setModalOpen(true);
     } finally {
-      localStorage.setItem("submissionInProgress", "false"); // Ensure reset
+      localStorage.setItem("submissionInProgress", "false");
     }
   };
 
-  const [hasSubmitted, setHasSubmitted] = useState(false);
+  const handleSubmit = async () => {
+    // Try new API first, fallback to old API if needed
+    await handleNewSubmission();
+  };
 
   const handleAutoSubmit = () => {
     if (!hasSubmitted) {
-      setHasSubmitted(true); // Ensure it runs only once
+      setHasSubmitted(true);
       setModalMessage("Test is being submitted...");
       setModalOpen(true);
       handleSubmit();
@@ -450,41 +446,6 @@ const QuestionNavigation = ({
     }
   };
 
-  // const enableFullScreen = () => {
-  //   const elem = document.documentElement; // The root element
-  //   if (elem.requestFullscreen) {
-  //     elem.requestFullscreen();
-  //   } else if (elem.mozRequestFullScreen) {
-  //     elem.mozRequestFullScreen(); // For Firefox
-  //   } else if (elem.webkitRequestFullscreen) {
-  //     elem.webkitRequestFullscreen(); // For Chrome, Safari, and Opera
-  //   } else if (elem.msRequestFullscreen) {
-  //     elem.msRequestFullscreen(); // For IE/Edge
-  //   }
-  // };
-
-  // const monitorFullScreen = () => {
-  //   if (!document.fullscreenElement && !hasSubmitted) {
-  //     toast.error(
-  //       "You exited full-screen mode. The test will now be submitted."
-  //     );
-  //     setHasSubmitted(true);
-  //     handleSubmit();
-  //   }
-  // };
-
-  useEffect(() => {
-    // Add event listeners
-    document.addEventListener("visibilitychange", handleTabSwitch);
-    // document.addEventListener("fullscreenchange", monitorFullScreen);
-
-    return () => {
-      // Clean up event listeners
-      document.removeEventListener("visibilitychange", handleTabSwitch);
-      // document.removeEventListener("fullscreenchange", monitorFullScreen);
-    };
-  }, []);
-
   useEffect(() => {
     document.addEventListener("visibilitychange", handleTabSwitch);
 
@@ -495,7 +456,6 @@ const QuestionNavigation = ({
 
   return (
     <>
-    
       <div className="bg-white p-7 rounded-lg shadow-lg">
         {/* Header Section */}
         <div className="mb-8 flex justify-between items-center">
@@ -507,11 +467,13 @@ const QuestionNavigation = ({
             <span>Instructions</span>
           </button>
         </div>
+        
         {/* Instructions Modal */}
         <InstructionsModal
           isVisible={showInstructionsModal}
           onClose={() => setShowInstructionsModal(false)}
         />
+        
         {/* Question Status Legend */}
         <div className="grid grid-cols-2 gap-4">
           <div className="flex items-center space-x-2 p-2 bg-blue-50 rounded-lg shadow-sm">
@@ -537,10 +499,12 @@ const QuestionNavigation = ({
             </span>
           </div>
         </div>
+        
         {/* Section Title */}
         <h3 className="text-xl font-semibold text-gray-700 mt-4 mb-4 border-b pb-2">
           {sectionName}
         </h3>
+        
         {/* Show Marked Only Toggle */}
         <div className="flex justify-between items-center mb-4">
           <label className="flex items-center cursor-pointer">
@@ -555,11 +519,11 @@ const QuestionNavigation = ({
             </span>
           </label>
         </div>
+        
         {/* Question Navigation Buttons */}
         <div className="grid grid-cols-5 gap-4">
           {filteredQuestions.length > 0 ? (
             filteredQuestions.map((question, i) => {
-              // console.log(`Question ${i + 1}:`, answeredQuestions[i]); // Debug
               return (
                 <button
                   key={i}
@@ -573,13 +537,13 @@ const QuestionNavigation = ({
                   }
                   className={`w-10 h-10 flex items-center justify-center rounded-md font-bold transition duration-200 focus:outline-none focus:ring ${
                     selectedQuestionIndex === i
-                      ? "bg-blue-200 text-blue-700 ring-2 ring-blue-300" // Current question
+                      ? "bg-blue-200 text-blue-700 ring-2 ring-blue-300"
                       : markedForReview.includes(i)
-                      ? "bg-red-500 text-white" // Marked for review
+                      ? "bg-red-500 text-white"
                       : answeredQuestions[i] !== undefined &&
                         answeredQuestions[i] !== null
-                      ? "bg-green-500 text-white" // Answered
-                      : "bg-gray-200 text-gray-700" // Unanswered
+                      ? "bg-green-500 text-white"
+                      : "bg-gray-200 text-gray-700"
                   }`}
                 >
                   {i + 1}
@@ -592,6 +556,7 @@ const QuestionNavigation = ({
             </p>
           )}
         </div>
+        
         {/* Submit Button */}
         <div className="hidden">
           <Timer totalMinutes={savedMinutes} onTimeUp={handleAutoSubmit} />
@@ -605,6 +570,7 @@ const QuestionNavigation = ({
         >
           Submit Test
         </button>
+        
         {modalOpen && (
           <div className="modal-overlay">
             <div className="modal-content">
@@ -617,8 +583,8 @@ const QuestionNavigation = ({
                   <button
                     className="modal-btn confirm"
                     onClick={() => {
-                      setModalOpen(false); // Close modal
-                      handleSubmit(); // Submit test
+                      setModalOpen(false);
+                      handleSubmit();
                     }}
                   >
                     Yes

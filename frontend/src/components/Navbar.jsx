@@ -18,7 +18,7 @@ function Navbar() {
     const userData = JSON.parse(localStorage.getItem("user")); // Fetch user data from localStorage
     if (userData) {
       setUser(userData);
-      setUserRole(userData.type); // Set user role based on type
+      setUserRole(userData.role); // Set user role based on type
       Cookies.set("loginToken", "true", { expires: 1 }); // Set login cookie
     }
   }, []);

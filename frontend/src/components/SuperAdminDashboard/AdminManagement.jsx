@@ -44,45 +44,49 @@ const AdminManagement = ({ user }) => {
     setIsCollapsed((prev) => !prev);
   };
 
-  const [subscriptionPlans, setSubscriptionPlans] = useState([]);
+  // const [subscriptionPlans, setSubscriptionPlans] = useState([]);
   // const API_BASE_URL = "https://mockexam.pythonanywhere.com/licences";
+const subscriptionPlans = [
+  { id: "BASIC", name: "BASIC" },
+  { id: "STANDARD", name: "STANDARD" }
+];
 
-  const fetchPlans = async () => {
-    if (!token) {
-      return;
-    }
+  // const fetchPlans = async () => {
+  //   if (!token) {
+  //     return;
+  //   }
 
-    try {
-      const response = await fetch(`${config.apiUrl}/licences`, {
-        method: "GET",
-        headers: {
-          Authorization: `Token ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
-      const result = await response.json();
+  //   try {
+  //     const response = await fetch(`${config.apiUrl}/licences`, {
+  //       method: "GET",
+  //       headers: {
+  //         Authorization: `Token ${token}`,
+  //         "Content-Type": "application/json",
+  //       },
+  //     });
+  //     const result = await response.json();
 
-      if (Array.isArray(result)) {
-        setSubscriptionPlans(result);
-      } else {
-        console.error("no plan available", result);
-      }
-    } catch (error) {
-      console.log("Error fetching subscription plans:", error);
-      if (error.response) {
-        console.log("Error Response:", error.response); // Check the response error
-      }
-    }
-  };
+  //     if (Array.isArray(result)) {
+  //       setSubscriptionPlans(result);
+  //     } else {
+  //       console.error("no plan available", result);
+  //     }
+  //   } catch (error) {
+  //     console.log("Error fetching subscription plans:", error);
+  //     if (error.response) {
+  //       console.log("Error Response:", error.response); // Check the response error
+  //     }
+  //   }
+  // };
 
-  useEffect(() => {
-    fetchPlans();
-  }, []); // Run once when the component mounts
+  // useEffect(() => {
+  //   fetchPlans();
+  // }, []); // Run once when the component mounts
 
   useEffect(() => {
     const fetchAdmins = async () => {
       try {
-        const response = await fetch(`${config.apiUrl}/vendor-admin-crud/`, {
+        const response = await fetch(`${config.apiUrl}/users/role/ADMIN`, {
           method: "GET",
           headers: {
             Authorization: `Token ${token}`,
@@ -97,8 +101,9 @@ const AdminManagement = ({ user }) => {
         const result = await response.json();
 
         // Check if result.data is an array before setting state
-        if (Array.isArray(result.data)) {
-          setAdmins(result.data);
+        console.log(result);
+        if (Array.isArray(result)) {
+          setAdmins(result);
         } else {
           console.error("Expected an array but received:", result.data);
         }
@@ -110,45 +115,45 @@ const AdminManagement = ({ user }) => {
     fetchAdmins();
   }, [token]);
 
-  useEffect(() => {
-    const checkPhoneNumber = async () => {
-      try {
-        // Find the first admin with a valid 10-digit phone number
-        const adminWithPhone = newAdmins.find((admin) =>
-          /^[0-9]{10}$/.test(admin.phone)
-        );
+  // useEffect(() => {
+  //   const checkPhoneNumber = async () => {
+  //     try {
+  //       // Find the first admin with a valid 10-digit phone number
+  //       const adminWithPhone = newAdmins.find((admin) =>
+  //         /^[0-9]{10}$/.test(admin.phone)
+  //       );
 
-        if (adminWithPhone) {
-          const response = await axios.get(`${config.apiUrl}/check-number/`, {
-            params: { mobile_no: adminWithPhone.phone },
-          });
+  //       if (adminWithPhone) {
+  //         const response = await axios.get(`${config.apiUrl}/check-number/`, {
+  //           params: { mobile_no: adminWithPhone.phone },
+  //         });
 
-          setErrors((prevErrors) => ({
-            ...prevErrors,
-            phoneExists: response.data.exists
-              ? "Phone number already exists"
-              : "",
-          }));
-        } else {
-          setErrors((prevErrors) => ({ ...prevErrors, phoneExists: "" }));
-        }
-      } catch (error) {
-        if (error.response) {
-          const { status, data } = error.response;
-          if (status === 404 && data.message === "EXISTS") {
-            setErrors((prevErrors) => ({
-              ...prevErrors,
-              phoneExists: "Phone number already exists",
-            }));
-          }
-        } else {
-          console.error("Error checking phone number:", error);
-        }
-      }
-    };
+  //         setErrors((prevErrors) => ({
+  //           ...prevErrors,
+  //           phoneExists: response.data.exists
+  //             ? "Phone number already exists"
+  //             : "",
+  //         }));
+  //       } else {
+  //         setErrors((prevErrors) => ({ ...prevErrors, phoneExists: "" }));
+  //       }
+  //     } catch (error) {
+  //       if (error.response) {
+  //         const { status, data } = error.response;
+  //         if (status === 404 && data.message === "EXISTS") {
+  //           setErrors((prevErrors) => ({
+  //             ...prevErrors,
+  //             phoneExists: "Phone number already exists",
+  //           }));
+  //         }
+  //       } else {
+  //         console.error("Error checking phone number:", error);
+  //       }
+  //     }
+  //   };
 
-    checkPhoneNumber();
-  }, [newAdmins]); // Dependency array should include newAdmins to watch for changes in any admin's phone number.
+  //   checkPhoneNumber();
+  // }, [newAdmins]); // Dependency array should include newAdmins to watch for changes in any admin's phone number.
 
   useEffect(() => {
     const handleResize = () => {
@@ -212,24 +217,24 @@ const AdminManagement = ({ user }) => {
       );
       return;
     }
-
     try {
       // Prepare the POST requests
       const responses = await Promise.all(
         newAdmins.map((admin) => {
           return axios.post(
-            `${config.apiUrl}/vendor-admin-crud/`,
+            `${config.apiUrl}/users`,
             {
               name: admin.name,
-              mobile_no: admin.phone,
-              institute_name: admin.username,
-              email_id: admin.email,
-              password_encoded: admin.password,
+              phoneNo: admin.phone,
+              instituteName: admin.username,
+              email: admin.email,
+              password: admin.password,
               licence: admin.subscriptionPlan,
+              role: "ADMIN",
             },
             {
               headers: {
-                Authorization: `Token ${token}`, // Include the token in the header
+                Authorization: `${token}`, 
                 "Content-Type": "application/json",
               },
             }
@@ -276,7 +281,7 @@ const AdminManagement = ({ user }) => {
       return;
     }
     try {
-      await axios.delete(`${config.apiUrl}/vendor-admin-crud/?id=${id}`, {
+      await axios.delete(`${config.apiUrl}/users/?id=${id}`, {
         headers: {
           Authorization: `Token ${token}`,
           "Content-Type": "application/json",
@@ -303,15 +308,15 @@ const AdminManagement = ({ user }) => {
 
     try {
       const response = await fetch(
-        `${config.apiUrl}/reset-password-from-dashboard/`,
+        `${config.apiUrl}/users/${currentAdmin.id}`,
         {
-          method: "POST",
+          method: "PUT",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            types: "admin", // Admin type
-            mobile_no: currentAdmin.mobile_no, // Mobile number from currentAdmin
+            role: "ADMIN", // Admin type
+            // mobile_no: currentAdmin.mobile_no, // Mobile number from currentAdmin
             new_password: newPassword, // The new password
           }),
         }
@@ -500,31 +505,25 @@ const AdminManagement = ({ user }) => {
 
                   {/* Subscription Plan Dropdown */}
                   <div className="relative">
-                    <FaCogs className="absolute left-3 top-3 text-gray-400 sm:left-2 sm:top-2 sm:text-xs lg:left-3 lg:top-3 lg:text-sm" />
-                    <select
-                      value={admin.subscriptionPlan || ""} // Controlled input for subscriptionPlan
-                      onChange={(e) =>
-                        handleAdminChange(
-                          index,
-                          "subscriptionPlan",
-                          e.target.value
-                        )
-                      }
-                      className="border text-gray-400 p-2 pl-10 mb-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 sm:p-1 sm:pl-8 sm:mb-1 sm:text-xs lg:p-2 lg:pl-10 lg:mb-2 lg:text-sm"
-                    >
-                      <option value="">Select Subscription Plan</option>
-                      {Array.isArray(subscriptionPlans) &&
-                      subscriptionPlans.length > 0 ? (
-                        subscriptionPlans.map((plan) => (
-                          <option key={plan.id} value={plan.id}>
-                            {plan.name || "Unnamed Subscription"}
-                          </option>
-                        ))
-                      ) : (
-                        <option disabled>No plans available</option>
-                      )}
-                    </select>
-                  </div>
+  <FaCogs className="absolute left-3 top-3 text-gray-400" />
+
+  <select
+    value={admin.subscriptionPlan || ""}
+    onChange={(e) =>
+      handleAdminChange(index, "subscriptionPlan", e.target.value)
+    }
+    className="border text-gray-400 p-2 pl-10 mb-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+  >
+    <option value="">Select Subscription Plan</option>
+
+    {subscriptionPlans.map((plan) => (
+      <option key={plan.id} value={plan.id}>
+        {plan.name}
+      </option>
+    ))}
+  </select>
+</div>
+
                 </div>
               </div>
             ))}
@@ -603,16 +602,16 @@ const AdminManagement = ({ user }) => {
                           {admin.name}
                         </td>
                         <td className="px-1 py-1 md:px-4 md:py-2 text-[8px] md:text-sm">
-                          {admin.institute_name}
+                          {admin.instituteName}
                         </td>
                         <td className="px-1 py-1 md:px-4 md:py-2 text-[8px] md:text-sm">
-                          {admin.password_encoded}
+                          {admin.password}
                         </td>
                         <td className="px-1 py-1 md:px-4 md:py-2 text-[8px] md:text-sm">
-                          {admin.mobile_no}
+                          {admin.phoneNo}
                         </td>
                         <td className="px-1 py-1 md:px-4 md:py-2 text-[8px] md:text-sm">
-                          {admin.email_id}
+                          {admin.email}
                         </td>
                         <td className="px-1 py-1 md:px-4 md:py-2 text-center">
                           <button

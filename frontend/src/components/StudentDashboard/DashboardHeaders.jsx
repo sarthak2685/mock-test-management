@@ -25,7 +25,7 @@ const DashboardHeader = ({ toggleSidebar }) => {
       const response = await fetch(`${config.apiUrl}/notifications/`, {
         method: "GET",
         headers: {
-          Authorization: `Token ${token}`,
+          Authorization: `${token}`,
           "Content-Type": "application/json",
         },
       });

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useMediaQuery } from "react-responsive";
 import QuestionNavigation from "../Mock/navigation";
 import MobileQuizLayout from "./MobileQuizLayout";
@@ -14,31 +14,44 @@ const MockDemo = () => {
     profileImage: "",
   };
   const S = JSON.parse(localStorage.getItem("user"));
-  const institueName = S.institute_name;
+  const token = S.token;
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
   const [submitted, setSubmitted] = useState(false);
 
-  const storedTestName = localStorage.getItem("selectedTestName");
-
   const [mockTestData, setMockTestData] = useState([]);
   const [timerDuration, setTimerDuration] = useState(0);
-  const SubjectId = localStorage.getItem("selectedSubjectId");
   
-  // Get language parameters - use short codes
-  const selectedLanguage = localStorage.getItem("selectedLanguage") || "en";
-  const optional = localStorage.getItem("nonSelectedLanguage") || "";
+  // Get test ID and language from localStorage
+  const testId = localStorage.getItem("selectedTestId");
+  const selectedLanguage = localStorage.getItem("selectedLanguage") || "ENGLISH";
   
-  console.log("Language Params - Selected:", selectedLanguage, "Optional:", optional);
+  // Track time spent per question
+  const questionStartTimeRef = useRef(Date.now());
+  const [questionTimeSpent, setQuestionTimeSpent] = useState({});
+  const [testStartTime] = useState(Date.now());
+
+  console.log("API Params - Test ID:", testId, "Language:", selectedLanguage);
 
   useEffect(() => {
     const fetchMockTests = async () => {
       try {
-        console.log("API Call - Language:", selectedLanguage, "Optional:", optional);
+        if (!testId) {
+          console.error("No test ID found");
+          return;
+        }
+
+        console.log("API Call - Test ID:", testId, "Language:", selectedLanguage);
         
         const response = await fetch(
-          `${config.apiUrl}/get-single-exam-details/?exam_id=${SubjectId}&institute_name=${institueName}&optional=${optional}&language=${selectedLanguage}`
+          `${config.apiUrl}/tests/${testId}/with-questions/${selectedLanguage}`,
+          {
+            headers: {
+              Authorization: `${token}`,
+              "Content-Type": "application/json",
+            },
+          }
         );
 
         if (!response.ok) {
@@ -46,101 +59,113 @@ const MockDemo = () => {
         }
 
         const result = await response.json();
+        console.log("API Response:", result);
 
-        if (result.data) {
-          const mockTestKeys = Object.keys(result.data);
-          const mockTestKey = mockTestKeys.find(
-            (key) => key !== "exam_domain" && key === storedTestName
-          );
-
-          if (mockTestKey) {
-            const testDetails = result.data[mockTestKey];
-
-            if (testDetails) {
-              setTimerDuration(Number(testDetails.exam_duration) || 0);
-
-              const groupedTests = Object.entries(testDetails)
-                .filter(
-                  ([key]) =>
-                    key !== "exam_duration" &&
-                    key !== "total_marks" &&
-                    key !== "total_questions" &&
-                    key !== "_positive_marks" &&
-                    key !== "_negative_marks"
-                )
-                .map(([subjectName, subjectDetails]) => {
-                  let questions = [];
-
-                  if (
-                    Array.isArray(subjectDetails.questions) &&
-                    subjectDetails.questions.length > 0
-                  ) {
-                    questions = subjectDetails.questions.map((question) => ({
-                      id: question.id,
-                      question: question.question,
-                      question2: question.question2,
-                      marks: question.positive_marks,
-                      negativeMarks: question.negative_marks,
-                      subject: question.subject || subjectName,
-                      options: [
-                        question.option_1,
-                        question.option_2,
-                        question.option_3,
-                        question.option_4,
-                        question.option_5,
-                      ].filter(option => option && option.trim() !== ""),
-                      files: [
-                        question.file_1,
-                        question.file_2,
-                        question.file_3,
-                        question.file_4,
-                        question.file_5,
-                      ].filter(file => file && file.trim() !== ""),
-                    }));
-                  }
-
-                  return {
+        // Transform the new API response format to match existing structure
+        if (result) {
+          let transformedData = [];
+          
+          // Check if hasSubjectGroups is true
+          if (result.hasSubjectGroups && result.questionsBySubject) {
+            // Group by subject
+            Object.entries(result.questionsBySubject).forEach(([subjectName, questions]) => {
+              if (questions && questions.length > 0) {
+                transformedData.push({
+                  subject: subjectName,
+                  no_of_questions: questions.length,
+                  questions: questions.map((question, index) => ({
+                    id: question.id,
+                    question: question.questionText || null,
+                    question2: question.questionImageUrl || null,
+                    marks: question.marks || 1.0,
+                    negativeMarks: result.negativeMark || 0,
                     subject: subjectName,
-                    no_of_questions: subjectDetails.no_of_questions,
-                    questions,
-                  };
+                    options: question.options ? question.options.map(option => option.optionText) : [],
+                    files: question.options ? question.options.map(option => option.optionImageUrl) : [],
+                    // Store original question data with option IDs for submission
+                    originalQuestion: question,
+                    optionsWithIds: question.options || []
+                  }))
                 });
-
-              setMockTestData(groupedTests);
-              setSelectedSubject(groupedTests[0]?.subject || "");
-
-              const uniqueSubjects = [
-                ...new Set(groupedTests.map((test) => test.subject)),
-              ];
-
-              localStorage.setItem(
-                "uniqueSubjects",
-                JSON.stringify(uniqueSubjects)
-              );
-            } else {
-              console.error("Mock test data is missing");
-            }
+              }
+            });
           } else {
-            console.error(
-              "Stored test name does not match any test in the API response"
-            );
+            // Single subject test
+            transformedData = [
+              {
+                subject: result.subjectName || "General",
+                no_of_questions: result.totalQuestions || (result.questions ? result.questions.length : 0),
+                questions: result.questions ? result.questions.map((question, index) => ({
+                  id: question.id,
+                  question: question.questionText || null,
+                  question2: question.questionImageUrl || null,
+                  marks: question.marks || 1.0,
+                  negativeMarks: result.negativeMark || 0,
+                  subject: result.subjectName || "General",
+                  options: question.options ? question.options.map(option => option.optionText) : [],
+                  files: question.options ? question.options.map(option => option.optionImageUrl) : [],
+                  // Store original question data with option IDs for submission
+                  originalQuestion: question,
+                  optionsWithIds: question.options || []
+                })) : []
+              }
+            ];
           }
-        } else {
-          console.error("Data field is missing from the API response");
+
+          setMockTestData(transformedData);
+          
+          // Set timer duration
+          if (result.durationMinutes) {
+            setTimerDuration(result.durationMinutes);
+          }
+
+          console.log("Transformed Data:", transformedData);
         }
       } catch (error) {
         console.error("Error fetching mock test data:", error);
       }
     };
-    if (SubjectId) {
+
+    if (testId) {
       fetchMockTests();
     }
-  }, [SubjectId, selectedLanguage, optional]);
+  }, [testId, selectedLanguage, token]);
 
+  // Track time when question changes
+  useEffect(() => {
+    // Record time spent on previous question
+    const currentTime = Date.now();
+    const timeSpent = Math.floor((currentTime - questionStartTimeRef.current) / 1000); // Convert to seconds
+    
+    if (currentQuestionIndex > 0 || currentSectionIndex > 0) {
+      // Calculate global question index
+      let globalQuestionIndex = currentQuestionIndex;
+      for (let i = 0; i < currentSectionIndex; i++) {
+        globalQuestionIndex += mockTestData[i]?.questions?.length || 0;
+      }
+      
+      setQuestionTimeSpent(prev => ({
+        ...prev,
+        [globalQuestionIndex - 1]: timeSpent
+      }));
+      
+      // Store in localStorage
+      localStorage.setItem("questionTimeSpent", JSON.stringify({
+        ...JSON.parse(localStorage.getItem("questionTimeSpent") || "{}"),
+        [globalQuestionIndex - 1]: timeSpent
+      }));
+    }
+
+    // Reset timer for current question
+    questionStartTimeRef.current = currentTime;
+  }, [currentQuestionIndex, currentSectionIndex, mockTestData]);
+
+  // Debugging
   useEffect(() => {
     console.log("Timer Duration:", timerDuration);
     console.log("Mock Test Data:", mockTestData);
-  }, [timerDuration, mockTestData]);
+    console.log("Question Time Spent:", questionTimeSpent);
+  }, [timerDuration, mockTestData, questionTimeSpent]);
 
   const [answeredQuestions, setAnsweredQuestions] = useState(
     mockTestData.map((subject) => new Array(subject.no_of_questions).fill(null))
@@ -153,6 +178,7 @@ const MockDemo = () => {
   );
 
   useEffect(() => {
+    // When mockTestData is fetched, update the answeredQuestions and markedForReview state
     if (mockTestData.length > 0) {
       setAnsweredQuestions(
         mockTestData.map((subject) =>
@@ -231,6 +257,7 @@ const MockDemo = () => {
         localStorage.removeItem("submissionResult");
         localStorage.removeItem("submittedData");
         localStorage.removeItem("selectedTestDetails");
+        localStorage.removeItem("questionTimeSpent");
       }
     };
 
@@ -277,17 +304,36 @@ const MockDemo = () => {
         storedData[sectionName].questions = [];
       }
 
+      // Determine selected_answer and selected_answer_2 based on userAnswer
       const selectedAnswer =
         typeof userAnswer === "string" &&
-        !userAnswer.startsWith("/media/uploads/")
+        !userAnswer.startsWith("http")
           ? userAnswer
           : null;
       const selectedAnswer2 =
         typeof userAnswer === "string" &&
-        userAnswer.startsWith("/media/uploads/")
+        userAnswer.startsWith("http")
           ? userAnswer
           : null;
 
+      // Find the selected option ID
+      let selectedOptionId = null;
+      if (currentQuestion.optionsWithIds && userAnswer) {
+        const selectedOptionIndex = currentQuestion.options.indexOf(userAnswer);
+        if (selectedOptionIndex !== -1 && currentQuestion.optionsWithIds[selectedOptionIndex]) {
+          selectedOptionId = currentQuestion.optionsWithIds[selectedOptionIndex].id;
+        }
+      }
+
+      // Calculate global question index for time tracking
+      let globalQuestionIndex = currentQuestionIndex;
+      for (let i = 0; i < currentSectionIndex; i++) {
+        globalQuestionIndex += mockTestData[i]?.questions?.length || 0;
+      }
+      
+      const timeSpent = questionTimeSpent[globalQuestionIndex] || 0;
+
+      // Update the selected answer for the current question
       storedData[sectionName].questions = [
         ...storedData[sectionName].questions.filter(
           (q) => q.question !== currentQuestion.id
@@ -298,10 +344,13 @@ const MockDemo = () => {
           selected_answer_2: selectedAnswer2,
           student: student_id,
           language: selectedLanguage,
+          selected_option_id: selectedOptionId, // Store option ID for new API
+          time_spent: timeSpent // Store time spent in seconds
         },
       ];
 
       localStorage.setItem("submittedData", JSON.stringify(storedData));
+      localStorage.setItem("testStartTime", testStartTime.toString());
 
       if (currentQuestionIndex < currentSection.questions.length - 1) {
         setCurrentQuestionIndex(currentQuestionIndex + 1);
@@ -310,7 +359,7 @@ const MockDemo = () => {
         setCurrentQuestionIndex(0);
 
         const nextSubject =
-          mockTestData[currentSectionIndex + 1]?.questions[0]?.subject ||
+          mockTestData[currentSectionIndex + 1]?.subject ||
           "Unknown Subject";
         setSelectedSubject(nextSubject);
       } else {
@@ -360,7 +409,7 @@ const MockDemo = () => {
       mockTestData[currentSectionIndex]?.questions.length > 0
     ) {
       const activeSubject =
-        mockTestData[currentSectionIndex]?.questions[0]?.subject ||
+        mockTestData[currentSectionIndex]?.subject ||
         "Unknown Subject";
       setSelectedSubject(activeSubject);
     }
@@ -396,13 +445,11 @@ const MockDemo = () => {
             {/* Section Navigation */}
             <div className="col-span-full grid grid-cols-4 space-x-4 py-4 px-8 bg-gray-100 rounded-lg shadow-md">
               {mockTestData.map((section, sectionIndex) => {
-                const uniqueSubjects = [
-                  ...new Set(section.questions.map((q) => q.subject)),
-                ];
+                const subject = section.subject;
 
-                return uniqueSubjects.map((subject, subjectIndex) => (
+                return (
                   <button
-                    key={`${sectionIndex}-${subjectIndex}`}
+                    key={`${sectionIndex}`}
                     className={`flex items-center col-span-1 py-3 px-4 rounded-lg transition duration-300 ${
                       currentSectionIndex === sectionIndex &&
                       selectedSubject === subject
@@ -413,7 +460,7 @@ const MockDemo = () => {
                   >
                     <span>{subject || "Unknown Subject"}</span>
                   </button>
-                ));
+                );
               })}
             </div>
 
@@ -467,14 +514,11 @@ const MockDemo = () => {
                         mockTestData[currentSectionIndex]?.questions[
                           currentQuestionIndex
                         ];
-                      const baseUrl = `${config.apiUrl}`;
-                      const defaultFileValue =
-                        "/media/uploads/questions/option_4_uFtm5qj.png";
 
                       const formattedQuestion =
                         currentQuestion?.question
-                          .replace(/\\n/g, "\n")
-                          .split("\n") || [];
+                          ?.replace(/\\n/g, "\n")
+                          ?.split("\n") || [];
 
                       return (
                         <>
@@ -495,13 +539,10 @@ const MockDemo = () => {
                             </p>
                           ))}
 
-                          {currentQuestion?.question2 &&
-                          currentQuestion.question2 !== defaultFileValue ? (
-                            currentQuestion.question2.startsWith(
-                              "/media/uploads/"
-                            ) ? (
+                          {currentQuestion?.question2 ? (
+                            currentQuestion.question2.startsWith("http") ? (
                               <img
-                                src={`${config.apiUrl}${currentQuestion.question2}`}
+                                src={currentQuestion.question2}
                                 alt="Additional question"
                                 className="max-w-full max-h-24 object-contain mt-4"
                               />
@@ -524,9 +565,6 @@ const MockDemo = () => {
                     const currentQuestion =
                       mockTestData[currentSectionIndex]?.questions[currentQuestionIndex];
 
-                    const baseUrl = `${config.apiUrl}`;
-                    const defaultFileValue = "/media/uploads/questions/option_4_uFtm5qj.png";
-
                     const cleanedOptions = currentQuestion?.options?.filter(
                       (option) =>
                         option &&
@@ -537,8 +575,8 @@ const MockDemo = () => {
                     const cleanedFiles = currentQuestion?.files?.filter(
                       (file) =>
                         file &&
+                        file !== null &&
                         file.trim() !== "" &&
-                        file !== defaultFileValue &&
                         file.trim().toLowerCase() !== "none"
                     );
 
@@ -546,7 +584,7 @@ const MockDemo = () => {
                       cleanedFiles?.length > 0 ? cleanedFiles : cleanedOptions;
 
                     return displayItems?.map((item, index) => {
-                      const isFile = item.startsWith("/media/uploads/");
+                      const isFile = item && item.startsWith("http");
                       const optionText = isFile
                         ? cleanedOptions?.[index]?.trim() || null
                         : item?.trim() || null;
@@ -573,7 +611,7 @@ const MockDemo = () => {
                           <div className="flex flex-col items-center">
                             {isFile && (
                               <img
-                                src={`${baseUrl}${item}`}
+                                src={item}
                                 alt={`Option ${index + 1}`}
                                 className="max-w-full max-h-24 object-contain mb-2"
                               />
@@ -581,16 +619,16 @@ const MockDemo = () => {
                             {optionText && (
                               <div className="text-gray-800 font-medium text-center">
                                 {optionText
-                                  .replace(/\\n/g, "\n")
-                                  .split("\n")
-                                  .map((line, idx) => (
+                                  ?.replace(/\\n/g, "\n")
+                                  ?.split("\n")
+                                  ?.map((line, idx) => (
                                     <p
                                       key={idx}
                                       className="flex flex-wrap items-center gap-2"
                                     >
                                       {line
-                                        .split(/(\$[^$]+\$)/g)
-                                        .map((part, i) =>
+                                        ?.split(/(\$[^$]+\$)/g)
+                                        ?.map((part, i) =>
                                           /^\$[^$]+\$$/.test(part) ? (
                                             <StaticMathField key={i}>
                                               {part.slice(1, -1)}
@@ -667,12 +705,11 @@ const MockDemo = () => {
             onSelectQuestion={(index) => setCurrentQuestionIndex(index)}
             onSubmit={() => setSubmitted(true)}
             sectionName={
-              mockTestData[currentSectionIndex]?.questions
-                ?.filter((question) => question.subject === selectedSubject)
-                .map((question) => question.subject)[0] || "Unknown Subject"
+              mockTestData[currentSectionIndex]?.subject || "Unknown Subject"
             }
             answeredQuestions={answeredQuestions[currentSectionIndex] || []}
             markedForReview={markedForReview[currentSectionIndex] || []}
+            questionTimeSpent={questionTimeSpent}
           />
         </div>
       </div>

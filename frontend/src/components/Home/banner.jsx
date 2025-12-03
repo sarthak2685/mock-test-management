@@ -13,7 +13,7 @@ function Banner() {
     // Check localStorage for logged in user
     useEffect(() => {
         const userData = JSON.parse(localStorage.getItem("user"));
-        if (userData && userData.type === "student") {
+        if (userData && userData.role === "STUDENT") {
             setUserType(userData.type);
             setBannerImage(mockkTestImage); // If student is logged in, set the student image
         } else {

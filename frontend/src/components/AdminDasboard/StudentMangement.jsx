@@ -19,7 +19,7 @@ import "react-toastify/dist/ReactToastify.css";
 const StudentManagement = ({ user }) => {
   const [students, setStudents] = useState([]);
   const [newStudents, setNewStudents] = useState([
-    { name: "", username: "", password: "", mobile_no: "" },
+    { name: "", password: "", mobile_no: "", email: "" },
   ]); // Added mobile_no field
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -32,6 +32,8 @@ const StudentManagement = ({ user }) => {
   const [currentStudent, setCurrentStudent] = useState(null);
   const [newPassword, setNewPassword] = useState("");
   const studentLimit = S.student_limit;
+const instituteEmail = S.email; 
+// const instituteId = S.institute_id;
 
   const toggleSidebar = () => {
     setIsCollapsed((prev) => !prev);
@@ -58,7 +60,7 @@ const StudentManagement = ({ user }) => {
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const response = await fetch(`${config.apiUrl}/admin-student-crud/`, {
+        const response = await fetch(`${config.apiUrl}/users/getAllStudent/${instituteEmail}`, {
           method: "GET",
           headers: {
             Authorization: `Token ${token}`,
@@ -71,9 +73,11 @@ const StudentManagement = ({ user }) => {
         }
 
         const data = await response.json();
+        console.log("Fetched student data:", data);
 
-        if (Array.isArray(data.data)) {
-          setStudents(data.data);
+        if (Array.isArray(data)) {
+          console.log("Setting students:", data);
+          setStudents(data);
         } else {
           console.warn("Fetched data is not an array:", data);
           setStudents([]); // Fallback to an empty array
@@ -104,7 +108,7 @@ const StudentManagement = ({ user }) => {
     if (students.length + newStudents.length < studentLimit) {
       setNewStudents([
         ...newStudents,
-        { name: "", username: "", password: "", mobile_no: "" },
+        { name: "", password: "", mobile_no: "", email: "" },
       ]);
     } else {
       setError(`Student limit exhausted`);
@@ -126,13 +130,13 @@ const StudentManagement = ({ user }) => {
       newStudents.some(
         (student) =>
           !student.name ||
-          !student.username ||
           !student.password ||
-          !student.mobile_no
+          !student.mobile_no ||
+          !student.email
       )
     ) {
       setError(
-        "All fields (name, username, password, mobile_no) are required."
+        "All fields (name, email, password, mobile_no) are required."
       );
       return;
     }
@@ -141,17 +145,19 @@ const StudentManagement = ({ user }) => {
       const responses = await Promise.all(
         newStudents.map((student) =>
           axios.post(
-            `${config.apiUrl}/admin-student-crud/`,
+            `${config.apiUrl}/users`,
             {
               name: student.name,
-              mobile_no: student.mobile_no,
-              institute_name: "none",
-              email_id: "none",
-              password_encoded: student.password,
+              phoneNo: student.mobile_no,
+              email: student.email,
+              instituteEmail: instituteEmail, 
+              // instituteId: 
+              password: student.password,
+              role: "STUDENT",
             },
             {
               headers: {
-                Authorization: `Token ${token}`,
+                Authorization: `${token}`,
                 "Content-Type": "application/json",
               },
             }
@@ -180,7 +186,7 @@ const StudentManagement = ({ user }) => {
       if (validStudents.length > 0) {
         setStudents([...students, ...validStudents]);
         setNewStudents([
-          { name: "", username: "", password: "", mobile_no: "" },
+          { name: "", email: "", password: "", mobile_no: "" },
         ]);
         setError(""); // Clear errors if at least one student was added
         toast.success("Students added successfully!", {
@@ -222,10 +228,10 @@ const StudentManagement = ({ user }) => {
   const handleRemoveStudent = async (id) => {
     try {
       // DELETE request to remove a student
-      await fetch(`${config.apiUrl}/admin-student-crud/?id=${id}`, {
+      await fetch(`${config.apiUrl}/users/${id}`, {
         method: "DELETE",
         headers: {
-          Authorization: `Token ${token}`,
+          Authorization: `${token}`,
           "Content-Type": "application/json",
         },
       });
@@ -316,7 +322,7 @@ const StudentManagement = ({ user }) => {
           (student.name?.toLowerCase() || "").includes(
             searchTerm.toLowerCase()
           ) ||
-          (student.username?.toLowerCase() || "").includes(
+          (student.email?.toLowerCase() || "").includes(
             searchTerm.toLowerCase()
           )
       )
@@ -424,7 +430,7 @@ const StudentManagement = ({ user }) => {
                       }
                       className="border p-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
-                    <input
+                    {/* <input
                       type="text"
                       placeholder="Username"
                       value={student.username}
@@ -432,7 +438,7 @@ const StudentManagement = ({ user }) => {
                         handleStudentChange(index, "username", e.target.value)
                       }
                       className="border p-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
+                    /> */}
                     <input
                       type="password"
                       placeholder="Password"
@@ -442,6 +448,16 @@ const StudentManagement = ({ user }) => {
                       }
                       className="border p-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
+                    <input
+                      type="email"
+                      placeholder="Email"
+                      value={student.email}
+                      onChange={(e) =>
+                        handleStudentChange(index, "email", e.target.value)
+                      }
+                      className="border p-2 w-full rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+
                     <div className="w-full">
                       <input
                         type="tel"
@@ -523,8 +539,8 @@ const StudentManagement = ({ user }) => {
                       <th className="px-2 py-1 md:px-4 md:py-2 text-left">
                         Mobile Number
                       </th>
-                      <th className="px-2 py-1 md:px-4 md:py-2 text-left">
-                        Password {/* Now visible in mobile */}
+                     <th className="px-2 py-1 md:px-4 md:py-2 text-center">
+                      Email
                       </th>
                       <th className="px-2 py-1 md:px-4 md:py-2 text-center">
                         Change Password {/* Now visible in mobile */}
@@ -547,10 +563,10 @@ const StudentManagement = ({ user }) => {
                             {student.name}
                           </td>
                           <td className="px-2 py-1 md:px-4 md:py-2 text-[9px] md:text-sm">
-                            {student.mobile_no}
+                            {student.phoneNo}
                           </td>
-                          <td className="px-2 py-1 md:px-4 md:py-2 text-[9px] md:text-sm">
-                            {student.password_encoded || student.password}{" "}
+                          <td className="px-2 py-1 md:px-4 md:py-2 text-[9px] md:text-sm text-center">
+                            {student.email}
                           </td>
                           <td className="px-2 py-1 md:px-4 md:py-2 text-center">
                             <button

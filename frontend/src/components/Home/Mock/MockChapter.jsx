@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useMediaQuery } from "react-responsive";
 import ChapterNavigation from "../Mock/ChapterNavigation";
 import ChapterMobile from "../Mock/ChapterMobile";
@@ -21,28 +21,36 @@ const MockChapter = () => {
 
   const S = JSON.parse(localStorage.getItem("user"));
   const token = S.token;
-  const institueName = S.institute_name;
+  const institueName = S.instituteId;
 
   const [mockTestData, setMockTestData] = useState([]);
   const [timerDuration, setTimerDuration] = useState(0);
-  const SubjectId = localStorage.getItem("selectedSubjectId");
   
-  // Get language parameters - use short codes
-  const selectedLanguage = localStorage.getItem("selectedLanguage") || "en";
-  const optional = localStorage.getItem("nonSelectedLanguage") || "";
+  // Get test ID and language from localStorage
+  const testId = localStorage.getItem("testId");
+  const selectedLanguage = localStorage.getItem("selectedLanguage").toUpperCase() || "ENGLISH";
   
-  console.log("Language Params - Selected:", selectedLanguage, "Optional:", optional);
+  // Track time spent per question
+  const questionStartTimeRef = useRef(Date.now());
+  const [questionTimeSpent, setQuestionTimeSpent] = useState({});
+
+  console.log("API Params - Test ID:", testId, "Language:", selectedLanguage);
 
   useEffect(() => {
     const fetchMockTests = async () => {
       try {
-        console.log("API Call - Language:", selectedLanguage, "Optional:", optional);
+        if (!testId) {
+          console.error("No test ID found");
+          return;
+        }
+
+        console.log("API Call - Test ID:", testId, "Language:", selectedLanguage);
         
         const response = await fetch(
-          `${config.apiUrl}/get-single-exam-details-based-on-subjects/?subject_id=${SubjectId}&institute_name=${institueName}&language=${selectedLanguage}`,
+          `${config.apiUrl}/tests/${testId}/with-questions/${selectedLanguage}`,
           {
             headers: {
-              Authorization: `Token ${token}`,
+              Authorization: `${token}`,
               "Content-Type": "application/json",
             },
           }
@@ -53,104 +61,76 @@ const MockChapter = () => {
         }
 
         const result = await response.json();
+        console.log("API Response:", result);
 
-        // Retrieve selected chapter from localStorage
-        const selectedChapter = localStorage.getItem("selectedChapter");
-
-        if (result && result.data && result.data.chapters) {
-          const groupedTests = [];
-
-          // Iterate through each chapter
-          Object.keys(result.data.chapters).forEach((chapterName) => {
-            const chapter = result.data.chapters[chapterName];
-
-            // Only process the selected chapter
-            if (selectedChapter && chapterName === selectedChapter) {
-              let currentTestName = "";
-              let currentTestDuration = 60; // Default duration if not provided
-
-              // Iterate through each test or question in the chapter
-              chapter.forEach((testDetails) => {
-                if (testDetails.test_name && testDetails.duration) {
-                  // Update the current test name and duration
-                  currentTestName = testDetails.test_name;
-                  currentTestDuration = parseInt(testDetails.duration, 10);
-                  currentTestDuration =
-                    isNaN(currentTestDuration) || currentTestDuration <= 0
-                      ? 60
-                      : currentTestDuration;
-                }
-
-                if (testDetails.id) {
-                  // Create or find the test entry in groupedTests
-                  let test = groupedTests.find(
-                    (t) => t.test_name === currentTestName
-                  );
-                  if (!test) {
-                    test = {
-                      test_name: currentTestName,
-                      exam_duration: currentTestDuration,
-                      questions: [],
-                    };
-                    groupedTests.push(test);
-                  }
-
-                  // Set the timer duration once (based on the first valid test)
-                  if (groupedTests.length === 1) {
-                    setTimerDuration(currentTestDuration);
-                  }
-
-                  // Add the question to the test
-                  test.questions.push({
-                    id: testDetails.id,
-                    question: testDetails.question || null, // Primary question
-                    question_1: testDetails.question_1 || null, // Additional question
-                    options: [
-                      testDetails.option_1,
-                      testDetails.option_2,
-                      testDetails.option_3,
-                      testDetails.option_4,
-                    ],
-                    files: [
-                      testDetails.file_1,
-                      testDetails.file_2,
-                      testDetails.file_3,
-                      testDetails.file_4,
-                    ].filter(Boolean), // Include files only if they exist
-                    correctAnswer:
-                      testDetails.correct_answer || testDetails.correct_ans2, // Include fallback for correct_ans2
-                    marks: testDetails.marks,
-                    negativeMarks: testDetails.negative_marks,
-                    subjects_details: testDetails.subjects_details,
-                    test_name: currentTestName, // Associate the test name with each question
-                    duration: currentTestDuration, // Associate the duration with each question
-                  });
-                }
-              });
+        // Transform the new API response format to match existing structure
+        if (result) {
+          const transformedData = [
+            {
+              test_name: result.testName || "Mock Test",
+              exam_duration: result.durationMinutes || 60,
+              questions: result.questions ? result.questions.map((question, index) => ({
+                id: question.id,
+                question: question.questionText || null,
+                question_1: question.questionImageUrl || null,
+                options: question.options ? question.options.map(option => option.optionText) : [],
+                files: question.options ? question.options.map(option => option.optionImageUrl) : [],
+                correctAnswer: question.options ? 
+                  question.options.find(opt => opt.isCorrect)?.optionText || null : null,
+                marks: question.marks || 1.0,
+                negativeMarks: result.negativeMark || 0,
+                test_name: result.testName,
+                duration: result.durationMinutes,
+                // Store original question data with option IDs
+                originalQuestion: question,
+                // Store options with their IDs for submission
+                optionsWithIds: question.options || []
+              })) : []
             }
-          });
+          ];
 
-          setMockTestData(groupedTests);
-        } else {
-          console.error(
-            "Chapters field is missing or malformed in the API response"
-          );
+          setMockTestData(transformedData);
+          
+          // Set timer duration
+          if (result.durationMinutes) {
+            setTimerDuration(result.durationMinutes);
+          }
+
+          console.log("Transformed Data:", transformedData);
         }
       } catch (error) {
         console.error("Error fetching mock test data:", error);
       }
     };
 
-    if (SubjectId) {
+    if (testId) {
       fetchMockTests();
     }
-  }, [SubjectId, selectedLanguage, token, institueName]); // Added language dependency
+  }, [testId, selectedLanguage, token]);
+
+  // Track time when question changes
+  useEffect(() => {
+    // Record time spent on previous question
+    const currentTime = Date.now();
+    const timeSpent = Math.floor((currentTime - questionStartTimeRef.current) / 1000); // Convert to seconds
+    
+    if (currentQuestionIndex > 0) {
+      setQuestionTimeSpent(prev => ({
+        ...prev,
+        [currentQuestionIndex - 1]: timeSpent
+      }));
+    }
+
+    // Reset timer for current question
+    questionStartTimeRef.current = currentTime;
+  }, [currentQuestionIndex]);
 
   // Debugging: Check the timerDuration and mockTestData
   useEffect(() => {
     console.log("Timer Duration:", timerDuration);
     console.log("Mock Test Data:", mockTestData);
-  }, [timerDuration, mockTestData]);
+    console.log("Question Time Spent:", questionTimeSpent);
+  }, [timerDuration, mockTestData, questionTimeSpent]);
 
   const [answeredQuestions, setAnsweredQuestions] = useState(
     mockTestData.map((subject) => new Array(subject.no_of_questions).fill(null))
@@ -167,12 +147,12 @@ const MockChapter = () => {
     if (mockTestData.length > 0) {
       setAnsweredQuestions(
         mockTestData.map((subject) =>
-          new Array(subject.no_of_questions).fill(null)
+          new Array(subject.questions?.length || 0).fill(null)
         )
       );
       setMarkedForReview(
         mockTestData.map((subject) =>
-          new Array(subject.no_of_questions).fill(false)
+          new Array(subject.questions?.length || 0).fill(false)
         )
       );
     }
@@ -231,6 +211,7 @@ const MockChapter = () => {
         localStorage.removeItem("submissionResult");
         localStorage.removeItem("submittedData");
         localStorage.removeItem("selectedTestDetails");
+        localStorage.removeItem("questionTimeSpent");
       }
     };
 
@@ -293,7 +274,7 @@ const MockChapter = () => {
       }
 
       if (!storedData[sectionName].questions) {
-        storedData[sectionName].questions = {};
+        storedData[sectionName].questions = [];
       }
 
       if (!Array.isArray(storedData[sectionName].questions)) {
@@ -303,14 +284,23 @@ const MockChapter = () => {
       // Determine selected_answer and selected_answer_2 based on userAnswer
       const selectedAnswer =
         typeof userAnswer === "string" &&
-        !userAnswer.startsWith("/media/uploads/")
+        !userAnswer.startsWith("http")
           ? userAnswer
           : null;
       const selectedAnswer2 =
         typeof userAnswer === "string" &&
-        userAnswer.startsWith("/media/uploads/")
+        userAnswer.startsWith("http")
           ? userAnswer
           : null;
+
+      // Find the selected option ID
+      let selectedOptionId = null;
+      if (currentQuestion.optionsWithIds && userAnswer) {
+        const selectedOptionIndex = currentQuestion.options.indexOf(userAnswer);
+        if (selectedOptionIndex !== -1 && currentQuestion.optionsWithIds[selectedOptionIndex]) {
+          selectedOptionId = currentQuestion.optionsWithIds[selectedOptionIndex].id;
+        }
+      }
 
       // Update the selected answer for the current question
       storedData[sectionName].questions = [
@@ -322,12 +312,15 @@ const MockChapter = () => {
           selected_answer: selectedAnswer || null,
           selected_answer_2: selectedAnswer2 || null,
           student: student_id,
-          language: selectedLanguage, // Use selectedLanguage instead of language
+          language: selectedLanguage,
+          selected_option_id: selectedOptionId, // Store option ID for new API
+          time_spent: questionTimeSpent[currentQuestionIndex] || 0 // Store time spent in seconds
         },
       ];
 
       // Save the updated structure to localStorage
       localStorage.setItem("submittedData", JSON.stringify(storedData));
+      localStorage.setItem("questionTimeSpent", JSON.stringify(questionTimeSpent));
 
       // Move to the next question or section
       if (currentQuestionIndex < currentSection.questions.length - 1) {
@@ -447,13 +440,11 @@ const MockChapter = () => {
                           currentQuestionIndex
                         ];
                       const baseUrl = `${config.apiUrl}`;
-                      const defaultFileValue =
-                        "/media/uploads/questions/option_4_uFtm5qj.png";
 
                       const formattedQuestion =
                         currentQuestion?.question
-                          .replace(/\\n/g, "\n")
-                          .split("\n") || [];
+                          ?.replace(/\\n/g, "\n")
+                          ?.split("\n") || [];
 
                       return (
                         <>
@@ -474,13 +465,10 @@ const MockChapter = () => {
                             </p>
                           ))}
 
-                          {currentQuestion?.question_1 &&
-                          currentQuestion.question_1 !== defaultFileValue ? (
-                            currentQuestion.question_1.startsWith(
-                              "/media/uploads/"
-                            ) ? (
+                          {currentQuestion?.question_1 ? (
+                            currentQuestion.question_1.startsWith("http") ? (
                               <img
-                                src={`${config.apiUrl}${currentQuestion.question_1}`}
+                                src={currentQuestion.question_1}
                                 alt="Additional question"
                                 className="max-w-full max-h-24 object-contain mt-4"
                               />
@@ -508,11 +496,9 @@ const MockChapter = () => {
                       ];
 
                     const baseUrl = `${config.apiUrl}`;
-                    const defaultFileValue =
-                      "/media/uploads/questions/option_4_uFtm5qj.png";
 
                     const validFiles = currentQuestion?.files?.filter(
-                      (file) => file && file !== defaultFileValue
+                      (file) => file && file !== null
                     );
 
                     const displayItems =
@@ -521,9 +507,8 @@ const MockChapter = () => {
                         : currentQuestion?.options;
 
                     return displayItems?.map((item, index) => {
-                      const isFile = item.startsWith("/media/uploads/");
-                      const optionText =
-                        currentQuestion?.options?.[index]?.trim() || null;
+                      const isFile = item && item.startsWith("http");
+                      const optionText = item;
 
                       return item ? (
                         <label
@@ -545,24 +530,24 @@ const MockChapter = () => {
                           <div className="flex flex-col items-center">
                             {isFile && (
                               <img
-                                src={`${baseUrl}${item}`}
+                                src={item}
                                 alt={`Option ${index + 1}`}
                                 className="max-w-full max-h-24 object-contain mb-2"
                               />
                             )}
-                            {optionText && (
+                            {!isFile && optionText && (
                               <div className="text-gray-800 font-medium text-center">
                                 {optionText
-                                  .replace(/\\n/g, "\n")
-                                  .split("\n")
-                                  .map((line, idx) => (
+                                  ?.replace(/\\n/g, "\n")
+                                  ?.split("\n")
+                                  ?.map((line, idx) => (
                                     <p
                                       key={idx}
                                       className="flex flex-wrap items-center gap-2"
                                     >
                                       {line
-                                        .split(/(\$[^$]+\$)/g)
-                                        .map((part, i) =>
+                                        ?.split(/(\$[^$]+\$)/g)
+                                        ?.map((part, i) =>
                                           /^\$[^$]+\$$/.test(part) ? (
                                             <StaticMathField key={i}>
                                               {part.slice(1, -1)}
@@ -643,6 +628,7 @@ const MockChapter = () => {
             }
             answeredQuestions={answeredQuestions[currentSectionIndex] || []}
             markedForReview={markedForReview[currentSectionIndex] || []}
+            questionTimeSpent={questionTimeSpent}
           />
         </div>
       </div>

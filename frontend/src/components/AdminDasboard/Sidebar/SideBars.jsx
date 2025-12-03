@@ -15,7 +15,8 @@ const Sidebar = ({ isCollapsed, toggleSidebar }) => {
     ? new Date(localStorage.getItem("expiry"))
     : null;
 
-  const isSubscriptionExpired = expiryDate ? currentDate > expiryDate : true;
+  // const isSubscriptionExpired = expiryDate ? currentDate > expiryDate : true;
+  const isSubscriptionExpired = false;
 
   const handleLogout = () => {
     localStorage.removeItem("user");

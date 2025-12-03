@@ -22,24 +22,17 @@ const logoMap = {
     RBI: rbiLogo,
 };
 
-// Map prefixes to category labels
+// Map exam names to category labels
 const categoryMap = {
-    SSC: "SSC Exam",
-    DEFENCE: "Defence Exam",
-    RRB: "Railway Exam",
-    IBPS: "Bank Exam",
-    SBI: "Bank Exam",
-    RBI: "Bank Exam",
-    NABARD: "Bank Exam",
-    UP: "Police exam",
-    Bihar: "Police exam",
-    BSSC: "BSSC exam",
+    CHSL: "SSC Exam",
+    JEE: "Engineering Exam",
+    TEst: "Test Exam",
+    // Add more mappings as needed based on your exam names
 };
 
-// Function to get category based on exam serial number
-const getCategory = (examSlno) => {
-    const prefix = examSlno.split("_")[0]; // Extract prefix
-    return categoryMap[prefix] || "General Exam"; // Default fallback
+// Function to get category based on exam name
+const getCategory = (examName) => {
+    return categoryMap[examName] || "General Exam"; // Default fallback
 };
 
 const Exams = () => {
@@ -56,10 +49,10 @@ const Exams = () => {
     useEffect(() => {
         const fetchExamData = async () => {
             try {
-                const response = await fetch(`${config.apiUrl}/exams/`);
+                const response = await fetch(`${config.apiUrl}/exams/allExam`);
                 const data = await response.json();
                 setExamData(data);
-                setCount(data.length - 1);
+                setCount(data.length);
             } catch (error) {
                 console.error("Error fetching exam data:", error);
             } finally {
@@ -72,11 +65,12 @@ const Exams = () => {
 
     // Get the appropriate logo for an exam
     const getLogo = (exam) => {
-        if (exam.image) return exam.image; // Use image from the exam data if available
+        // Use examImageUrl from the API response if available
+        if (exam.examImageUrl) return exam.examImageUrl;
 
         // Match a logo based on exam name
         for (const key in logoMap) {
-            if (exam.name.includes(key)) {
+            if (exam.examName.includes(key)) {
                 return logoMap[key];
             }
         }
@@ -86,8 +80,7 @@ const Exams = () => {
     // Handle card click navigation
     const handleCardClick = (exam) => {
         localStorage.setItem("selectedSubjectId", exam.id);
-
-        if (user?.type === "student") {
+        if (user?.role === "STUDENT") {
             navigate("/mock-test", { state: { exam } });
         } else {
             navigate("/login");
@@ -144,7 +137,6 @@ const Exams = () => {
         <div ref={ref} className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             {loading ? (
                 <>
-                    {" "}
                     <h1 className="text-5xl font-extrabold text-black mb-4 text-center">
                         Our Extensive List Of{" "}
                         <span className="text-[#007bff]">Exams</span>
@@ -184,27 +176,35 @@ const Exams = () => {
                                 )
                                 .map((exam, index) => (
                                     <div
-                                        key={index}
+                                        key={exam.id}
                                         className="relative bg-white border rounded-md shadow-lg p-4 flex flex-col items-center transition-transform transform hover:scale-105 hover:shadow-2xl duration-300 ease-in-out cursor-pointer"
                                         onClick={() => handleCardClick(exam)}
                                     >
-                                        {(!user || user.type !== "student") && (
+                                        {(!user || user.role !== "STUDENT") && (
                                             <div className="absolute top-0 right-0 -mr-3 -mt-3 bg-red-400 text-xs font-bold text-white py-1 px-3 rounded-full shadow-md">
                                                 Locked
                                             </div>
                                         )}
                                         <div className="w-24 h-24 rounded-full mb-4 flex items-center justify-center">
                                             <img
-                                                src={getLogo(exam)} // Dynamically determine logo
-                                                alt={`${exam.name} logo`}
+                                                src={getLogo(exam)}
+                                                alt={`${exam.examName} logo`}
                                                 className="w-full h-full object-cover rounded-full"
+                                                onError={(e) => {
+                                                    // Fallback if image fails to load
+                                                    e.target.style.display = 'none';
+                                                    e.target.nextSibling.style.display = 'flex';
+                                                }}
                                             />
+                                            <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-sm text-center hidden">
+                                                {exam.examName}
+                                            </div>
                                         </div>
                                         <h3 className="text-xl font-bold text-gray-800">
-                                            {exam.name}
+                                            {exam.examName}
                                         </h3>
                                         <p className="text-gray-600">
-                                            {getCategory(exam.exam_slno)}
+                                            {getCategory(exam.examName)}
                                         </p>
                                     </div>
                                 ))}
